@@ -7,6 +7,23 @@ import { NodeType, UniversalNode } from './types';
 
 export const PALEMBANG_NODES: UniversalNode[] = [
   {
+    id: 'node-0',
+    name: 'Bukit Siguntang (Genesis Node)',
+    type: NodeType.HERITAGE,
+    description: 'Bukit Siguntang merupakan Genesis Node, titik awal narasi sejarah dan peradaban yang menjadi akar jaringan budaya digital SIGUNTANG.',
+    image: 'https://cda.1001malam.com/uploads/tour/onedaycityandmusitourpalembang_bukitsiguntang_5060.JPG',
+    location: {
+      lat: -2.9972,
+      lng: 104.7256,
+      address: 'Bukit Lama, Kec. Ilir Barat I, Kota Palembang, Sumatera Selatan'
+    },
+    traceability: [
+      { id: 'tx-0', timestamp: '2024-01-01T00:00:00Z', event: 'Genesis Block & Root Node Init', actor: 'SIGUNTANG Protocol', hash: '0x0000...genesis9b' },
+      { id: 'tx-siguntang-1', timestamp: '2024-01-05T08:00:00Z', event: 'Verifikasi Kedaulatan Budaya', actor: 'Dinas Pariwisata', hash: '0x7e2b...864c' }
+    ],
+    tags: ['Genesis', 'Sriwijaya', 'Sejarah', 'Akar Peradaban']
+  },
+  {
     id: 'node-1',
     name: 'Museum Sultan Mahmud Badaruddin II',
     type: NodeType.HERITAGE,
