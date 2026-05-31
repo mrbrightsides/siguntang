@@ -1,0 +1,6 @@
+{
+  "name": "SIGUNTANG - Peta Hidup Budaya Nusantara",
+  "description": "Sistem Integrasi Gerbang Universal Node, Traceability & Artificial Intelligence Nusantara Gemilang. A smart tourism infrastructure for Palembang heritage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
