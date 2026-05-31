@@ -156,7 +156,7 @@ export default function App() {
             >
               <div className="relative z-10 w-full aspect-square max-w-[500px] mx-auto bg-white rounded-[40px] p-4 shadow-2xl rotate-3">
                 <img 
-                  src="/src/assets/images/ampera_hero_image_1780038648909.png" 
+                  src="https://i.imgur.com/oRfzTOT.jpeg" 
                   className="w-full h-full object-cover rounded-[32px]"
                   alt="Palembang Jembatan Ampera"
                   referrerPolicy="no-referrer"
