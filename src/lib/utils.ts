@@ -17,3 +17,15 @@ export function formatDate(dateString: string) {
     year: 'numeric',
   });
 }
+
+export function cleanAsterisks(text: string): string {
+  if (!text) return '';
+  return text
+    // Replace bullet points starting with * into clean bullet points •
+    .replace(/^(\s*)\*\s+/gm, '$1• ')
+    // Remove bold/italic asterisks ***text***, **text**, *text*
+    .replace(/\*{1,3}([^*]+?)\*{1,3}/g, '$1')
+    // Remove any leftover stray asterisks
+    .replace(/\*/g, '')
+    .trim();
+}

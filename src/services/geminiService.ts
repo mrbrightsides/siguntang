@@ -5,6 +5,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import { ChatMessage } from "../types";
+import { cleanAsterisks } from "../lib/utils";
 
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
@@ -32,14 +33,17 @@ export async function getAIResponse(messages: ChatMessage[]) {
         Tugas Anda:
         - Memberikan narasi digital interaktif tentang "nyawa" di balik audio storytelling dan heritage map.
         - Menjelaskan Palembang sebagai pilot city (Sriwijaya, Sungai Musi, Islam Nusantara).
-        - Memberikan rekomendasi yang personal dan membanggakan identitas Nusantara.`,
+        - Memberikan rekomendasi yang personal dan membanggakan identitas Nusantara.
+        
+        PENTING: Jangan gunakan karakter tanda bintang (asterisk '*' atau '**') untuk formatting teks, penebalan (bold), miring (italic), ataupun bullet points. Tuliskan teks secara bersih, elegan, dan natural tanpa markdown asterisk.`,
         temperature: 0.7,
       },
       history: history,
     });
 
     const result = await chat.sendMessage({ message: lastMessage });
-    return result.text || "Maaf, saya sedang mengalami gangguan koneksi ke STC Node.";
+    const rawText = result.text || "Maaf, saya sedang mengalami gangguan koneksi ke STC Node.";
+    return cleanAsterisks(rawText);
   } catch (error) {
     console.error("AI Guide Error:", error);
     return "Maaf, saya sedang tidak dapat terhubung ke sistem pusat Nusantara Gemilang.";

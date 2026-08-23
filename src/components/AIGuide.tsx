@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { MessageSquare, Send, X, Bot, Sparkles, User } from 'lucide-react';
 import { ChatMessage } from '../types';
 import { getAIResponse } from '../services/geminiService';
-import { cn } from '../lib/utils';
+import { cn, cleanAsterisks } from '../lib/utils';
 
 export function AIGuide() {
   const [isOpen, setIsOpen] = useState(false);
@@ -81,12 +81,12 @@ export function AIGuide() {
                     {msg.role === 'user' ? <User size={14} /> : <Bot size={14} className="text-[#8b0000]" />}
                   </div>
                   <div className={cn(
-                    "max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm",
+                    "max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-line",
                     msg.role === 'user' 
                       ? "bg-[#1a1a1a] text-white rounded-tr-none" 
                       : "bg-[#f5f2ed] text-[#1a1a1a] rounded-tl-none"
                   )}>
-                    {msg.content}
+                    {cleanAsterisks(msg.content)}
                   </div>
                 </div>
               ))}
