@@ -63,7 +63,7 @@ export async function getAIResponse(messages: ChatMessage[]) {
 
   try {
     const chat = ai.chats.create({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.8-flash",
       config: {
         systemInstruction: `Anda adalah SIGUNTANG AI Guide, asisten digital cerdas untuk platform SIGUNTANG (Sistem Integrasi Gerbang Universal Node, Traceability & Artificial Intelligence Nusantara Gemilang).
         
@@ -130,7 +130,7 @@ export async function generateAndRefineProposal(
     Pastikan respons Anda HANYA berupa JSON tanpa markdown block selain json.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.8-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",

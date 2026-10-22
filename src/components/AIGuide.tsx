@@ -5,18 +5,16 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, Send, X, Bot, Sparkles, User, Key, CheckCircle, RefreshCw } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, Sparkles, User } from 'lucide-react';
 import { ChatMessage } from '../types';
-import { getAIResponse, hasActiveGeminiKey, saveCustomApiKey, getStoredApiKey } from '../services/geminiService';
+import { getAIResponse, hasActiveGeminiKey } from '../services/geminiService';
 import { cn, cleanAsterisks } from '../lib/utils';
 
 export function AIGuide() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showKeyConfig, setShowKeyConfig] = useState(false);
-  const [customKey, setCustomKey] = useState(getStoredApiKey());
   const [isKeyActive, setIsKeyActive] = useState(hasActiveGeminiKey());
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', content: 'Halo! Saya SIGUNTANG AI Guide. Bagaimana saya bisa membantu Anda menjelajahi warisan Nusantara Gemilang di Palembang hari ini?' }
+    { role: 'model', content: 'Halo! Saya SIGUNTANG AI Guide. Bagaimana saya bisa membantu Anda menjelajahi warisan Nusantara Gemilang dan legenda Sungai Musi hari ini?' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -33,20 +31,6 @@ export function AIGuide() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
-
-  const handleSaveKey = (e: React.FormEvent) => {
-    e.preventDefault();
-    saveCustomApiKey(customKey);
-    const active = hasActiveGeminiKey();
-    setIsKeyActive(active);
-    setShowKeyConfig(false);
-    if (active) {
-      setMessages(prev => [
-        ...prev,
-        { role: 'model', content: 'Kunci API Gemini berhasil dikonfigurasi. Saya siap memandu Anda menjelajahi sejarah dan kebudayaan Sungai Musi.' }
-      ]);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,155 +49,152 @@ export function AIGuide() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999]">
+    <>
+      {/* Mobile Backdrop Overlay */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs z-[9998] md:hidden"
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Floating Chat Container */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="absolute bottom-20 right-0 w-[350px] md:w-[420px] h-[580px] bg-white rounded-3xl shadow-2xl shadow-black/20 border border-black/5 overflow-hidden flex flex-col"
+            exit={{ opacity: 0, y: 40, scale: 0.98 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className={cn(
+              "fixed z-[9999] bg-white flex flex-col overflow-hidden shadow-2xl border border-black/10 transition-all",
+              // Mobile layout: Dynamic full-width bottom-sheet docking
+              "inset-x-0 bottom-0 w-full h-[88vh] max-h-[640px] rounded-t-[2rem] rounded-b-none",
+              // Tablet & Desktop layout: Floating card at bottom-right
+              "md:inset-x-auto md:bottom-24 md:right-6 md:w-[420px] md:h-[600px] md:max-h-[680px] md:rounded-3xl"
+            )}
           >
             {/* Header */}
-            <div className="p-5 bg-[#8b0000] text-white">
+            <div className="pt-3 pb-4 px-5 sm:p-5 bg-[#8b0000] text-white shrink-0 relative">
+              {/* Mobile grab handle indicator */}
+              <div className="w-12 h-1 bg-white/30 rounded-full mx-auto mb-3 md:hidden" />
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/20 rounded-xl">
-                    <Bot size={20} />
+                  <div className="p-2.5 bg-white/15 rounded-2xl shadow-inner flex items-center justify-center">
+                    <Bot size={22} className="text-amber-300" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-serif text-lg font-bold">SIGUNTANG AI</h3>
+                      <h3 className="font-serif text-lg font-bold tracking-tight">SIGUNTANG AI</h3>
                       <span className={cn(
-                        "inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-medium",
-                        isKeyActive ? "bg-emerald-500/20 text-emerald-200 border border-emerald-400/30" : "bg-amber-400/20 text-amber-200 border border-amber-300/30"
+                        "inline-flex items-center gap-1.5 text-[10px] px-2.5 py-0.5 rounded-full font-medium shadow-xs",
+                        isKeyActive ? "bg-emerald-500/25 text-emerald-200 border border-emerald-400/30" : "bg-amber-400/25 text-amber-200 border border-amber-300/30"
                       )}>
                         <span className={cn("w-1.5 h-1.5 rounded-full", isKeyActive ? "bg-emerald-400" : "bg-amber-400 animate-pulse")} />
-                        {isKeyActive ? "Online" : "Perlu Kunci"}
+                        {isKeyActive ? "Online" : "Siap Memandu"}
                       </span>
                     </div>
-                    <p className="text-[10px] uppercase tracking-widest opacity-80">Nusantara Heritage Guide</p>
+                    <p className="text-[10px] uppercase tracking-wider text-white/75 font-medium">Nusantara Heritage Guide</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <button 
-                    onClick={() => setShowKeyConfig(!showKeyConfig)} 
-                    title="Pengaturan Kunci API Gemini"
-                    className={cn(
-                      "p-1.5 rounded-lg transition-colors text-white/90 hover:bg-white/10",
-                      showKeyConfig && "bg-white/20"
-                    )}
-                  >
-                    <Key size={18} />
-                  </button>
-                  <button onClick={() => setIsOpen(false)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
-                    <X size={20} />
-                  </button>
-                </div>
-              </div>
 
-              {/* API Key Drawer */}
-              {showKeyConfig && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-4 pt-3 border-t border-white/10 text-xs"
+                {/* Close Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 hover:bg-white/15 rounded-xl transition-colors text-white/90 active:scale-95"
+                  aria-label="Tutup Obrolan"
                 >
-                  <p className="text-white/90 mb-2 leading-relaxed">
-                    Kunci Gemini dibaca otomatis dari Environment Variables Vercel (setelah Redeploy) atau masukkan langsung di bawah:
-                  </p>
-                  <form onSubmit={handleSaveKey} className="flex gap-2">
-                    <input 
-                      type="password"
-                      value={customKey}
-                      onChange={(e) => setCustomKey(e.target.value)}
-                      placeholder="Masukkan AI Studio Gemini Key..."
-                      className="flex-1 px-3 py-1.5 rounded-lg bg-black/30 border border-white/20 text-white placeholder-white/50 text-xs focus:outline-none focus:border-amber-300"
-                    />
-                    <button 
-                      type="submit"
-                      className="px-3 py-1.5 bg-amber-400 text-stone-900 font-semibold rounded-lg hover:bg-amber-300 transition-colors shrink-0"
-                    >
-                      Simpan
-                    </button>
-                  </form>
-                </motion.div>
-              )}
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-stone-50/50">
               {messages.map((msg, idx) => (
-                <div key={idx} className={cn("flex gap-3", msg.role === 'user' ? "flex-row-reverse" : "flex-row")}>
+                <div key={idx} className={cn("flex gap-2.5 sm:gap-3", msg.role === 'user' ? "flex-row-reverse" : "flex-row")}>
                   <div className={cn(
-                    "p-2 rounded-lg h-fit",
-                    msg.role === 'user' ? "bg-[#f5f2ed]" : "bg-[#8b0000]/10"
+                    "p-2 rounded-xl h-fit shrink-0 shadow-2xs",
+                    msg.role === 'user' ? "bg-[#f5f2ed] text-stone-700" : "bg-[#8b0000]/10 text-[#8b0000]"
                   )}>
-                    {msg.role === 'user' ? <User size={14} /> : <Bot size={14} className="text-[#8b0000]" />}
+                    {msg.role === 'user' ? <User size={15} /> : <Bot size={15} />}
                   </div>
                   <div className={cn(
-                    "max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-line",
+                    "max-w-[85%] sm:max-w-[80%] p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-sm whitespace-pre-line break-words",
                     msg.role === 'user' 
-                      ? "bg-[#1a1a1a] text-white rounded-tr-none" 
-                      : "bg-[#f5f2ed] text-[#1a1a1a] rounded-tl-none"
+                      ? "bg-[#1a1a1a] text-white rounded-tr-xs" 
+                      : "bg-[#f5f2ed] text-[#1a1a1a] rounded-tl-xs border border-black/5"
                   )}>
                     {cleanAsterisks(msg.content)}
                   </div>
                 </div>
               ))}
+
               {isTyping && (
-                <div className="flex gap-3">
-                  <div className="p-2 rounded-lg bg-[#8b0000]/10">
-                    <Bot size={14} className="text-[#8b0000]" />
+                <div className="flex gap-2.5 sm:gap-3">
+                  <div className="p-2 rounded-xl bg-[#8b0000]/10 text-[#8b0000] shrink-0">
+                    <Bot size={15} />
                   </div>
-                  <div className="bg-[#f5f2ed] p-4 rounded-2xl rounded-tl-none flex gap-1">
-                    <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0 }} className="w-1.5 h-1.5 bg-black/20 rounded-full" />
-                    <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }} className="w-1.5 h-1.5 bg-black/20 rounded-full" />
-                    <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.4 }} className="w-1.5 h-1.5 bg-black/20 rounded-full" />
+                  <div className="bg-[#f5f2ed] p-3.5 sm:p-4 rounded-2xl rounded-tl-xs flex items-center gap-1.5 border border-black/5">
+                    <motion.div animate={{ opacity: [0.3, 1, 0.3], scale: [0.9, 1.1, 0.9] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0 }} className="w-2 h-2 bg-[#8b0000]/60 rounded-full" />
+                    <motion.div animate={{ opacity: [0.3, 1, 0.3], scale: [0.9, 1.1, 0.9] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.2 }} className="w-2 h-2 bg-[#8b0000]/60 rounded-full" />
+                    <motion.div animate={{ opacity: [0.3, 1, 0.3], scale: [0.9, 1.1, 0.9] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4 }} className="w-2 h-2 bg-[#8b0000]/60 rounded-full" />
                   </div>
                 </div>
               )}
               <div ref={messagesEndRef} />
             </div>
 
-              {/* Folklore Quick Suggestion Chips */}
-              <div className="px-6 py-2 bg-[#f5f2ed]/80 border-t border-black/5 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                {[
-                  'Cerita Antu Banyu',
-                  'Legenda Pulau Kemaro',
-                  'Putri Kembang Dadar',
-                  'Kutukan Si Pahit Lidah',
-                  'Misteri Buaya Buntung'
-                ].map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => {
-                      setInput(`Ceritakan tentang ${tag} di Sungai Musi`);
-                    }}
-                    className="shrink-0 px-2.5 py-1 bg-white hover:bg-[#8b0000] hover:text-white text-stone-700 text-[10px] font-medium rounded-full border border-black/5 transition-colors shadow-2xs"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
+            {/* Quick Suggestion Chips */}
+            <div className="px-4 sm:px-5 py-2.5 bg-[#f5f2ed]/90 border-t border-black/5 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+              <span className="text-[10px] text-stone-500 font-semibold shrink-0 uppercase tracking-wider flex items-center gap-1">
+                <Sparkles size={11} className="text-amber-600" /> Ide:
+              </span>
+              {[
+                'Cerita Antu Banyu',
+                'Legenda Pulau Kemaro',
+                'Putri Kembang Dadar',
+                'Kutukan Si Pahit Lidah',
+                'Misteri Buaya Buntung'
+              ].map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => {
+                    setInput(`Ceritakan tentang ${tag} di Sungai Musi`);
+                  }}
+                  className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#8b0000] hover:text-white text-stone-700 text-[11px] font-medium rounded-full border border-black/5 transition-all shadow-2xs active:scale-95 touch-manipulation"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
 
-              {/* Input */}
-              <form onSubmit={handleSubmit} className="p-6 border-t border-black/5 bg-[#f5f2ed]/50">
-                <div className="relative">
-                  <input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Tanya sejarah atau folklore Musi..."
-                    className="w-full pl-5 pr-12 py-3 bg-white border border-black/5 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8b0000]/20 transition-all font-sans"
+            {/* Input Form with safe bottom padding for mobile browsers */}
+            <form onSubmit={handleSubmit} className="p-3.5 sm:p-4 md:p-5 border-t border-black/5 bg-white shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Tanya sejarah atau cerita Musi..."
+                  className="w-full pl-4 pr-12 py-3 bg-[#f5f2ed]/70 hover:bg-[#f5f2ed] border border-black/5 rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#8b0000]/25 transition-all font-sans placeholder-stone-400"
                 />
                 <button 
                   type="submit"
                   disabled={!input.trim() || isTyping}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[#8b0000] text-white rounded-xl disabled:opacity-50 transition-all active:scale-95"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2.5 bg-[#8b0000] text-white rounded-xl disabled:opacity-40 transition-all hover:bg-[#700000] active:scale-95 shadow-xs"
+                  aria-label="Kirim Pesan"
                 >
-                  <Send size={16} />
+                  <Send size={15} />
                 </button>
               </div>
             </form>
@@ -221,16 +202,18 @@ export function AIGuide() {
         )}
       </AnimatePresence>
 
+      {/* Floating Action Button */}
       <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.06 }}
+        whileTap={{ scale: 0.94 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-[#8b0000] text-white rounded-2xl shadow-2xl flex items-center justify-center relative group overflow-hidden"
+        className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[9999] w-14 h-14 bg-[#8b0000] text-white rounded-2xl shadow-xl shadow-red-950/25 flex items-center justify-center relative group overflow-hidden border border-white/20 touch-manipulation"
+        aria-label={isOpen ? "Tutup SIGUNTANG AI" : "Buka SIGUNTANG AI"}
       >
         <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#ff4d4d] rounded-full border-2 border-white animate-pulse" />
+        <div className="absolute top-2 right-2 w-3 h-3 bg-amber-400 rounded-full border-2 border-[#8b0000] animate-pulse" />
       </motion.button>
-    </div>
+    </>
   );
 }
