@@ -7,19 +7,41 @@ import { GoogleGenAI } from "@google/genai";
 import { ChatMessage } from "../types";
 import { cleanAsterisks } from "../lib/utils";
 
+export function getStoredApiKey(): string {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem('SIGUNTANG_GEMINI_API_KEY') || '';
+}
+
+export function saveCustomApiKey(key: string): void {
+  if (typeof window === 'undefined') return;
+  if (!key.trim()) {
+    localStorage.removeItem('SIGUNTANG_GEMINI_API_KEY');
+  } else {
+    localStorage.setItem('SIGUNTANG_GEMINI_API_KEY', key.trim());
+  }
+}
+
+export function hasActiveGeminiKey(): boolean {
+  return !!getGeminiClient();
+}
+
 function getGeminiClient(): GoogleGenAI | null {
+  const localKey = typeof window !== 'undefined' ? localStorage.getItem('SIGUNTANG_GEMINI_API_KEY') : null;
   const apiKey =
-    (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) ||
-    (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_API_KEY) ||
-    (typeof window !== 'undefined' && (window as any).__GEMINI_API_KEY__) ||
+    localKey ||
+    (typeof process !== 'undefined' && (process.env?.GEMINI_API_KEY || process.env?.VITE_GEMINI_API_KEY)) ||
+    (typeof import.meta !== 'undefined' && ((import.meta as any).env?.VITE_GEMINI_API_KEY || (import.meta as any).env?.GEMINI_API_KEY)) ||
+    (typeof window !== 'undefined' && ((window as any).__GEMINI_API_KEY__ || (window as any).GEMINI_API_KEY)) ||
     '';
 
-  if (!apiKey || apiKey === 'undefined' || apiKey === 'null') {
+  const cleanKey = typeof apiKey === 'string' ? apiKey.trim() : '';
+
+  if (!cleanKey || cleanKey === 'undefined' || cleanKey === 'null') {
     return null;
   }
 
   try {
-    return new GoogleGenAI({ apiKey });
+    return new GoogleGenAI({ apiKey: cleanKey });
   } catch (error) {
     console.warn("GoogleGenAI lazy init prevented:", error);
     return null;
@@ -41,7 +63,7 @@ export async function getAIResponse(messages: ChatMessage[]) {
 
   try {
     const chat = ai.chats.create({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       config: {
         systemInstruction: `Anda adalah SIGUNTANG AI Guide, asisten digital cerdas untuk platform SIGUNTANG (Sistem Integrasi Gerbang Universal Node, Traceability & Artificial Intelligence Nusantara Gemilang).
         

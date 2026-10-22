@@ -5,13 +5,16 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, Send, X, Bot, Sparkles, User } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, Sparkles, User, Key, CheckCircle, RefreshCw } from 'lucide-react';
 import { ChatMessage } from '../types';
-import { getAIResponse } from '../services/geminiService';
+import { getAIResponse, hasActiveGeminiKey, saveCustomApiKey, getStoredApiKey } from '../services/geminiService';
 import { cn, cleanAsterisks } from '../lib/utils';
 
 export function AIGuide() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showKeyConfig, setShowKeyConfig] = useState(false);
+  const [customKey, setCustomKey] = useState(getStoredApiKey());
+  const [isKeyActive, setIsKeyActive] = useState(hasActiveGeminiKey());
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'model', content: 'Halo! Saya SIGUNTANG AI Guide. Bagaimana saya bisa membantu Anda menjelajahi warisan Nusantara Gemilang di Palembang hari ini?' }
   ]);
@@ -24,8 +27,26 @@ export function AIGuide() {
   };
 
   useEffect(() => {
+    setIsKeyActive(hasActiveGeminiKey());
+  }, [isOpen]);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  const handleSaveKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveCustomApiKey(customKey);
+    const active = hasActiveGeminiKey();
+    setIsKeyActive(active);
+    setShowKeyConfig(false);
+    if (active) {
+      setMessages(prev => [
+        ...prev,
+        { role: 'model', content: 'Kunci API Gemini berhasil dikonfigurasi. Saya siap memandu Anda menjelajahi sejarah dan kebudayaan Sungai Musi.' }
+      ]);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +61,7 @@ export function AIGuide() {
     const response = await getAIResponse(newMessages);
     setMessages([...newMessages, { role: 'model', content: response }]);
     setIsTyping(false);
+    setIsKeyActive(hasActiveGeminiKey());
   };
 
   return (
@@ -50,24 +72,74 @@ export function AIGuide() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="absolute bottom-20 right-0 w-[350px] md:w-[400px] h-[550px] bg-white rounded-3xl shadow-2xl shadow-black/20 border border-black/5 overflow-hidden flex flex-col"
+            className="absolute bottom-20 right-0 w-[350px] md:w-[420px] h-[580px] bg-white rounded-3xl shadow-2xl shadow-black/20 border border-black/5 overflow-hidden flex flex-col"
           >
             {/* Header */}
-            <div className="p-6 bg-[#8b0000] text-white">
-              <div className="flex items-center justify-between mb-1">
+            <div className="p-5 bg-[#8b0000] text-white">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white/20 rounded-xl">
                     <Bot size={20} />
                   </div>
                   <div>
-                    <h3 className="font-serif text-lg font-bold">SIGUNTANG AI</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-serif text-lg font-bold">SIGUNTANG AI</h3>
+                      <span className={cn(
+                        "inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-medium",
+                        isKeyActive ? "bg-emerald-500/20 text-emerald-200 border border-emerald-400/30" : "bg-amber-400/20 text-amber-200 border border-amber-300/30"
+                      )}>
+                        <span className={cn("w-1.5 h-1.5 rounded-full", isKeyActive ? "bg-emerald-400" : "bg-amber-400 animate-pulse")} />
+                        {isKeyActive ? "Online" : "Perlu Kunci"}
+                      </span>
+                    </div>
                     <p className="text-[10px] uppercase tracking-widest opacity-80">Nusantara Heritage Guide</p>
                   </div>
                 </div>
-                <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-white/10 rounded-lg transition-colors">
-                  <X size={20} />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button 
+                    onClick={() => setShowKeyConfig(!showKeyConfig)} 
+                    title="Pengaturan Kunci API Gemini"
+                    className={cn(
+                      "p-1.5 rounded-lg transition-colors text-white/90 hover:bg-white/10",
+                      showKeyConfig && "bg-white/20"
+                    )}
+                  >
+                    <Key size={18} />
+                  </button>
+                  <button onClick={() => setIsOpen(false)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
+
+              {/* API Key Drawer */}
+              {showKeyConfig && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-4 pt-3 border-t border-white/10 text-xs"
+                >
+                  <p className="text-white/90 mb-2 leading-relaxed">
+                    Kunci Gemini dibaca otomatis dari Environment Variables Vercel (setelah Redeploy) atau masukkan langsung di bawah:
+                  </p>
+                  <form onSubmit={handleSaveKey} className="flex gap-2">
+                    <input 
+                      type="password"
+                      value={customKey}
+                      onChange={(e) => setCustomKey(e.target.value)}
+                      placeholder="Masukkan AI Studio Gemini Key..."
+                      className="flex-1 px-3 py-1.5 rounded-lg bg-black/30 border border-white/20 text-white placeholder-white/50 text-xs focus:outline-none focus:border-amber-300"
+                    />
+                    <button 
+                      type="submit"
+                      className="px-3 py-1.5 bg-amber-400 text-stone-900 font-semibold rounded-lg hover:bg-amber-300 transition-colors shrink-0"
+                    >
+                      Simpan
+                    </button>
+                  </form>
+                </motion.div>
+              )}
             </div>
 
             {/* Messages */}
