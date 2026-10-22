@@ -14,8 +14,9 @@ import { UniversalNode, NodeType } from './types';
 import { HeritageMap } from './components/HeritageMap';
 import { TraceabilityHub } from './components/TraceabilityHub';
 import { STCExplorerModal } from './components/STCExplorerModal';
+import { MusiCruiseDiorama } from './components/MusiCruiseDiorama';
 import { connectWallet, WalletState, recordTraceabilityTransaction } from './services/blockchainService';
-import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download } from 'lucide-react';
+import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -110,18 +111,25 @@ export default function App() {
                 className="flex flex-wrap items-center justify-center lg:justify-start gap-4"
               >
                 <button 
-                  onClick={() => document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-4 bg-[#8b0000] text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-[#a00000] transition-colors flex items-center gap-2 shadow-xl shadow-[#8b0000]/20"
+                  onClick={() => document.getElementById('expedition')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="px-8 py-4 bg-[#8b0000] text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-[#a00000] transition-all flex items-center gap-2 shadow-xl shadow-[#8b0000]/25 hover:scale-[1.02] active:scale-95"
                 >
-                  Explore Heritage
+                  <Compass size={16} />
+                  Naik Ketek & Jelajah Musi
+                </button>
+                <button 
+                  onClick={() => document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="px-8 py-4 bg-white text-[#1a1a1a] border border-black/10 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  Explore Heritage Nodes
                   <ChevronRight size={16} />
                 </button>
                 <button 
                   onClick={() => setIsExplorerOpen(true)}
-                  className="px-8 py-4 bg-white text-[#1a1a1a] border border-black/5 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  className="px-6 py-4 bg-black/5 text-[#1a1a1a] hover:bg-black/10 rounded-2xl font-bold text-xs uppercase tracking-widest transition-colors flex items-center gap-2"
                 >
-                  View Network
                   <Globe size={16} />
+                  Network
                 </button>
               </motion.div>
 
@@ -132,18 +140,18 @@ export default function App() {
                 className="mt-12 flex items-center justify-center lg:justify-start gap-8"
               >
                 <div className="flex flex-col items-center lg:items-start">
+                  <span className="font-serif text-3xl font-bold text-[#8b0000]">5 Rute</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Folklore Musi</span>
+                </div>
+                <div className="w-px h-10 bg-black/10" />
+                <div className="flex flex-col items-center lg:items-start">
                   <span className="font-serif text-3xl font-bold text-[#8b0000]">120+</span>
                   <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Cultural Nodes</span>
                 </div>
                 <div className="w-px h-10 bg-black/10" />
                 <div className="flex flex-col items-center lg:items-start">
                   <span className="font-serif text-3xl font-bold text-[#8b0000]">100%</span>
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Traceable</span>
-                </div>
-                <div className="w-px h-10 bg-black/10" />
-                <div className="flex flex-col items-center lg:items-start">
-                  <span className="font-serif text-3xl font-bold text-[#8b0000]">24/7</span>
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">AI Assistance</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Traceable STC</span>
                 </div>
               </motion.div>
             </div>
@@ -176,6 +184,12 @@ export default function App() {
           </div>
         </div>
       </section>
+
+      {/* Musi River Cruise Folklore Diorama Section */}
+      <MusiCruiseDiorama onNodeSelect={(name) => {
+        const found = PALEMBANG_NODES.find(n => n.name.toLowerCase().includes(name.toLowerCase()));
+        if (found) setSelectedNode(found);
+      }} />
 
       {/* Mission Section: Transforming Passive to Active */}
       <section className="py-24 bg-[#8b0000] text-white">

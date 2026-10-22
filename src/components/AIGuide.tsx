@@ -105,14 +105,36 @@ export function AIGuide() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
-            <form onSubmit={handleSubmit} className="p-6 border-t border-black/5 bg-[#f5f2ed]/50">
-              <div className="relative">
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask about Palembang heritage..."
-                  className="w-full pl-5 pr-12 py-3 bg-white border border-black/5 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8b0000]/20 transition-all font-sans"
+              {/* Folklore Quick Suggestion Chips */}
+              <div className="px-6 py-2 bg-[#f5f2ed]/80 border-t border-black/5 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                {[
+                  'Cerita Antu Banyu',
+                  'Legenda Pulau Kemaro',
+                  'Putri Kembang Dadar',
+                  'Kutukan Si Pahit Lidah',
+                  'Misteri Buaya Buntung'
+                ].map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => {
+                      setInput(`Ceritakan tentang ${tag} di Sungai Musi`);
+                    }}
+                    className="shrink-0 px-2.5 py-1 bg-white hover:bg-[#8b0000] hover:text-white text-stone-700 text-[10px] font-medium rounded-full border border-black/5 transition-colors shadow-2xs"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+
+              {/* Input */}
+              <form onSubmit={handleSubmit} className="p-6 border-t border-black/5 bg-[#f5f2ed]/50">
+                <div className="relative">
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Tanya sejarah atau folklore Musi..."
+                    className="w-full pl-5 pr-12 py-3 bg-white border border-black/5 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8b0000]/20 transition-all font-sans"
                 />
                 <button 
                   type="submit"

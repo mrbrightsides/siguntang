@@ -24,7 +24,11 @@ export function Navbar({ walletAddress, onConnectWallet }: NavbarProps) {
           </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-7">
+          <a href="#expedition" className="font-sans text-xs uppercase tracking-widest font-bold text-[#8b0000] flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+            <span className="w-2 h-2 rounded-full bg-[#8b0000] animate-pulse" />
+            Ekspedisi Musi (Diorama)
+          </a>
           <a href="#explorer" className="font-sans text-xs uppercase tracking-widest font-semibold hover:text-[#8b0000] transition-colors">Explorer</a>
           <a href="#map" className="font-sans text-xs uppercase tracking-widest font-semibold hover:text-[#8b0000] transition-colors">Heritage Map</a>
           <a href="#traceability" className="font-sans text-xs uppercase tracking-widest font-semibold hover:text-[#8b0000] transition-colors">Traceability</a>

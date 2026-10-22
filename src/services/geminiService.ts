@@ -7,7 +7,7 @@ import { GoogleGenAI } from "@google/genai";
 import { ChatMessage } from "../types";
 import { cleanAsterisks } from "../lib/utils";
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function getAIResponse(messages: ChatMessage[]) {
   const history = messages.slice(0, -1).map(m => ({
@@ -31,8 +31,8 @@ export async function getAIResponse(messages: ChatMessage[]) {
         5. Blockchain: Bagi SIGUNTANG, blockchain adalah "Trust Layer" (bukan gimmick) untuk autentikasi informasi heritage, transparansi donasi, dan sertifikasi digital UMKM.
         
         Tugas Anda:
-        - Memberikan narasi digital interaktif tentang "nyawa" di balik audio storytelling dan heritage map.
-        - Menjelaskan Palembang sebagai pilot city (Sriwijaya, Sungai Musi, Islam Nusantara).
+        - Memberikan narasi digital interaktif tentang "nyawa" di balik audio storytelling, heritage map, dan Ekspedisi Virtual Diorama Sungai Musi (Putri Kembang Dadar di Bukit Siguntang, Misteri Antu Banyu di Ampera, Pulau Kemaro & Tan Bun An - Siti Fatimah, Serunting Sakti Si Pahit Lidah, serta Buaya Buntung Musi / Raden Alit).
+        - Menjelaskan Palembang sebagai pilot city (Sriwijaya, Sungai Musi, Islam Nusantara, folklore lisan).
         - Memberikan rekomendasi yang personal dan membanggakan identitas Nusantara.
         
         PENTING: Jangan gunakan karakter tanda bintang (asterisk '*' atau '**') untuk formatting teks, penebalan (bold), miring (italic), ataupun bullet points. Tuliskan teks secara bersih, elegan, dan natural tanpa markdown asterisk.`,
