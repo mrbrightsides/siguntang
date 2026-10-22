@@ -85,35 +85,35 @@ export function AIGuide() {
               zIndex: 9999,
             }}
             className={cn(
-              "bg-white flex flex-col overflow-hidden shadow-2xl border border-black/10 transition-all",
-              // Mobile layout: Dynamic bottom sheet docking
-              "left-0 right-0 bottom-0 w-full h-[88vh] max-h-[640px] rounded-t-[2rem] rounded-b-none",
+              "bg-white flex flex-col overflow-hidden shadow-2xl border border-black/10 transition-all box-border",
+              // Mobile layout: Dynamic bottom sheet docking, firmly contained
+              "inset-x-0 bottom-0 w-full max-w-full h-[88vh] max-h-[640px] rounded-t-[2rem] rounded-b-none",
               // Tablet & Desktop layout: Firmly pinned to bottom-right corner above the button
-              "md:left-auto md:right-6 md:bottom-24 md:w-[420px] md:h-[600px] md:max-h-[calc(100vh-130px)] md:rounded-3xl"
+              "md:inset-x-auto md:left-auto md:right-6 md:bottom-24 md:w-[420px] md:h-[600px] md:max-h-[calc(100vh-130px)] md:rounded-3xl"
             )}
           >
             {/* Header */}
-            <div className="pt-3 pb-4 px-5 sm:p-5 bg-[#8b0000] text-white shrink-0">
+            <div className="pt-3 pb-4 px-4 sm:px-5 sm:p-5 bg-[#8b0000] text-white shrink-0">
               {/* Mobile grab handle indicator */}
               <div className="w-12 h-1 bg-white/30 rounded-full mx-auto mb-3 md:hidden" />
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-white/15 rounded-2xl shadow-inner flex items-center justify-center">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 sm:p-2.5 bg-white/15 rounded-2xl shadow-inner flex items-center justify-center shrink-0">
                     <Bot size={22} className="text-amber-300" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-serif text-lg font-bold tracking-tight">SIGUNTANG AI</h3>
+                      <h3 className="font-serif text-base sm:text-lg font-bold tracking-tight truncate">SIGUNTANG AI</h3>
                       <span className={cn(
-                        "inline-flex items-center gap-1.5 text-[10px] px-2.5 py-0.5 rounded-full font-medium shadow-xs",
+                        "inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full font-medium shadow-xs shrink-0",
                         isKeyActive ? "bg-emerald-500/25 text-emerald-200 border border-emerald-400/30" : "bg-amber-400/25 text-amber-200 border border-amber-300/30"
                       )}>
                         <span className={cn("w-1.5 h-1.5 rounded-full", isKeyActive ? "bg-emerald-400" : "bg-amber-400 animate-pulse")} />
                         {isKeyActive ? "Online" : "Siap Memandu"}
                       </span>
                     </div>
-                    <p className="text-[10px] uppercase tracking-wider text-white/75 font-medium">Nusantara Heritage Guide</p>
+                    <p className="text-[10px] uppercase tracking-wider text-white/75 font-medium truncate">Nusantara Heritage Guide</p>
                   </div>
                 </div>
 
@@ -121,7 +121,7 @@ export function AIGuide() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="p-2 hover:bg-white/15 rounded-xl transition-colors text-white/90 active:scale-95 cursor-pointer"
+                  className="p-2 hover:bg-white/15 rounded-xl transition-colors text-white/90 active:scale-95 cursor-pointer shrink-0 ml-2"
                   aria-label="Tutup Obrolan"
                 >
                   <X size={20} />
@@ -129,10 +129,16 @@ export function AIGuide() {
               </div>
             </div>
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-stone-50/50">
+            {/* Messages Area - strictly overflow-x-hidden with min-w-0 container */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 space-y-4 bg-stone-50/50 w-full min-w-0">
               {messages.map((msg, idx) => (
-                <div key={idx} className={cn("flex gap-2.5 sm:gap-3", msg.role === 'user' ? "flex-row-reverse" : "flex-row")}>
+                <div 
+                  key={idx} 
+                  className={cn(
+                    "flex w-full min-w-0 items-start gap-2 sm:gap-3",
+                    msg.role === 'user' ? "flex-row-reverse" : "flex-row"
+                  )}
+                >
                   <div className={cn(
                     "p-2 rounded-xl h-fit shrink-0 shadow-2xs",
                     msg.role === 'user' ? "bg-[#f5f2ed] text-stone-700" : "bg-[#8b0000]/10 text-[#8b0000]"
@@ -140,7 +146,7 @@ export function AIGuide() {
                     {msg.role === 'user' ? <User size={15} /> : <Bot size={15} />}
                   </div>
                   <div className={cn(
-                    "max-w-[85%] sm:max-w-[80%] p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-sm whitespace-pre-line break-words",
+                    "min-w-0 max-w-[calc(100%-42px)] sm:max-w-[78%] p-3 sm:p-4 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-sm whitespace-pre-wrap break-words [overflow-wrap:anywhere]",
                     msg.role === 'user' 
                       ? "bg-[#1a1a1a] text-white rounded-tr-xs" 
                       : "bg-[#f5f2ed] text-[#1a1a1a] rounded-tl-xs border border-black/5"
@@ -151,11 +157,11 @@ export function AIGuide() {
               ))}
 
               {isTyping && (
-                <div className="flex gap-2.5 sm:gap-3">
+                <div className="flex w-full min-w-0 items-start gap-2 sm:gap-3">
                   <div className="p-2 rounded-xl bg-[#8b0000]/10 text-[#8b0000] shrink-0">
                     <Bot size={15} />
                   </div>
-                  <div className="bg-[#f5f2ed] p-3.5 sm:p-4 rounded-2xl rounded-tl-xs flex items-center gap-1.5 border border-black/5">
+                  <div className="bg-[#f5f2ed] p-3 sm:p-4 rounded-2xl rounded-tl-xs flex items-center gap-1.5 border border-black/5">
                     <motion.div animate={{ opacity: [0.3, 1, 0.3], scale: [0.9, 1.1, 0.9] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0 }} className="w-2 h-2 bg-[#8b0000]/60 rounded-full" />
                     <motion.div animate={{ opacity: [0.3, 1, 0.3], scale: [0.9, 1.1, 0.9] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.2 }} className="w-2 h-2 bg-[#8b0000]/60 rounded-full" />
                     <motion.div animate={{ opacity: [0.3, 1, 0.3], scale: [0.9, 1.1, 0.9] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4 }} className="w-2 h-2 bg-[#8b0000]/60 rounded-full" />
@@ -166,7 +172,7 @@ export function AIGuide() {
             </div>
 
             {/* Quick Suggestion Chips */}
-            <div className="px-4 sm:px-5 py-2.5 bg-[#f5f2ed]/90 border-t border-black/5 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+            <div className="px-3.5 sm:px-5 py-2.5 bg-[#f5f2ed]/90 border-t border-black/5 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0 max-w-full">
               <span className="text-[10px] text-stone-500 font-semibold shrink-0 uppercase tracking-wider flex items-center gap-1">
                 <Sparkles size={11} className="text-amber-600" /> Ide:
               </span>
@@ -191,14 +197,14 @@ export function AIGuide() {
             </div>
 
             {/* Input Form with safe bottom padding for mobile browsers */}
-            <form onSubmit={handleSubmit} className="p-3.5 sm:p-4 md:p-5 border-t border-black/5 bg-white shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              <div className="relative flex items-center">
+            <form onSubmit={handleSubmit} className="p-3 sm:p-4 md:p-5 border-t border-black/5 bg-white shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))] w-full">
+              <div className="relative flex items-center w-full">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Tanya sejarah atau cerita Musi..."
-                  className="w-full pl-4 pr-12 py-3 bg-[#f5f2ed]/70 hover:bg-[#f5f2ed] border border-black/5 rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#8b0000]/25 transition-all font-sans placeholder-stone-400"
+                  className="w-full pl-3.5 pr-12 py-3 bg-[#f5f2ed]/70 hover:bg-[#f5f2ed] border border-black/5 rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#8b0000]/25 transition-all font-sans placeholder-stone-400"
                 />
                 <button 
                   type="submit"
