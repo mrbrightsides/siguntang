@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageSquare, Send, X, Bot, Sparkles, User } from 'lucide-react';
 import { ChatMessage } from '../types';
@@ -11,6 +12,7 @@ import { getAIResponse, hasActiveGeminiKey } from '../services/geminiService';
 import { cn, cleanAsterisks } from '../lib/utils';
 
 export function AIGuide() {
+  const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isKeyActive, setIsKeyActive] = useState(hasActiveGeminiKey());
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -19,6 +21,10 @@ export function AIGuide() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -48,9 +54,11 @@ export function AIGuide() {
     setIsKeyActive(hasActiveGeminiKey());
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <>
-      {/* Mobile Backdrop Overlay */}
+      {/* Backdrop Overlay for closing on outside click */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -58,7 +66,7 @@ export function AIGuide() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs z-[9998] md:hidden"
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-[9998] md:bg-black/10"
             aria-hidden="true"
           />
         )}
@@ -68,20 +76,24 @@ export function AIGuide() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.98 }}
+            initial={{ opacity: 0, y: 30, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 40, scale: 0.98 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            exit={{ opacity: 0, y: 30, scale: 0.96 }}
+            transition={{ type: "spring", damping: 26, stiffness: 320 }}
+            style={{
+              position: 'fixed',
+              zIndex: 9999,
+            }}
             className={cn(
-              "fixed z-[9999] bg-white flex flex-col overflow-hidden shadow-2xl border border-black/10 transition-all",
-              // Mobile layout: Dynamic full-width bottom-sheet docking
-              "inset-x-0 bottom-0 w-full h-[88vh] max-h-[640px] rounded-t-[2rem] rounded-b-none",
-              // Tablet & Desktop layout: Floating card at bottom-right
-              "md:inset-x-auto md:bottom-24 md:right-6 md:w-[420px] md:h-[600px] md:max-h-[680px] md:rounded-3xl"
+              "bg-white flex flex-col overflow-hidden shadow-2xl border border-black/10 transition-all",
+              // Mobile layout: Dynamic bottom sheet docking
+              "left-0 right-0 bottom-0 w-full h-[88vh] max-h-[640px] rounded-t-[2rem] rounded-b-none",
+              // Tablet & Desktop layout: Firmly pinned to bottom-right corner above the button
+              "md:left-auto md:right-6 md:bottom-24 md:w-[420px] md:h-[600px] md:max-h-[calc(100vh-130px)] md:rounded-3xl"
             )}
           >
             {/* Header */}
-            <div className="pt-3 pb-4 px-5 sm:p-5 bg-[#8b0000] text-white shrink-0 relative">
+            <div className="pt-3 pb-4 px-5 sm:p-5 bg-[#8b0000] text-white shrink-0">
               {/* Mobile grab handle indicator */}
               <div className="w-12 h-1 bg-white/30 rounded-full mx-auto mb-3 md:hidden" />
 
@@ -109,7 +121,7 @@ export function AIGuide() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="p-2 hover:bg-white/15 rounded-xl transition-colors text-white/90 active:scale-95"
+                  className="p-2 hover:bg-white/15 rounded-xl transition-colors text-white/90 active:scale-95 cursor-pointer"
                   aria-label="Tutup Obrolan"
                 >
                   <X size={20} />
@@ -171,7 +183,7 @@ export function AIGuide() {
                   onClick={() => {
                     setInput(`Ceritakan tentang ${tag} di Sungai Musi`);
                   }}
-                  className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#8b0000] hover:text-white text-stone-700 text-[11px] font-medium rounded-full border border-black/5 transition-all shadow-2xs active:scale-95 touch-manipulation"
+                  className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#8b0000] hover:text-white text-stone-700 text-[11px] font-medium rounded-full border border-black/5 transition-all shadow-2xs active:scale-95 touch-manipulation cursor-pointer"
                 >
                   {tag}
                 </button>
@@ -191,7 +203,7 @@ export function AIGuide() {
                 <button 
                   type="submit"
                   disabled={!input.trim() || isTyping}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2.5 bg-[#8b0000] text-white rounded-xl disabled:opacity-40 transition-all hover:bg-[#700000] active:scale-95 shadow-xs"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2.5 bg-[#8b0000] text-white rounded-xl disabled:opacity-40 transition-all hover:bg-[#700000] active:scale-95 shadow-xs cursor-pointer"
                   aria-label="Kirim Pesan"
                 >
                   <Send size={15} />
@@ -202,18 +214,31 @@ export function AIGuide() {
         )}
       </AnimatePresence>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button - Locked strictly to bottom-right corner of viewport */}
       <motion.button
-        whileHover={{ scale: 1.06 }}
-        whileTap={{ scale: 0.94 }}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.92 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[9999] w-14 h-14 bg-[#8b0000] text-white rounded-2xl shadow-xl shadow-red-950/25 flex items-center justify-center relative group overflow-hidden border border-white/20 touch-manipulation"
+        style={{
+          position: 'fixed',
+          right: '1.5rem',
+          bottom: '1.5rem',
+          zIndex: 9999,
+        }}
+        className={cn(
+          "w-14 h-14 bg-[#8b0000] text-white rounded-2xl shadow-2xl shadow-red-950/35 flex items-center justify-center overflow-hidden border border-white/20 touch-manipulation cursor-pointer transition-shadow",
+          isOpen ? "max-md:hidden" : "flex"
+        )}
         aria-label={isOpen ? "Tutup SIGUNTANG AI" : "Buka SIGUNTANG AI"}
       >
-        <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
-        <div className="absolute top-2 right-2 w-3 h-3 bg-amber-400 rounded-full border-2 border-[#8b0000] animate-pulse" />
+        {!isOpen && (
+          <div className="pointer-events-none absolute top-2 right-2 w-3 h-3 bg-amber-400 rounded-full border-2 border-[#8b0000] animate-pulse" />
+        )}
       </motion.button>
     </>
+    ,
+    document.body
   );
 }
