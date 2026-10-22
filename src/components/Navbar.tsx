@@ -14,15 +14,16 @@ export function Navbar({ walletAddress, onConnectWallet }: NavbarProps) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-[5000] bg-[#f5f2ed]/80 backdrop-blur-md border-b border-black/10">
       <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#8b0000] flex items-center justify-center rounded-lg shadow-lg">
-            <span className="text-white font-bold text-xl">S</span>
-          </div>
-          <div>
-            <h1 className="font-serif text-2xl font-bold tracking-tight text-[#1a1a1a]">SIGUNTANG</h1>
-            <p className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#8b0000]">Nusantara Gemilang</p>
-          </div>
-        </div>
+        <a href="#" className="flex items-center transition-opacity hover:opacity-90">
+          <img 
+            src="https://i.imgur.com/E0EOmhA.png" 
+            alt="SIGUNTANG Nusantara Gemilang" 
+            className="h-10 md:h-11 w-auto object-contain"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = 'https://i.imgur.com/E0EOmhA.png';
+            }}
+          />
+        </a>
 
         <div className="hidden md:flex items-center gap-7">
           <a href="#expedition" className="font-sans text-xs uppercase tracking-widest font-bold text-[#8b0000] flex items-center gap-1.5 hover:opacity-80 transition-opacity">

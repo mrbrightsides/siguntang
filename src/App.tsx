@@ -391,10 +391,16 @@ export default function App() {
       <footer className="py-20 border-t border-black/5">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-10">
-            <div>
-              <h2 className="font-serif text-3xl font-bold mb-2">SIGUNTANG</h2>
-              <p className="text-xs uppercase tracking-widest font-bold text-[#8b0000]">Nusantara Gemilang</p>
-            </div>
+            <a href="#" className="flex items-center transition-opacity hover:opacity-90">
+              <img 
+                src="https://i.imgur.com/E0EOmhA.png" 
+                alt="SIGUNTANG Nusantara Gemilang" 
+                className="h-10 md:h-12 w-auto object-contain"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = 'https://i.imgur.com/E0EOmhA.png';
+                }}
+              />
+            </a>
             <div className="flex gap-12">
               <div>
                 <h4 className="font-bold text-xs uppercase tracking-widest mb-4">Platform</h4>
