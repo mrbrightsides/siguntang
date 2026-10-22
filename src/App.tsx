@@ -16,6 +16,7 @@ import { TraceabilityHub } from './components/TraceabilityHub';
 import { STCExplorerModal } from './components/STCExplorerModal';
 import { MusiCruiseDiorama } from './components/MusiCruiseDiorama';
 import { connectWallet, WalletState, recordTraceabilityTransaction } from './services/blockchainService';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass } from 'lucide-react';
 import { cn } from './lib/utils';
 
@@ -282,10 +283,12 @@ export default function App() {
             <p className="text-gray-500 max-w-2xl mx-auto">Visualisasi distribusi node budaya dan religi di seluruh wilayah Kota Palembang yang terintegrasi dalam Smart Tourism Chain.</p>
           </div>
 
-          <HeritageMap 
-            nodes={PALEMBANG_NODES} 
-            onNodeClick={setSelectedNode} 
-          />
+          <ErrorBoundary fallbackTitle="Peta Budaya Palembang Sedang Dimuat">
+            <HeritageMap 
+              nodes={PALEMBANG_NODES} 
+              onNodeClick={setSelectedNode} 
+            />
+          </ErrorBoundary>
         </div>
       </section>
 

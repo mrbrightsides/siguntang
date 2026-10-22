@@ -7,9 +7,31 @@ import { GoogleGenAI } from "@google/genai";
 import { ChatMessage } from "../types";
 import { cleanAsterisks } from "../lib/utils";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+function getGeminiClient(): GoogleGenAI | null {
+  const apiKey =
+    (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) ||
+    (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_API_KEY) ||
+    (typeof window !== 'undefined' && (window as any).__GEMINI_API_KEY__) ||
+    '';
+
+  if (!apiKey || apiKey === 'undefined' || apiKey === 'null') {
+    return null;
+  }
+
+  try {
+    return new GoogleGenAI({ apiKey });
+  } catch (error) {
+    console.warn("GoogleGenAI lazy init prevented:", error);
+    return null;
+  }
+}
 
 export async function getAIResponse(messages: ChatMessage[]) {
+  const ai = getGeminiClient();
+  if (!ai) {
+    return "Halo! Saya SIGUNTANG AI Guide. Layanan asisten AI membutuhkan kunci GEMINI_API_KEY di dashboard Vercel Anda (Environment Variables). Namun, seluruh fitur peta digital, Ekspedisi Diorama Sungai Musi, dan smart traceability SIGUNTANG dapat Anda jelajahi dengan lancar tanpa hambatan.";
+  }
+
   const history = messages.slice(0, -1).map(m => ({
     role: m.role,
     parts: [{ text: m.content }]
@@ -56,6 +78,14 @@ export async function generateAndRefineProposal(
   currentDescription: string
 ): Promise<{ title: string; description: string }> {
   try {
+    const ai = getGeminiClient();
+    if (!ai) {
+      return {
+        title: currentTitle,
+        description: currentDescription + `\n\n[Revisi Catatan: ${customPrompt}]`
+      };
+    }
+
     const prompt = `Anda adalah ahli konsultan proposal hibah pemerintah, khususnya program bantuan Dana Indonesiana (Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi) untuk kategori "Penciptaan Karya Kreatif Inovatif" dengan sub-kategori "Aplikasi/Program Komputer".
     
     Tugas Anda adalah memodifikasi atau memperinci proposal aplikasi "SIGUNTANG" berdasarkan instruksi kustom pengguna.
@@ -78,7 +108,7 @@ export async function generateAndRefineProposal(
     Pastikan respons Anda HANYA berupa JSON tanpa markdown block selain json.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
