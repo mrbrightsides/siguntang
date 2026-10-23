@@ -14,10 +14,12 @@ import { UniversalNode, NodeType } from './types';
 import { HeritageMap } from './components/HeritageMap';
 import { TraceabilityHub } from './components/TraceabilityHub';
 import { STCExplorerModal } from './components/STCExplorerModal';
+import { LegalModal, LegalTab } from './components/LegalModal';
+import { STCEcosystemModal } from './components/STCEcosystemModal';
 import { MusiCruiseDiorama } from './components/MusiCruiseDiorama';
 import { connectWallet, WalletState, recordTraceabilityTransaction } from './services/blockchainService';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass } from 'lucide-react';
+import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass, Layers } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -27,6 +29,8 @@ export default function App() {
   const [wallet, setWallet] = useState<WalletState | null>(null);
   const [txLoading, setTxLoading] = useState(false);
   const [isExplorerOpen, setIsExplorerOpen] = useState(false);
+  const [isSTCEcosystemOpen, setIsSTCEcosystemOpen] = useState(false);
+  const [legalModalTab, setLegalModalTab] = useState<LegalTab | null>(null);
 
   const handleConnectWallet = async () => {
     const state = await connectWallet();
@@ -64,7 +68,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f5f2ed] text-[#1a1a1a] font-sans selection:bg-[#8b0000] selection:text-white">
-      <Navbar walletAddress={wallet?.address || null} onConnectWallet={handleConnectWallet} />
+      <Navbar 
+        walletAddress={wallet?.address || null} 
+        onConnectWallet={handleConnectWallet} 
+        onOpenSTCEcosystem={() => setIsSTCEcosystemOpen(true)}
+      />
       
       {/* Hero Section - The Universal Gate */}
       <section className="relative pt-32 pb-20 overflow-hidden">
@@ -74,10 +82,17 @@ export default function App() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-3 py-1 bg-[#8b0000]/10 border border-[#8b0000]/20 rounded-full mb-6"
+                className="mb-6"
               >
-                <Sparkles size={14} className="text-[#8b0000]" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b0000]">Smart Tourism Chain v2.0</span>
+                <button
+                  onClick={() => setIsSTCEcosystemOpen(true)}
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#8b0000]/10 hover:bg-[#8b0000]/20 border border-[#8b0000]/25 rounded-full transition-all group cursor-pointer text-left"
+                  title="Klik untuk membuka 12 Modul Riset Disertasi STC"
+                >
+                  <Sparkles size={14} className="text-[#8b0000]" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b0000]">Smart Tourism Chain • 12 Modul Ekosistem</span>
+                  <ArrowUpRight size={12} className="text-[#8b0000] opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </button>
               </motion.div>
               
               <motion.h1 
@@ -230,12 +245,16 @@ export default function App() {
       </section>
 
       {/* Explorer Section */}
-      <section id="explorer" className="py-24 bg-white/50">
+      <section id="explorer" className="py-24 bg-white/50 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
             <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#8b0000]/10 border border-[#8b0000]/20 rounded-full mb-3">
+                <Globe size={14} className="text-[#8b0000]" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b0000]">Direktori Simpul Budaya Palembang</span>
+              </div>
               <h2 className="font-serif text-4xl font-bold mb-4 tracking-tight">Eksplorasi Node Nusantara</h2>
-              <p className="text-gray-500 max-w-md">Jelajahi setiap titik cerdas dalam ekosistem SIGUNTANG yang mewakili identitas lokal Palembang.</p>
+              <p className="text-gray-500 max-w-xl">Direktori simpul budaya Palembang lengkap dengan kategori, narasi kurasi, koordinat spasial, dan status verifikasi smart contract.</p>
             </div>
             
             <div className="flex overflow-x-auto pb-4 gap-3 no-scrollbar">
@@ -272,15 +291,15 @@ export default function App() {
       </section>
 
       {/* Heritage Map Section */}
-      <section id="map" className="py-24">
+      <section id="map" className="py-24 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#8b0000]/10 border border-[#8b0000]/20 rounded-full mb-6">
               <MapIcon size={14} className="text-[#8b0000]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b0000]">Geo-Spatial Heritage Network</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b0000]">Peta Interaktif Lokasi Budaya</span>
             </div>
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4 tracking-tight">Peta Jaringan Nusantara</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">Visualisasi distribusi node budaya dan religi di seluruh wilayah Kota Palembang yang terintegrasi dalam Smart Tourism Chain.</p>
+            <p className="text-gray-500 max-w-2xl mx-auto">Peta interaktif persebaran lokasi budaya dan religi Kota Palembang dengan penanda spasial serta informasi mendalam setiap situs bersejarah.</p>
           </div>
 
           <ErrorBoundary fallbackTitle="Peta Budaya Palembang Sedang Dimuat">
@@ -293,15 +312,15 @@ export default function App() {
       </section>
 
       {/* Traceability Section */}
-      <section id="traceability" className="py-24 bg-white/50">
+      <section id="traceability" className="py-24 bg-white/50 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-black/5 border border-black/10 rounded-full mb-6">
               <Database size={14} className="text-[#8b0000]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#1a1a1a]">Digital Trust Infrastructure</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#1a1a1a]">Digital Trust & Verification Mechanism</span>
             </div>
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4 tracking-tight">Traceability Hub</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">Monitor keamanan data dan keaslian histori aset melalui ledger blockchain yang transparan.</p>
+            <p className="text-gray-500 max-w-2xl mx-auto">Mekanisme pencatatan terdistribusi, ringkasan hash SHA-256, verifikasi integritas narasi, serta riwayat aktivitas transaksi donasi yang transparan.</p>
           </div>
 
           <TraceabilityHub onLaunchExplorer={() => setIsExplorerOpen(true)} />
@@ -315,73 +334,125 @@ export default function App() {
         </div>
         
         <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
             <div>
-              <div className="w-16 h-16 bg-[#8b0000] flex items-center justify-center rounded-2xl mb-8">
-                <Shield size={32} />
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#8b0000]/30 border border-[#8b0000]/50 rounded-full mb-6">
+                <Shield size={14} className="text-[#ff4d4d]" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white">Kajian Disertasi Doktor • Universitas Sriwijaya</span>
               </div>
-              <h2 className="font-serif text-4xl font-bold mb-8 leading-tight">Blockchain sebagai <br /><span className="text-[#8b0000]">Trust Layer Utama</span></h2>
-              <div className="space-y-8">
-                <div className="flex gap-6">
-                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <span className="font-mono text-sm">01</span>
+              <h2 className="font-serif text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                Blockchain sebagai <br />
+                <span className="text-[#8b0000]">Trust Layer Utama</span>
+              </h2>
+              <p className="text-gray-400 text-sm leading-relaxed mb-8">
+                Bukan sekadar gimmick, teknologi di SIGUNTANG berakar langsung dari riset doktoral <strong>Smart Tourism Chain (STC)</strong>. Menjadi jembatan antara aplikasi pariwisata, perangkat IoT, dan ledger terdistribusi dengan 12 modul ekosistem terpadu.
+              </p>
+
+              <div className="space-y-6">
+                <div className="flex gap-5">
+                  <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 border border-white/10">
+                    <span className="font-mono text-sm text-[#ff4d4d] font-bold">01</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2">Autentikasi Informasi</h4>
-                    <p className="text-gray-400 text-sm leading-relaxed">Bukan sekadar gimmick, blockchain di SIGUNTANG adalah fondasi validasi untuk sejarah aset, histori artefak, dan transparansi donasi religi.</p>
+                    <h4 className="font-bold text-base mb-1">Integritas Narasi & Hashing Metadata</h4>
+                    <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">Menjamin data sejarah artefak dan simpul budaya tidak dapat diubah sepihak dengan SHA-256 state hashing.</p>
                   </div>
                 </div>
-                <div className="flex gap-6">
-                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <span className="font-mono text-sm">02</span>
+                <div className="flex gap-5">
+                  <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 border border-white/10">
+                    <span className="font-mono text-sm text-[#ff4d4d] font-bold">02</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2">Sertifikat Digital UMKM</h4>
-                    <p className="text-gray-400 text-sm leading-relaxed">Memberikan bukti autentisitas digital bagi pengrajin songket dan produk budaya lokal agar memiliki nilai global yang terverifikasi.</p>
+                    <h4 className="font-bold text-base mb-1">Mitigasi Karbon & FOLU Net Sink 2030</h4>
+                    <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">Melalui modul STC CarbonPrint & ImpactViz, konsumsi komputasi dan pelayaran ketek dipetakan ke target emisi riil SDGs.</p>
                   </div>
                 </div>
-                <div className="flex gap-6">
-                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <span className="font-mono text-sm">03</span>
+                <div className="flex gap-5">
+                  <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 border border-white/10">
+                    <span className="font-mono text-sm text-[#ff4d4d] font-bold">03</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2">Infrastruktur Smart Tourism</h4>
-                    <p className="text-gray-500 text-sm leading-relaxed">Menjadi fondasi arsitektur jaringan yang menghubungkan ribuan node budaya Nusantara dalam satu sistem integrasi yang cerdas.</p>
+                    <h4 className="font-bold text-base mb-1">Identitas Berdaulat (SSI & KYC) UMKM</h4>
+                    <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">Sertifikat digital terverifikasi bagi maestro pengrajin songket dan pelaku ekonomi kreatif lokal tanpa ketergantungan pihak ketiga.</p>
                   </div>
                 </div>
+              </div>
+
+              <div className="mt-10 pt-6 border-t border-white/10 flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => setIsSTCEcosystemOpen(true)}
+                  className="px-6 py-3.5 bg-[#8b0000] hover:bg-[#a00000] text-white rounded-2xl font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-[#8b0000]/30 active:scale-95 cursor-pointer"
+                >
+                  <Layers size={16} />
+                  Jelajahi 12 Modul STC Ecosystem
+                </button>
+                <button
+                  onClick={() => setLegalModalTab('protocol')}
+                  className="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold text-xs uppercase tracking-widest transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  Baca Dokumen Protokol
+                  <ChevronRight size={14} />
+                </button>
               </div>
             </div>
             
-            <div className="bg-white rounded-[40px] p-10 text-[#1a1a1a]">
-              <div className="flex items-center justify-between mb-10">
-                <h3 className="font-serif text-2xl font-bold">STC Network Status</h3>
+            <div className="bg-white rounded-[40px] p-8 sm:p-10 text-[#1a1a1a] shadow-2xl">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#8b0000]">Smart Tourism Chain</span>
+                  <h3 className="font-serif text-2xl font-bold">STC Network Status</h3>
+                </div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-green-100">
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                   Synchronized
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 mb-8">
                 {[ 
                   { label: 'Blockchain Height', value: '#4,892,102' },
                   { label: 'Active Cultural Nodes', value: '1,248' },
                   { label: 'Validated Transactions', value: '124.5k' },
-                  { label: 'Network Latency', value: '12ms' }
+                  { label: 'Gas Converter Rate', value: 'IDR Real-time' },
+                  { label: 'Carbon Measurement', value: 'FOLU 2030 Ready' }
                 ].map((item, i) => (
-                  <div key={i} className="flex items-baseline justify-between py-4 border-b border-black/5 last:border-0">
-                    <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{item.label}</span>
-                    <span className="font-mono text-lg font-bold">{item.value}</span>
+                  <div key={i} className="flex items-baseline justify-between py-3 border-b border-black/5 last:border-0">
+                    <span className="text-gray-500 text-xs font-bold uppercase tracking-widest">{item.label}</span>
+                    <span className="font-mono text-base font-bold">{item.value}</span>
                   </div>
                 ))}
               </div>
 
-              <button 
-                onClick={() => setIsExplorerOpen(true)}
-                className="w-full mt-12 py-4 bg-[#1a1a1a] text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-black transition-colors flex items-center justify-center gap-2"
-              >
-                Launch Explorer Console
-                <ArrowUpRight size={16} />
-              </button>
+              {/* Ecosystem Mini Badges */}
+              <div className="p-4 bg-[#f5f2ed] rounded-2xl mb-6">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block mb-2">
+                  Terintegrasi ke Suite Riset STC:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {['CarbonPrint', 'ImpactViz', 'Connect API', 'KYC SSI', 'GasVision', 'Converter'].map((tag) => (
+                    <span key={tag} className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-white border border-black/5 rounded-lg text-gray-700">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button 
+                  onClick={() => setIsExplorerOpen(true)}
+                  className="py-3.5 bg-[#1a1a1a] text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-black transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  Explorer Console
+                  <ArrowUpRight size={14} />
+                </button>
+                <button 
+                  onClick={() => setIsSTCEcosystemOpen(true)}
+                  className="py-3.5 bg-[#8b0000]/10 text-[#8b0000] hover:bg-[#8b0000]/20 rounded-2xl font-bold text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  12 Modul STC
+                  <Layers size={14} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -401,27 +472,106 @@ export default function App() {
                 }}
               />
             </a>
-            <div className="flex gap-12">
+            <div className="flex flex-col sm:flex-row gap-10 sm:gap-14">
               <div>
-                <h4 className="font-bold text-xs uppercase tracking-widest mb-4">Platform</h4>
-                <ul className="space-y-2 text-sm text-gray-500">
-                  <li><a href="#" className="hover:text-[#8b0000]">Explorer</a></li>
-                  <li><a href="#" className="hover:text-[#8b0000]">Heritage Map</a></li>
-                  <li><a href="#" className="hover:text-[#8b0000]">Traceability</a></li>
+                <h4 className="font-bold text-xs uppercase tracking-widest mb-4 text-[#1a1a1a]">Platform</h4>
+                <ul className="space-y-2.5 text-sm text-gray-500">
+                  <li>
+                    <a 
+                      href="#explorer" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="hover:text-[#8b0000] flex items-center gap-2 transition-colors group"
+                    >
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Explorer</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ Simpul Budaya</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a 
+                      href="#map" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById('map')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="hover:text-[#8b0000] flex items-center gap-2 transition-colors group"
+                    >
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Heritage Map</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ Peta Interaktif</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a 
+                      href="#traceability" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById('traceability')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="hover:text-[#8b0000] flex items-center gap-2 transition-colors group"
+                    >
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Traceability</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ Verifikasi Hash</span>
+                    </a>
+                  </li>
                 </ul>
               </div>
+
               <div>
-                <h4 className="font-bold text-xs uppercase tracking-widest mb-4">Legal</h4>
-                <ul className="space-y-2 text-sm text-gray-500">
-                  <li><a href="#" className="hover:text-[#8b0000]">STC Protocol</a></li>
-                  <li><a href="#" className="hover:text-[#8b0000]">Data Sovereign</a></li>
-                  <li><a href="#" className="hover:text-[#8b0000]">Governance</a></li>
+                <h4 className="font-bold text-xs uppercase tracking-widest mb-4 text-[#1a1a1a]">Knowledge & Protocol</h4>
+                <ul className="space-y-2.5 text-sm text-gray-500">
+                  <li>
+                    <button 
+                      onClick={() => setIsSTCEcosystemOpen(true)}
+                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
+                    >
+                      <span className="font-semibold text-[#8b0000] group-hover:underline">STC Ecosystem (12 Modul)</span>
+                      <span className="text-[10px] bg-[#8b0000]/10 text-[#8b0000] font-mono px-1.5 py-0.2 rounded font-bold">Riset</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => setLegalModalTab('protocol')}
+                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
+                    >
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">STC Protocol</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ Overview</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => setLegalModalTab('sovereignty')}
+                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
+                    >
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Data Sovereignty</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ Kedaulatan</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => setLegalModalTab('governance')}
+                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
+                    >
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Governance</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ Stewardship</span>
+                    </button>
+                  </li>
                 </ul>
               </div>
             </div>
           </div>
           <div className="mt-20 pt-10 border-t border-black/5 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-xs text-gray-400">© 2026 SIGUNTANG (Sistem Integrasi Gerbang Universal Node Traceability AI Nusantara Gemilang). Powered by STC (Smart Tourism Chain).</p>
+            <p className="text-xs text-gray-500">
+              © 2026 SIGUNTANG (Sistem Integrasi Gerbang Universal Node Traceability AI Nusantara Gemilang).{' '}
+              <button 
+                onClick={() => setIsSTCEcosystemOpen(true)}
+                className="text-[#8b0000] hover:underline font-semibold cursor-pointer"
+              >
+                Powered by STC (Smart Tourism Chain) Ecosystem
+              </button>
+              . Kajian Disertasi Doktor Universitas Sriwijaya.
+            </p>
             <div className="flex items-center gap-2">
               <Shield size={14} className="text-[#8b0000]" />
               <span className="text-[10px] font-mono text-gray-400">V.2.4.0-STC_MAINNET</span>
@@ -537,6 +687,21 @@ export default function App() {
       <STCExplorerModal
         isOpen={isExplorerOpen}
         onClose={() => setIsExplorerOpen(false)}
+      />
+
+      <LegalModal
+        isOpen={!!legalModalTab}
+        initialTab={legalModalTab || 'protocol'}
+        onOpenSTCEcosystem={() => {
+          setLegalModalTab(null);
+          setIsSTCEcosystemOpen(true);
+        }}
+        onClose={() => setLegalModalTab(null)}
+      />
+
+      <STCEcosystemModal
+        isOpen={isSTCEcosystemOpen}
+        onClose={() => setIsSTCEcosystemOpen(false)}
       />
     </div>
   );
