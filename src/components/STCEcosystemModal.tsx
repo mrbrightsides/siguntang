@@ -286,6 +286,15 @@ export function STCEcosystemModal({ isOpen, onClose, initialFilter = 'Semua' }: 
                             </span>
                             {module.dissertationScope}
                           </div>
+
+                          {module.externalUrl && (
+                            <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-gray-500">
+                              <span className="text-gray-400">Endpoint Live:</span>
+                              <span className="text-[#8b0000] font-semibold truncate max-w-[200px]">
+                                {module.externalUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                              </span>
+                            </div>
+                          )}
                         </motion.div>
                       )}
                     </div>
@@ -310,10 +319,11 @@ export function STCEcosystemModal({ isOpen, onClose, initialFilter = 'Semua' }: 
                       </button>
 
                       <a
-                        href={DISSERTATION_RESEARCH_INFO.ecosystemShowcaseUrl}
+                        href={module.externalUrl || DISSERTATION_RESEARCH_INFO.ecosystemShowcaseUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8b0000] hover:bg-[#a00000] text-white text-[11px] font-bold rounded-xl transition-all shadow-sm shadow-[#8b0000]/20 active:scale-95"
+                        title={module.externalUrl ? `Buka ${module.name} (${module.externalUrl})` : `Buka ${module.name}`}
                       >
                         <span>Launch App</span>
                         <ArrowUpRight size={13} />
