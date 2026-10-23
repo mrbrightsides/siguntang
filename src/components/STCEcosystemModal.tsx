@@ -157,6 +157,9 @@ export function STCEcosystemModal({ isOpen, onClose, initialFilter = 'Semua' }: 
                   <p>
                     <strong>Smart Tourism Chain (STC)</strong> merupakan hasil kajian disertasi doktoral yang merumuskan arsitektur blockchain untuk sektor pariwisata dan pelestarian budaya. SIGUNTANG hadir sebagai <em>Cultural Experience Layer Node</em> pertama yang mengadopsi 12 modul STC—menjamin data artefak tidak dapat dipalsukan, transaksi mikro gas ramah kantong, jejak karbon terukur menuju <strong>FOLU Net Sink 2030</strong>, dan transparansi donasi berbasis bukti digital.
                   </p>
+                  <p>
+                    SIGUNTANG merupakan platform demonstrasi digital yang mengintegrasikan teknologi blockchain, kecerdasan buatan, dan sistem informasi geospasial untuk mendukung pelestarian warisan budaya serta pengembangan pariwisata cerdas di Palembang. Platform ini dikembangkan dengan memanfaatkan pendekatan SmartTourismChain (STC), sebuah inisiatif arsitektur teknologi yang mengeksplorasi pemanfaatan smart contract, pencatatan digital, dan integrasi sistem dalam ekosistem pariwisata. Melalui SIGUNTANG, pendekatan tersebut dieksplorasi dalam konteks yang lebih spesifik: pengelolaan informasi cagar budaya, pemetaan simpul warisan sejarah, serta pengembangan konsep keterlacakan dan verifikasi digital. SIGUNTANG menghadirkan konteks penerapan; STC menyediakan landasan eksplorasi teknologinya.
+                  </p>
                 </div>
               </div>
             </div>
