@@ -9,9 +9,10 @@ import { formatDate } from '../lib/utils';
 
 interface TraceabilityHubProps {
   onLaunchExplorer?: () => void;
+  onOpenMintSBT?: () => void;
 }
 
-export function TraceabilityHub({ onLaunchExplorer }: TraceabilityHubProps) {
+export function TraceabilityHub({ onLaunchExplorer, onOpenMintSBT }: TraceabilityHubProps) {
   const stats = [
     { label: 'Network Integrity', value: '99.9%', icon: Shield, color: 'text-green-500' },
     { label: 'Active Heritage Nodes', value: '1,248', icon: Globe, color: 'text-blue-500' },
@@ -35,7 +36,7 @@ export function TraceabilityHub({ onLaunchExplorer }: TraceabilityHubProps) {
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-[#8b0000]/5 text-[#8b0000] rounded-full border border-[#8b0000]/10">
           <Activity size={16} className="animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-widest">Live Mainnet Sync</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest">Live Sepolia Sync</span>
         </div>
       </div>
 
@@ -86,13 +87,25 @@ export function TraceabilityHub({ onLaunchExplorer }: TraceabilityHubProps) {
         </div>
       </div>
       
-      <button 
-        onClick={onLaunchExplorer}
-        className="w-full mt-10 py-5 bg-[#1a1a1a] text-white rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center justify-center gap-3"
-      >
-        Launch Full Blockchain Explorer
-        <Globe size={16} />
-      </button>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-10">
+        <button 
+          onClick={onLaunchExplorer}
+          className="py-5 px-6 bg-[#1a1a1a] text-white rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center justify-center gap-3 cursor-pointer shadow-lg"
+        >
+          Launch Blockchain Explorer
+          <Globe size={16} />
+        </button>
+
+        {onOpenMintSBT && (
+          <button 
+            onClick={onOpenMintSBT}
+            className="py-5 px-6 bg-gradient-to-r from-[#8b0000] to-[#b30000] text-white rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:brightness-110 transition-all flex items-center justify-center gap-3 cursor-pointer shadow-lg shadow-[#8b0000]/25"
+          >
+            <Shield size={16} className="text-amber-300" />
+            Mint Soulbound Token (ERC-5192)
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -610,8 +610,178 @@ export const CULTURAL_CERTIFICATE_ABI = [
   }
 ];
 
+export const SEPOLIA_CONFIG = {
+  chainId: 11155111,
+  chainIdHex: '0xaa36a7',
+  chainName: 'Ethereum Sepolia Testnet',
+  rpcUrl: 'https://rpc.sepolia.org',
+  nativeCurrency: {
+    name: 'Sepolia Ether',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  blockExplorerUrls: ['https://sepolia.etherscan.io'],
+};
+
+export const STC_CULTURAL_SBT_ABI = [
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": false, "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+    ],
+    "name": "Locked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": false, "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+    ],
+    "name": "Unlocked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "from", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "to", "type": "address" },
+      { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+    ],
+    "name": "Transfer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "recipient", "type": "address" },
+      { "indexed": false, "internalType": "string", "name": "nodeName", "type": "string" },
+      { "indexed": false, "internalType": "string", "name": "certificateType", "type": "string" },
+      { "indexed": false, "internalType": "string", "name": "ipfsURI", "type": "string" },
+      { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+    ],
+    "name": "CulturalCertificateIssued",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "to", "type": "address" },
+      { "internalType": "string", "name": "ipfsUri", "type": "string" },
+      { "internalType": "string", "name": "nodeName", "type": "string" },
+      { "internalType": "string", "name": "certType", "type": "string" }
+    ],
+    "name": "mintCulturalCertificate",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+    ],
+    "name": "locked",
+    "outputs": [
+      { "internalType": "bool", "name": "", "type": "bool" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+    ],
+    "name": "tokenURI",
+    "outputs": [
+      { "internalType": "string", "name": "", "type": "string" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+    ],
+    "name": "ownerOf",
+    "outputs": [
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "ownerAccount", "type": "address" }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalSupply",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "name",
+    "outputs": [
+      { "internalType": "string", "name": "", "type": "string" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      { "internalType": "string", "name": "", "type": "string" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+    ],
+    "name": "getCertificate",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+          { "internalType": "string", "name": "nodeName", "type": "string" },
+          { "internalType": "string", "name": "certificateType", "type": "string" },
+          { "internalType": "address", "name": "recipient", "type": "address" },
+          { "internalType": "uint256", "name": "issuedAt", "type": "uint256" },
+          { "internalType": "bool", "name": "isValid", "type": "bool" }
+        ],
+        "internalType": "struct STCCulturalSBT.CertificateRecord",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
+
 export const CONTRACT_ADDRESSES = {
   HERITAGE_NODE_REGISTRY: "0x17a1e4875c125ad6e89388d9f042a361499495da",
   TRACEABILITY_TRANSACTION: "0x9E52752349Ceed8792f6A2671C153Ff89C2D59b6",
   CULTURAL_CERTIFICATE: "0x2875c7a9A6Fe816b72Fc1B490329361EC5187D3E",
+  // Kontrak ERC-5192 Soulbound Token Resmi di Sepolia Testnet
+  STC_CULTURAL_SBT: "0xC9F2bb2e96CE36E61935c0c8C1374EdEDfdcc302",
 };

@@ -14,9 +14,10 @@ interface STCDashboardProps {
   node: UniversalNode;
   isOpen: boolean;
   onClose: () => void;
+  onMintSBT?: (node: UniversalNode) => void;
 }
 
-export function STCDashboard({ node, isOpen, onClose }: STCDashboardProps) {
+export function STCDashboard({ node, isOpen, onClose, onMintSBT }: STCDashboardProps) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
 
@@ -124,11 +125,23 @@ export function STCDashboard({ node, isOpen, onClose }: STCDashboardProps) {
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             <span className="font-mono text-[9px] text-white/40 uppercase tracking-widest">Mainnet Node Synchronization Active</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {onMintSBT && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onMintSBT(node);
+                }}
+                className="px-5 py-2 bg-gradient-to-r from-[#8b0000] to-[#b30000] hover:brightness-110 text-white font-mono text-[10px] uppercase tracking-widest rounded-full transition-all flex items-center gap-2 shadow-lg shadow-[#8b0000]/30 cursor-pointer"
+              >
+                <Shield size={12} className="text-amber-300" />
+                Klaim Soulbound Token (ERC-5192)
+              </button>
+            )}
             {!txHash && (
               <button 
                 disabled={isRegistering}
-                className="px-6 py-2 bg-[#8b0000] hover:bg-[#a00000] text-white font-mono text-[10px] uppercase tracking-widest rounded-full transition-all flex items-center gap-2 shadow-lg shadow-[#8b0000]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-5 py-2 bg-white/10 hover:bg-white/15 text-white/90 font-mono text-[10px] uppercase tracking-widest rounded-full transition-all flex items-center gap-2 border border-white/15 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleRegister}
               >
                 {isRegistering ? (
@@ -136,14 +149,14 @@ export function STCDashboard({ node, isOpen, onClose }: STCDashboardProps) {
                 ) : (
                   <Shield size={12} />
                 )}
-                Register Heritage Node
+                Register Node
               </button>
             )}
             <button 
               onClick={onClose}
-              className="px-6 py-2 bg-transparent hover:bg-white/5 text-white/80 font-mono text-[10px] uppercase tracking-widest border border-white/20 rounded-full transition-colors"
+              className="px-5 py-2 bg-transparent hover:bg-white/5 text-white/80 font-mono text-[10px] uppercase tracking-widest border border-white/20 rounded-full transition-colors cursor-pointer"
             >
-              Close Secure Terminal
+              Close
             </button>
           </div>
         </div>

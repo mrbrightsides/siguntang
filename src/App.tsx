@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { NodeCard } from './components/NodeCard';
@@ -17,9 +17,11 @@ import { STCExplorerModal } from './components/STCExplorerModal';
 import { LegalModal, LegalTab } from './components/LegalModal';
 import { STCEcosystemModal } from './components/STCEcosystemModal';
 import { MusiCruiseDiorama } from './components/MusiCruiseDiorama';
+import { MintSBTModal } from './components/MintSBTModal';
 import { connectWallet, WalletState, recordTraceabilityTransaction } from './services/blockchainService';
+import { SEPOLIA_CONFIG } from './contractData';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass, Layers } from 'lucide-react';
+import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass, Layers, Lock } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -31,6 +33,39 @@ export default function App() {
   const [isExplorerOpen, setIsExplorerOpen] = useState(false);
   const [isSTCEcosystemOpen, setIsSTCEcosystemOpen] = useState(false);
   const [legalModalTab, setLegalModalTab] = useState<LegalTab | null>(null);
+  const [isMintSBTOpen, setIsMintSBTOpen] = useState(false);
+  const [mintTargetNode, setMintTargetNode] = useState<UniversalNode | null>(null);
+
+  useEffect(() => {
+    if (typeof window.ethereum !== 'undefined') {
+      const handleChainChanged = (chainIdHex: string) => {
+        const chainId = parseInt(chainIdHex, 16);
+        setWallet(prev => prev ? {
+          ...prev,
+          chainId,
+          isSepolia: chainId === SEPOLIA_CONFIG.chainId
+        } : null);
+      };
+
+      const handleAccountsChanged = (accounts: string[]) => {
+        if (!accounts || accounts.length === 0) {
+          setWallet(null);
+        } else {
+          setWallet(prev => prev ? { ...prev, address: accounts[0] } : null);
+        }
+      };
+
+      window.ethereum.on('chainChanged', handleChainChanged);
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+
+      return () => {
+        if (window.ethereum?.removeListener) {
+          window.ethereum.removeListener('chainChanged', handleChainChanged);
+          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        }
+      };
+    }
+  }, []);
 
   const handleConnectWallet = async () => {
     const state = await connectWallet();
@@ -72,6 +107,10 @@ export default function App() {
         walletAddress={wallet?.address || null} 
         onConnectWallet={handleConnectWallet} 
         onOpenSTCEcosystem={() => setIsSTCEcosystemOpen(true)}
+        onOpenMintSBT={() => {
+          setMintTargetNode(null);
+          setIsMintSBTOpen(true);
+        }}
       />
       
       {/* Hero Section - The Universal Gate */}
@@ -323,7 +362,13 @@ export default function App() {
             <p className="text-gray-500 max-w-2xl mx-auto">Mekanisme pencatatan terdistribusi, ringkasan hash SHA-256, verifikasi integritas narasi, serta riwayat aktivitas transaksi donasi yang transparan.</p>
           </div>
 
-          <TraceabilityHub onLaunchExplorer={() => setIsExplorerOpen(true)} />
+          <TraceabilityHub 
+            onLaunchExplorer={() => setIsExplorerOpen(true)} 
+            onOpenMintSBT={() => {
+              setMintTargetNode(null);
+              setIsMintSBTOpen(true);
+            }}
+          />
         </div>
       </section>
 
@@ -659,15 +704,26 @@ export default function App() {
                 <div className="space-y-3">
                   <button 
                     onClick={() => {
+                      setMintTargetNode(selectedNode);
+                      setIsMintSBTOpen(true);
+                      setSelectedNode(null);
+                    }}
+                    className="w-full py-4 bg-gradient-to-r from-[#8b0000] to-[#b30000] hover:brightness-110 text-white rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 shadow-lg shadow-[#8b0000]/25 cursor-pointer"
+                  >
+                    Klaim SBT Budaya (ERC-5192)
+                    <Shield size={16} className="text-amber-300" />
+                  </button>
+                  <button 
+                    onClick={() => {
                       setShowSTC(selectedNode);
                       setSelectedNode(null);
                     }}
-                    className="w-full py-4 bg-[#8b0000] text-white rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-[#a00000] transition-all flex items-center justify-center gap-3 shadow-lg shadow-[#8b0000]/20"
+                    className="w-full py-4 bg-[#1a1a1a] text-white rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center justify-center gap-3 shadow-sm cursor-pointer"
                   >
                     View Secure Traceability
                     <Shield size={16} />
                   </button>
-                  <button className="w-full py-4 bg-transparent border border-black/10 text-black rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-black/5 transition-all flex items-center justify-center gap-3">
+                  <button className="w-full py-3.5 bg-transparent border border-black/10 text-black rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-black/5 transition-all flex items-center justify-center gap-3 cursor-pointer">
                     Download Audio Story
                     <Download size={16} />
                   </button>
@@ -682,6 +738,10 @@ export default function App() {
         node={showSTC || selectedNode || PALEMBANG_NODES[0]} 
         isOpen={!!showSTC} 
         onClose={() => setShowSTC(null)} 
+        onMintSBT={(node) => {
+          setMintTargetNode(node);
+          setIsMintSBTOpen(true);
+        }}
       />
 
       <STCExplorerModal
@@ -702,6 +762,14 @@ export default function App() {
       <STCEcosystemModal
         isOpen={isSTCEcosystemOpen}
         onClose={() => setIsSTCEcosystemOpen(false)}
+      />
+
+      <MintSBTModal
+        isOpen={isMintSBTOpen}
+        onClose={() => setIsMintSBTOpen(false)}
+        defaultNode={mintTargetNode}
+        wallet={wallet}
+        onConnectWallet={handleConnectWallet}
       />
     </div>
   );
