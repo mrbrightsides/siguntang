@@ -784,4 +784,6 @@ export const CONTRACT_ADDRESSES = {
   CULTURAL_CERTIFICATE: "0x2875c7a9A6Fe816b72Fc1B490329361EC5187D3E",
   // Kontrak ERC-5192 Soulbound Token Resmi di Sepolia Testnet
   STC_CULTURAL_SBT: "0xC9F2bb2e96CE36E61935c0c8C1374EdEDfdcc302",
+  // Dompet Treasury / Dana Abadi Pelestarian Cagar Budaya (Sepolia)
+  HERITAGE_TREASURY: "0x17A1e4875c125ad6e89388d9F042A361499495Da",
 };

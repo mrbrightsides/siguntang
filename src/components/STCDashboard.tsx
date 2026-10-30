@@ -5,10 +5,11 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Shield, History, User, Loader2 } from 'lucide-react';
+import { Shield, History, User, Loader2, ExternalLink } from 'lucide-react';
 import { UniversalNode } from '../types';
 import { formatDate } from '../lib/utils';
 import { registerHeritageNode } from '../services/blockchainService';
+import { CONTRACT_ADDRESSES } from '../contractData';
 
 interface STCDashboardProps {
   node: UniversalNode;
@@ -121,10 +122,19 @@ export function STCDashboard({ node, isOpen, onClose, onMintSBT }: STCDashboardP
         </div>
 
         <div className="p-6 bg-white/5 border-top border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="font-mono text-[9px] text-white/40 uppercase tracking-widest">Mainnet Node Synchronization Active</span>
-          </div>
+          <a 
+            href={`https://sepolia.etherscan.io/address/${CONTRACT_ADDRESSES.STC_CULTURAL_SBT}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            title="Lihat Smart Contract di Sepolia Etherscan"
+          >
+            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+            <span className="font-mono text-[9px] text-white/50 hover:text-emerald-300 uppercase tracking-widest underline flex items-center gap-1">
+              Sepolia Contract: {CONTRACT_ADDRESSES.STC_CULTURAL_SBT.slice(0, 8)}...{CONTRACT_ADDRESSES.STC_CULTURAL_SBT.slice(-4)}
+              <ExternalLink size={10} />
+            </span>
+          </a>
           <div className="flex flex-wrap items-center gap-3">
             {onMintSBT && (
               <button

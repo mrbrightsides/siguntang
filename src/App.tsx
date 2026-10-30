@@ -18,6 +18,8 @@ import { LegalModal, LegalTab } from './components/LegalModal';
 import { STCEcosystemModal } from './components/STCEcosystemModal';
 import { MusiCruiseDiorama } from './components/MusiCruiseDiorama';
 import { MintSBTModal } from './components/MintSBTModal';
+import { DonationModal } from './components/DonationModal';
+import { BookingModal } from './components/BookingModal';
 import { connectWallet, WalletState, recordTraceabilityTransaction } from './services/blockchainService';
 import { SEPOLIA_CONFIG } from './contractData';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -35,6 +37,10 @@ export default function App() {
   const [legalModalTab, setLegalModalTab] = useState<LegalTab | null>(null);
   const [isMintSBTOpen, setIsMintSBTOpen] = useState(false);
   const [mintTargetNode, setMintTargetNode] = useState<UniversalNode | null>(null);
+  const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const [donationTargetNode, setDonationTargetNode] = useState<UniversalNode | null>(null);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [bookingTargetNode, setBookingTargetNode] = useState<UniversalNode | null>(null);
 
   useEffect(() => {
     if (typeof window.ethereum !== 'undefined') {
@@ -684,20 +690,30 @@ export default function App() {
 
                 <div className="grid grid-cols-2 gap-4 mb-10">
                   <button 
-                    disabled={txLoading}
-                    onClick={() => handleTransaction('Booking', selectedNode.name, '0.01')}
-                    className="flex flex-col items-center justify-center gap-3 p-6 bg-[#f5f2ed] border border-black/5 rounded-3xl hover:bg-[#8b0000]/5 transition-all text-[#1a1a1a] disabled:opacity-50"
+                    onClick={() => {
+                      setBookingTargetNode(selectedNode);
+                      setIsBookingOpen(true);
+                    }}
+                    className="flex flex-col items-center justify-center gap-3 p-6 bg-[#f5f2ed] border border-black/5 rounded-3xl hover:bg-[#8b0000]/10 hover:border-[#8b0000]/30 transition-all text-[#1a1a1a] cursor-pointer group"
                   >
-                    <Calendar size={20} className="text-[#8b0000]" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-center">Book Visit</span>
+                    <Calendar size={22} className="text-[#8b0000] group-hover:scale-110 transition-transform" />
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-center block">Book Visit</span>
+                      <span className="text-[9px] text-[#8b0000] font-mono font-semibold">Tiket SBT On-Chain</span>
+                    </div>
                   </button>
                   <button 
-                    disabled={txLoading}
-                    onClick={() => handleTransaction('Donation', selectedNode.name, '0.1')}
-                    className="flex flex-col items-center justify-center gap-3 p-6 bg-[#f5f2ed] border border-black/5 rounded-3xl hover:bg-[#8b0000]/5 transition-all text-[#1a1a1a] disabled:opacity-50"
+                    onClick={() => {
+                      setDonationTargetNode(selectedNode);
+                      setIsDonationOpen(true);
+                    }}
+                    className="flex flex-col items-center justify-center gap-3 p-6 bg-[#f5f2ed] border border-black/5 rounded-3xl hover:bg-[#8b0000]/10 hover:border-[#8b0000]/30 transition-all text-[#1a1a1a] cursor-pointer group"
                   >
-                    <DonationIcon size={20} className="text-[#8b0000]" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-center">Donate STC</span>
+                    <DonationIcon size={22} className="text-[#8b0000] group-hover:scale-110 transition-transform" />
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-center block">Donate STC</span>
+                      <span className="text-[9px] text-emerald-600 font-mono font-semibold">Sepolia ETH Escrow</span>
+                    </div>
                   </button>
                 </div>
 
@@ -768,6 +784,26 @@ export default function App() {
         isOpen={isMintSBTOpen}
         onClose={() => setIsMintSBTOpen(false)}
         defaultNode={mintTargetNode}
+        wallet={wallet}
+        onConnectWallet={handleConnectWallet}
+      />
+
+      <DonationModal
+        isOpen={isDonationOpen}
+        onClose={() => setIsDonationOpen(false)}
+        node={donationTargetNode || PALEMBANG_NODES[0]}
+        wallet={wallet}
+        onConnectWallet={handleConnectWallet}
+        onClaimPatronSBT={(node) => {
+          setMintTargetNode(node);
+          setIsMintSBTOpen(true);
+        }}
+      />
+
+      <BookingModal
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        node={bookingTargetNode || PALEMBANG_NODES[0]}
         wallet={wallet}
         onConnectWallet={handleConnectWallet}
       />

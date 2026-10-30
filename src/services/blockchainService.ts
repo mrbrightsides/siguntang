@@ -289,7 +289,7 @@ export async function issueCulturalCertificate(recipientName: string, certType: 
   if (typeof window.ethereum === 'undefined') return null;
 
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
+    const provider = new ethers.BrowserProvider(window.ethereum, 'any');
     const signer = await provider.getSigner();
     
     const contract = new ethers.Contract(
@@ -304,5 +304,132 @@ export async function issueCulturalCertificate(recipientName: string, certType: 
   } catch (error) {
     console.error("Issue Certificate Failed:", error);
     throw error;
+  }
+}
+
+export interface OnChainTraceabilityRecord {
+  id: string;
+  type: string;
+  node: string;
+  actor: string;
+  time: string;
+  hash: string;
+  fullHash: string;
+  blockNumber: number;
+  explorerUrl: string;
+  isLiveOnChain: boolean;
+}
+
+/**
+ * Donasi langsung on-chain (Sepolia ETH) untuk dana abadi konservasi simpul cagar budaya
+ */
+export async function donateToHeritageNode(amountEth: string, nodeName: string) {
+  if (typeof window.ethereum === 'undefined') {
+    throw new Error('MetaMask tidak terdeteksi. Silakan gunakan peramban dengan ekstensi Web3.');
+  }
+
+  // Pastikan berada di jaringan Sepolia
+  try {
+    const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
+    const currentChainId = parseInt(chainIdHex, 16);
+
+    if (currentChainId !== SEPOLIA_CONFIG.chainId) {
+      const switched = await switchToSepoliaTestnet();
+      if (!switched) {
+        throw new Error('Harap beralih ke jaringan Ethereum Sepolia Testnet di MetaMask.');
+      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  } catch (netErr: any) {
+    if (netErr?.code === 4001 || netErr?.message?.includes('user rejected')) {
+      throw new Error('Peralihan ke jaringan Sepolia ditolak oleh pengguna di MetaMask.');
+    }
+  }
+
+  const provider = new ethers.BrowserProvider(window.ethereum, 'any');
+  const signer = await provider.getSigner();
+
+  try {
+    const tx = await signer.sendTransaction({
+      to: CONTRACT_ADDRESSES.HERITAGE_TREASURY,
+      value: ethers.parseEther(amountEth)
+    });
+
+    const receipt = await tx.wait();
+    return {
+      txHash: receipt.hash || tx.hash,
+      amount: amountEth,
+      nodeName,
+      explorerUrl: `${SEPOLIA_CONFIG.blockExplorerUrls[0]}/tx/${receipt.hash || tx.hash}`
+    };
+  } catch (error: any) {
+    if (
+      error?.code === 'ACTION_REJECTED' || 
+      error?.code === 4001 || 
+      error?.info?.error?.code === 4001 ||
+      error?.message?.includes('user rejected')
+    ) {
+      throw new Error('Transaksi donasi dibatalkan di MetaMask.');
+    }
+    throw new Error(error?.reason || error?.message || 'Gagal mengirim donasi on-chain.');
+  }
+}
+
+/**
+ * Membaca riwayat event transaksi langsung dari Smart Contract STCCulturalSBT di Sepolia
+ */
+export async function fetchOnChainTraceabilityLogs(): Promise<OnChainTraceabilityRecord[]> {
+  try {
+    let provider: ethers.Provider;
+    if (typeof window.ethereum !== 'undefined') {
+      provider = new ethers.BrowserProvider(window.ethereum, 'any');
+    } else {
+      provider = new ethers.JsonRpcProvider(SEPOLIA_CONFIG.rpcUrl);
+    }
+
+    const contract = new ethers.Contract(
+      CONTRACT_ADDRESSES.STC_CULTURAL_SBT,
+      STC_CULTURAL_SBT_ABI,
+      provider
+    );
+
+    const currentBlock = await provider.getBlockNumber().catch(() => 12020000);
+    const fromBlock = Math.max(0, currentBlock - 50000);
+
+    const filter = contract.filters.CulturalCertificateIssued();
+    const events = await contract.queryFilter(filter, fromBlock, 'latest').catch(async () => {
+      const transferFilter = contract.filters.Transfer();
+      return await contract.queryFilter(transferFilter, Math.max(0, currentBlock - 10000), 'latest');
+    });
+
+    const records: OnChainTraceabilityRecord[] = [];
+
+    for (let i = events.length - 1; i >= 0; i--) {
+      const ev = events[i];
+      if ('args' in ev && ev.args) {
+        const tokenId = ev.args[0] ? Number(ev.args[0]) : (i + 1);
+        const recipient = ev.args[1] ? String(ev.args[1]) : '0x...';
+        const nodeName = ev.args[2] ? String(ev.args[2]) : 'Bukit Siguntang (Genesis Node)';
+        const certType = ev.args[3] ? String(ev.args[3]) : 'Proof-of-Visit SBT';
+
+        records.push({
+          id: `sbt-log-${ev.transactionHash.slice(0, 8)}-${tokenId}`,
+          type: `${certType} #${tokenId}`,
+          node: nodeName,
+          actor: `${recipient.slice(0, 6)}...${recipient.slice(-4)}`,
+          time: 'Terverifikasi Sepolia',
+          hash: `${ev.transactionHash.slice(0, 6)}...${ev.transactionHash.slice(-4)}`,
+          fullHash: ev.transactionHash,
+          blockNumber: ev.blockNumber,
+          explorerUrl: `${SEPOLIA_CONFIG.blockExplorerUrls[0]}/tx/${ev.transactionHash}`,
+          isLiveOnChain: true
+        });
+      }
+    }
+
+    return records;
+  } catch (err) {
+    console.warn("Gagal fetch on-chain logs:", err);
+    return [];
   }
 }

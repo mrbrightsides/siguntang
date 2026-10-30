@@ -69,19 +69,35 @@ SIGUNTANG menerapkan arsitektur dua lapis:
 
 ---
 
-## 📜 Arsitektur Smart Contract (EVM Compatible)
+## 📜 Arsitektur Smart Contract & Web3 Pipeline (Ethereum Sepolia Testnet)
 
-Sistem kelacakgalian SIGUNTANG ditunjang oleh 3 kontrak pintar utama:
+Sistem kelacakgalian dan kedaulatan data SIGUNTANG ditunjang oleh smart contracts yang dapat diverifikasi secara publik di **Sepolia Etherscan** dan **IPFS Gateway**:
 
-1. **`HeritageNodeRegistry` Contract**  
-   * **Fungsi:** `registerNode(name, category, location, metadataHash)`  
-   * **Tujuan:** Menyimpan titik koordinat, silsilah sejarah, dan hash metadata IPFS secara permanen.
-2. **`TraceabilityTransaction` Contract**  
-   * **Fungsi:** `recordTransaction(type, nodeName, amount, metadataHash)`  
-   * **Tujuan:** Mencatat aktivitas konservasi, kunjungan budaya, dan penyaluran dana restorasi.
-3. **`CulturalCertificate` Contract**  
-   * **Fungsi:** `issueCertificate(recipientName, certType, issuedFor, metadataHash)`  
-   * **Tujuan:** Penerbitan kredensial budaya tak-dapat-dipalsukan untuk pengrajin Songket dan cagar budaya otentik.
+1. **`STCCulturalSBT` Contract (ERC-5192 Minimal Soulbound Tokens)**  
+   * **Deployed Address (Sepolia):** [`0xC9F2bb2e96CE36E61935c0c8C1374EdEDfdcc302`](https://sepolia.etherscan.io/address/0xC9F2bb2e96CE36E61935c0c8C1374EdEDfdcc302)
+   * **Source Code:** `contracts/STCCulturalSBT.sol`
+   * **Standar:** EIP-5192 (`locked(uint256) returns (bool)`, `event Locked(uint256)`)
+   * **Fungsi:** `mintCulturalCertificate(address to, string memory ipfsUri, string memory nodeName, string memory certType)`
+   * **Sifat Token:** *Non-transferable* (terkunci permanen pada wallet penerima, tidak dapat diperjualbelikan seperti NFT komersial).
+   * **Tujuan:** Sertifikasi silsilah tenun Songket Palembang asli, tanda kunjungan resmi (*Proof-of-Visit*), dan mandat kurasi cagar budaya.
+
+2. **Decentralized IPFS Storage Pipeline (`src/services/ipfsService.ts`)**  
+   * **Standar Metadata:** JSON-LD / ERC-721 Metadata Schema diperluas dengan geospasial GIS (lat/lng), kurator tanda tangan digital, dan spesifikasi STC Trust Layer.
+   * **CID Format:** Canonical CIDv1 (`bafkrei...`) yang dapat diinspeksi melalui gateway terdistribusi seperti `https://ipfs.io/ipfs/...` atau Pinata Cloud.
+
+3. **`HeritageNodeRegistry` & Treasury Escrow**  
+   * **Heritage Treasury:** [`0x17A1e4875c125ad6e89388d9F042A361499495Da`](https://sepolia.etherscan.io/address/0x17A1e4875c125ad6e89388d9F042A361499495Da)
+   * **STC Zero-Leakage Escrow:** Donasi mikro (Sepolia ETH) ditransfer langsung secara *peer-to-treasury* tanpa perantara bank atau potongan platform swasta.
+   * **Proof-of-Visit Booking:** Reservasi kunjungan menerbitkan tiket digital langsung dalam format Soulbound Token (ERC-5192) untuk memusnahkan calo tiket dan menjamin verifikasi presisi pada analisis statistik STC.
+   * **Live On-Chain Event Poller:** Modul `TraceabilityHub` membaca riwayat event `CulturalCertificateIssued` secara langsung dari smart contract Sepolia, sehingga setiap token baru otomatis muncul di ledger publik.
+
+### ⚡ Cara Cepat Deploy Kontrak ke Sepolia via Remix IDE:
+1. Buka [remix.ethereum.org](https://remix.ethereum.org).
+2. Buat file baru `STCCulturalSBT.sol` dan salin kode dari direktori `contracts/STCCulturalSBT.sol`.
+3. Compile menggunakan Solidity versi `0.8.20`.
+4. Di tab **Deploy & Run Transactions**, ubah Environment ke **Injected Provider - MetaMask** (pastikan akun MetaMask berada di jaringan **Sepolia Testnet**).
+5. Klik tombol **Deploy** dan konfirmasi transaksi.
+6. Masukkan alamat kontrak yang terbit ke `CONTRACT_ADDRESSES.STC_CULTURAL_SBT` di `src/contractData.ts`.
 
 ---
 
