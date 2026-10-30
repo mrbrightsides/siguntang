@@ -45,15 +45,15 @@ SIGUNTANG menerapkan arsitektur dua lapis:
 
 ## 🎨 Fitur Unggulan Platform
 
-### 1. 🚤 Musi Cruise Navigator (Diorama Sinematik & Imersif)
-* Simulasi pelayaran menyusuri Sungai Musi dengan sudut pandang realistis-atmosferik.
-* Menampilkan titik-titik legendaris di sepanjang sungai:
-  * **Jembatan Ampera** — Landmark ikonik dengan tata cahaya atmosferik.
-  * **Pulau Kemaro** — Diorama pagoda legendaris lengkap dengan kisah cinta abadi Tan Bun An & Siti Fatimah.
-  * **Kampung Arab Al-Munawar** — Cagar budaya arsitektur rumah batu berusia ratusan tahun.
-  * **Benteng Kuto Besak (BKB)** — Simbol ketangguhan Kesultanan Palembang Darussalam.
-  * **Legenda Putri Kemarau** — Kisah pengorbanan luhur demi keselamatan rakyat Sriwijaya.
-* Dilengkapi *audio ambiance* gemercik air sungai dan mode pencahayaan dinamis.
+### 1. 🚤 Musi Cruise Navigator (Diorama 3D WebGL Spatial & Sinematik 2.5D)
+* **True 3D Spatial WebGL Engine (Three.js)**:
+  * **Simulasi Gelombang Air Dinamis**: Fisika permukaan air Sungai Musi dengan pergeseran vertex sinusoidal riil dan material reflektif sedimen keemasan.
+  * **Model 3D Prosedural Landmark**: Jembatan Ampera (twin tower berketinggian 14m, kabel suspensi baja melengkung, & pendar lampu merah nokturnal), Pagoda 9 Tingkat Pulau Kemaro (atap oktagonal bertingkat & pohon cinta), dan Genesis Monolith Bukit Siguntang (batu berpendar aksara Pallawa Sriwijaya).
+  * **Hero Perahu Ketek 3D**: Berlayar menyusuri kelokan kurva sungai Musi dengan simulasi fisik pitch, roll, dan oleng pelan mengikuti arus air.
+  * **Interaktivitas 360° & Raycasting**: OrbitControls bebas untuk rotasi dan zoom kamera, preset kamera fokus landmark, serta inspeksi objek 3D langsung untuk membaca peran node pada STC Trust Layer.
+  * **Siklus Atmosfer Waktu**: Pergantian pencahayaan dinamis (Senja Keemasan, Purnama Ampera, Kabut Pagi, & Hujan Musi) dengan kabut volumetrik dan efek kabut `FogExp2`.
+* **Mode Sinematik 2.5D Folklore**:
+  * Eksplorasi 5 rute cerita tutur lisan dengan senter teplok pembuka misteri tersembunyi, radar kedalaman arus, sensor gerak gyroscope smartphone, dan pengumpulan 5 pusaka paspor digital STC.
 
 ### 2. 🤖 Panduan Budaya Cerdas (AI Cultural Guide)
 * Didukung model bahasa mutakhir **Gemini 2.5 Flash** via `@google/genai`.
@@ -119,6 +119,7 @@ Sistem kelacakgalian dan kedaulatan data SIGUNTANG ditunjang oleh smart contract
 | **Frontend Framework** | React 19 + TypeScript + Vite |
 | **Artificial Intelligence** | Google Gemini API (`@google/genai` — Gemini 2.5 Flash) |
 | **Styling & Design** | Tailwind CSS + Lucide Icons |
+| **3D WebGL & Grafis Spasial** | Three.js (`three` + `OrbitControls`) |
 | **Animasi & Interaksi** | Framer Motion (`motion/react`) |
 | **Web3 & Blockchain** | Ethers.js v6 + SIWE (Sign-In with Ethereum) + MetaMask |
 | **Peta Spasial** | Leaflet + React Leaflet |

@@ -30,10 +30,12 @@ import {
   Smartphone,
   Eye,
   Crosshair,
-  Radio
+  Radio,
+  Box
 } from 'lucide-react';
 import { MUSI_FOLKLORE_EXPEDITION, FolkloreStory, FolkloreHotspot, FolkloreRelic } from '../data/folkloreData';
 import { musiAudio, MusiWeatherType } from '../services/musiAudioEngine';
+import { Musi3DDiorama } from './Musi3DDiorama';
 
 interface MusiCruiseDioramaProps {
   onNodeSelect?: (nodeName: string) => void;
@@ -125,6 +127,7 @@ export function MusiCruiseDiorama({ onNodeSelect }: MusiCruiseDioramaProps) {
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 
   // Immersive Controls State
+  const [viewMode, setViewMode] = useState<'3d' | '2d'>('3d');
   const [weather, setWeather] = useState<MusiWeatherType>('senja');
   const [torchActive, setTorchActive] = useState<boolean>(true);
   const [torchPos, setTorchPos] = useState<{ x: number; y: number }>({ x: 50, y: 55 });
@@ -703,6 +706,52 @@ export function MusiCruiseDiorama({ onNodeSelect }: MusiCruiseDioramaProps) {
           </div>
         </div>
 
+        {/* VIEW MODE SELECTOR: 3D SPATIAL WEBGL vs 2.5D SINEMATIK */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 p-2 bg-[#120c08] border border-amber-500/30 rounded-2xl shadow-xl">
+          <div className="flex items-center gap-2.5 pl-2">
+            <span className="font-mono text-[10px] text-amber-400 font-bold tracking-wider uppercase">
+              Engine Viewport:
+            </span>
+            <span className="text-xs text-stone-300 font-medium">
+              {viewMode === '3d' 
+                ? '3D Spatial WebGL (Three.js Diroama • Orbit 360° • Pendar Ampera)' 
+                : 'Sinematik 2.5D Parallax & Senter Teplok Explorer'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 p-1 bg-black/60 rounded-xl border border-white/10 shrink-0">
+            <button
+              onClick={() => {
+                setViewMode('3d');
+                triggerHaptic([30]);
+              }}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold font-mono uppercase tracking-wider transition-all cursor-pointer ${
+                viewMode === '3d'
+                  ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-stone-950 shadow-md font-extrabold'
+                  : 'text-stone-400 hover:text-white'
+              }`}
+            >
+              <Box size={14} className={viewMode === '3d' ? 'text-stone-950 animate-pulse' : 'text-amber-400'} />
+              <span>Diorama 3D Spatial</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-black/30 text-stone-950 font-mono font-black">PRO</span>
+            </button>
+            <button
+              onClick={() => {
+                setViewMode('2d');
+                triggerHaptic([30]);
+              }}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold font-mono uppercase tracking-wider transition-all cursor-pointer ${
+                viewMode === '2d'
+                  ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-stone-950 shadow-md font-extrabold'
+                  : 'text-stone-400 hover:text-white'
+              }`}
+            >
+              <Layers size={14} />
+              <span>Sinematik 2.5D</span>
+            </button>
+          </div>
+        </div>
+
         {/* WEATHER & TIME-OF-DAY ENGINE BAR */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-[#120c08] border border-amber-900/30 rounded-2xl px-4 py-2.5 mb-6 text-xs">
           <div className="flex items-center gap-2 text-stone-400">
@@ -897,16 +946,19 @@ export function MusiCruiseDiorama({ onNodeSelect }: MusiCruiseDioramaProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Diorama Stage (Col 8) */}
           <div className="lg:col-span-8 flex flex-col gap-4">
-            <div
-              onPointerMove={handlePointerMove}
-              onPointerLeave={handlePointerLeave}
-              onPointerDown={handleDioramaPointerDown}
-              className="relative w-full h-[490px] md:h-[580px] rounded-3xl overflow-hidden border border-amber-500/30 bg-black shadow-2xl transition-all cursor-crosshair touch-none"
-              style={{
-                perspective: '1000px',
-              }}
-            >
-              {/* Dynamic Sky Gradient according to Weather */}
+            {viewMode === '3d' ? (
+              <Musi3DDiorama onNodeSelect={onNodeSelect} />
+            ) : (
+              <div
+                onPointerMove={handlePointerMove}
+                onPointerLeave={handlePointerLeave}
+                onPointerDown={handleDioramaPointerDown}
+                className="relative w-full h-[490px] md:h-[580px] rounded-3xl overflow-hidden border border-amber-500/30 bg-black shadow-2xl transition-all cursor-crosshair touch-none"
+                style={{
+                  perspective: '1000px',
+                }}
+              >
+                {/* Dynamic Sky Gradient according to Weather */}
               <div
                 className={`absolute inset-0 transition-colors duration-1000 ${
                   weather === 'senja'
@@ -1143,6 +1195,7 @@ export function MusiCruiseDiorama({ onNodeSelect }: MusiCruiseDioramaProps) {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Hotspot Lore Detail Callout (When selected) */}
             <AnimatePresence>
