@@ -67,6 +67,15 @@ SIGUNTANG menerapkan arsitektur dua lapis:
 * Pemantau langsung transaksi kelacakgalian budaya (*Live Traceability Ledger*).
 * Menampilkan metrik *Network Integrity*, blok blockchain, dan riwayat sertifikasi kriya.
 
+### 5. 🔌 STC Phygital IoT Gateway & Hardware Digital Twin
+* **Hardware-to-Web Connectivity**: Mendukung komunikasi langsung browser-ke-mikrokontroler melalui **Web Serial API** (kabel USB 115200 baud) dan **Web Bluetooth LE (BLE)** tanpa memerlukan perantara cloud server.
+* **Web NFC Mobile Scanner**: Membaca chip NFC fisik langsung dari sensor belakang smartphone pada Android Chrome.
+* **Two-Way Downlink & Uplink**:
+  * *Downlink*: Perintah web menyalakan LED WS2812B Jembatan Ampera dan klakson DFPlayer Mini pada diorama fisik.
+  * *Uplink*: Sentuhan fisik kapal di dermaga mengirimkan event real-time ke web.
+* **On-Chain Proof-of-Physical-Presence (PoPP)**: Verifikasi sentuhan chip NFC langsung mencetak Soulbound Token (ERC-5192) ke Sepolia Testnet.
+* **Firmware C++ Bawaan**: Kode Arduino siap flash (`STC_Diorama_ESP32.ino`), tabel pinout lengkap, dan panduan perakitan lab kampus Bina Darma.
+
 ---
 
 ## 📜 Arsitektur Smart Contract & Web3 Pipeline (Ethereum Sepolia Testnet)

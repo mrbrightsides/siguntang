@@ -31,14 +31,18 @@ import {
   Eye,
   Crosshair,
   Radio,
-  Box
+  Box,
+  Cpu
 } from 'lucide-react';
 import { MUSI_FOLKLORE_EXPEDITION, FolkloreStory, FolkloreHotspot, FolkloreRelic } from '../data/folkloreData';
 import { musiAudio, MusiWeatherType } from '../services/musiAudioEngine';
 import { Musi3DDiorama } from './Musi3DDiorama';
+import { PhygitalConsoleModal } from './PhygitalConsoleModal';
 
 interface MusiCruiseDioramaProps {
   onNodeSelect?: (nodeName: string) => void;
+  onOpenStoryteller?: (weather: MusiWeatherType) => void;
+  onOpenPlanner?: () => void;
 }
 
 interface FolkloreSecret {
@@ -115,7 +119,7 @@ interface WaterRipple {
   color: string;
 }
 
-export function MusiCruiseDiorama({ onNodeSelect }: MusiCruiseDioramaProps) {
+export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlanner }: MusiCruiseDioramaProps) {
   const [currentIdx, setCurrentIdx] = useState<number>(0);
   const [isCruising, setIsCruising] = useState<boolean>(false);
   const [autoCruise, setAutoCruise] = useState<boolean>(false);
@@ -134,6 +138,7 @@ export function MusiCruiseDiorama({ onNodeSelect }: MusiCruiseDioramaProps) {
   const [revealedSecret, setRevealedSecret] = useState<FolkloreSecret | null>(null);
   const [discoveredSecrets, setDiscoveredSecrets] = useState<string[]>([]);
   const [isSecretModalOpen, setIsSecretModalOpen] = useState<boolean>(false);
+  const [isPhygitalOpen, setIsPhygitalOpen] = useState<boolean>(false);
   const [gyroActive, setGyroActive] = useState<boolean>(false);
   const [gyroSupported, setGyroSupported] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -686,6 +691,40 @@ export function MusiCruiseDiorama({ onNodeSelect }: MusiCruiseDioramaProps) {
                 <span>{gyroActive ? 'Gyro HP Aktif' : 'Gerak Gyro'}</span>
               </button>
             )}
+
+            {/* AI Musi Storyteller Button */}
+            {onOpenStoryteller && (
+              <button
+                onClick={() => onOpenStoryteller(weather)}
+                className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-amber-600/30 to-amber-700/20 hover:from-amber-600/40 hover:to-amber-700/30 border border-amber-500/40 rounded-xl text-xs font-semibold text-amber-200 shadow-sm transition-all cursor-pointer"
+                title="Buka Pencerita Lisan AI Musi Berbasis Persona"
+              >
+                <Sparkles size={14} className="text-amber-400" />
+                <span>AI Storyteller</span>
+              </button>
+            )}
+
+            {/* Smart Musi Cruise Planner Button */}
+            {onOpenPlanner && (
+              <button
+                onClick={onOpenPlanner}
+                className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-emerald-600/30 to-teal-700/20 hover:from-emerald-600/40 hover:to-teal-700/30 border border-emerald-500/40 rounded-xl text-xs font-semibold text-emerald-200 shadow-sm transition-all cursor-pointer"
+                title="Rancang Rute Pelayaran & Emisi Karbon STC"
+              >
+                <Compass size={14} className="text-emerald-400" />
+                <span>Cruise Planner</span>
+              </button>
+            )}
+
+            {/* Phygital IoT Console Button */}
+            <button
+              onClick={() => setIsPhygitalOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 rounded-xl text-xs font-semibold text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.2)] transition-all cursor-pointer"
+              title="Buka Konsol Jembatan Phygital IoT & Digital Twin"
+            >
+              <Cpu size={16} className="text-amber-400 animate-pulse" />
+              <span>Phygital IoT</span>
+            </button>
 
             {/* Theater / Fullscreen Toggle */}
             <button
@@ -1559,6 +1598,14 @@ export function MusiCruiseDiorama({ onNodeSelect }: MusiCruiseDioramaProps) {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Phygital IoT Console & Hardware Twin Modal */}
+        <PhygitalConsoleModal
+          isOpen={isPhygitalOpen}
+          onClose={() => setIsPhygitalOpen(false)}
+          currentWeather={weather}
+          onWeatherChange={handleSelectWeather}
+        />
       </div>
     </section>
   );

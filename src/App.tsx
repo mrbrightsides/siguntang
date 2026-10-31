@@ -20,10 +20,14 @@ import { MusiCruiseDiorama } from './components/MusiCruiseDiorama';
 import { MintSBTModal } from './components/MintSBTModal';
 import { DonationModal } from './components/DonationModal';
 import { BookingModal } from './components/BookingModal';
+import { AIVisionInspectorModal } from './components/AIVisionInspectorModal';
+import { MusiStorytellerModal } from './components/MusiStorytellerModal';
+import { MusiPlannerModal } from './components/MusiPlannerModal';
+import { MusiWeatherType } from './services/musiAudioEngine';
 import { connectWallet, WalletState, recordTraceabilityTransaction } from './services/blockchainService';
 import { SEPOLIA_CONFIG } from './contractData';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass, Layers, Lock } from 'lucide-react';
+import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass, Layers, Lock, BookOpen } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -41,6 +45,10 @@ export default function App() {
   const [donationTargetNode, setDonationTargetNode] = useState<UniversalNode | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingTargetNode, setBookingTargetNode] = useState<UniversalNode | null>(null);
+  const [isAIVisionOpen, setIsAIVisionOpen] = useState(false);
+  const [isStorytellerOpen, setIsStorytellerOpen] = useState(false);
+  const [storytellerWeather, setStorytellerWeather] = useState<MusiWeatherType>('senja');
+  const [isPlannerOpen, setIsPlannerOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window.ethereum !== 'undefined') {
@@ -113,33 +121,13 @@ export default function App() {
         walletAddress={wallet?.address || null} 
         onConnectWallet={handleConnectWallet} 
         onOpenSTCEcosystem={() => setIsSTCEcosystemOpen(true)}
-        onOpenMintSBT={() => {
-          setMintTargetNode(null);
-          setIsMintSBTOpen(true);
-        }}
       />
       
       {/* Hero Section - The Universal Gate */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="flex flex-col lg:flex-row items-center gap-16">
-            <div className="flex-1 text-center lg:text-left">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6"
-              >
-                <button
-                  onClick={() => setIsSTCEcosystemOpen(true)}
-                  className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#8b0000]/10 hover:bg-[#8b0000]/20 border border-[#8b0000]/25 rounded-full transition-all group cursor-pointer text-left"
-                  title="Klik untuk membuka 12 Modul Riset Disertasi STC"
-                >
-                  <Sparkles size={14} className="text-[#8b0000]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b0000]">Smart Tourism Chain • 12 Modul Ekosistem</span>
-                  <ArrowUpRight size={12} className="text-[#8b0000] opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </button>
-              </motion.div>
-              
+            <div className="flex-1 text-center lg:text-left">              
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -247,10 +235,17 @@ export default function App() {
       </section>
 
       {/* Musi River Cruise Folklore Diorama Section */}
-      <MusiCruiseDiorama onNodeSelect={(name) => {
-        const found = PALEMBANG_NODES.find(n => n.name.toLowerCase().includes(name.toLowerCase()));
-        if (found) setSelectedNode(found);
-      }} />
+      <MusiCruiseDiorama 
+        onNodeSelect={(name) => {
+          const found = PALEMBANG_NODES.find(n => n.name.toLowerCase().includes(name.toLowerCase()));
+          if (found) setSelectedNode(found);
+        }}
+        onOpenStoryteller={(w) => {
+          setStorytellerWeather(w);
+          setIsStorytellerOpen(true);
+        }}
+        onOpenPlanner={() => setIsPlannerOpen(true)}
+      />
 
       {/* Mission Section: Transforming Passive to Active */}
       <section className="py-24 bg-[#8b0000] text-white">
@@ -512,7 +507,7 @@ export default function App() {
       {/* Footer */}
       <footer className="py-20 border-t border-black/5">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-10">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-12">
             <a href="#" className="flex items-center transition-opacity hover:opacity-90">
               <img 
                 src="https://i.imgur.com/E0EOmhA.png" 
@@ -523,7 +518,7 @@ export default function App() {
                 }}
               />
             </a>
-            <div className="flex flex-col sm:flex-row gap-10 sm:gap-14">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10 lg:gap-14">
               <div>
                 <h4 className="font-bold text-xs uppercase tracking-widest mb-4 text-[#1a1a1a]">Platform</h4>
                 <ul className="space-y-2.5 text-sm text-gray-500">
@@ -609,6 +604,65 @@ export default function App() {
                     </button>
                   </li>
                 </ul>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-xs uppercase tracking-widest mb-4 text-[#1a1a1a] flex items-center gap-1.5">
+                  <Sparkles size={13} className="text-[#8b0000]" />
+                  Blockchain & AI
+                </h4>
+                <div className="flex flex-col gap-2.5">
+                  <button 
+                    onClick={() => setIsAIVisionOpen(true)}
+                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-600/30 rounded-xl text-amber-950 font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
+                    title="Inspeksi Ragam Hias & Keaslian Songket dengan Gemini 3.8 Flash Vision"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sparkles size={14} className="text-amber-600 group-hover:scale-110 transition-transform" />
+                      <span>AI Songket Vision</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-800 font-mono font-semibold">Vision 3.8</span>
+                  </button>
+
+                  <button 
+                    onClick={() => setIsStorytellerOpen(true)}
+                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-amber-600/10 hover:bg-amber-600/20 border border-amber-500/30 rounded-xl text-amber-950 font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
+                    title="Buka Pencerita Lisan AI Musi Berbasis Persona"
+                  >
+                    <div className="flex items-center gap-2">
+                      <BookOpen size={14} className="text-amber-700 group-hover:scale-110 transition-transform" />
+                      <span>AI Musi Storyteller</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-700/20 text-amber-900 font-mono font-semibold">Persona</span>
+                  </button>
+
+                  <button 
+                    onClick={() => setIsPlannerOpen(true)}
+                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-600/30 rounded-xl text-emerald-950 font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
+                    title="Rancang Rute Pelayaran & Emisi Karbon STC"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Compass size={14} className="text-emerald-600 group-hover:scale-110 transition-transform" />
+                      <span>Cruise & Carbon Planner</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-600/20 text-emerald-800 font-mono font-semibold">CarbonPrint</span>
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      setMintTargetNode(null);
+                      setIsMintSBTOpen(true);
+                    }}
+                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-[#8b0000]/10 hover:bg-[#8b0000]/20 border border-[#8b0000]/30 rounded-xl text-[#8b0000] font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
+                    title="Klaim Sertifikat Budaya Soulbound Token (ERC-5192) Sepolia"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Shield size={14} className="text-[#8b0000] group-hover:scale-110 transition-transform" />
+                      <span>Klaim SBT Budaya</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#8b0000]/15 text-[#8b0000] font-mono font-semibold">ERC-5192</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -807,6 +861,36 @@ export default function App() {
         wallet={wallet}
         onConnectWallet={handleConnectWallet}
       />
+
+      <AIVisionInspectorModal
+        isOpen={isAIVisionOpen}
+        onClose={() => setIsAIVisionOpen(false)}
+        wallet={wallet}
+        onConnectWallet={handleConnectWallet}
+      />
+
+      <MusiStorytellerModal
+        isOpen={isStorytellerOpen}
+        onClose={() => setIsStorytellerOpen(false)}
+        currentWeather={storytellerWeather}
+        wallet={wallet}
+        onConnectWallet={handleConnectWallet}
+      />
+
+      <MusiPlannerModal
+        isOpen={isPlannerOpen}
+        onClose={() => setIsPlannerOpen(false)}
+        wallet={wallet}
+        onConnectWallet={handleConnectWallet}
+        onNavigateToNode={(nodeName) => {
+          setIsPlannerOpen(false);
+          const found = PALEMBANG_NODES.find(n => n.name.toLowerCase().includes(nodeName.toLowerCase()));
+          if (found) setSelectedNode(found);
+        }}
+      />
+
+      {/* Floating AI Guide & Musi Storyteller Assistant */}
+      <AIGuide />
     </div>
   );
 }

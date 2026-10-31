@@ -22,10 +22,13 @@ import {
   Info,
   MapPin,
   ChevronRight,
-  X
+  X,
+  Cpu
 } from 'lucide-react';
 import { musiAudio, MusiWeatherType } from '../services/musiAudioEngine';
 import { motion, AnimatePresence } from 'motion/react';
+import { PhygitalConsoleModal } from './PhygitalConsoleModal';
+import { AICuratorDrawer } from './AICuratorDrawer';
 
 interface Musi3DDioramaProps {
   onNodeSelect?: (nodeName: string) => void;
@@ -39,6 +42,7 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
   const [timeOfDay, setTimeOfDay] = useState<MusiWeatherType>('senja');
   const [cameraPreset, setCameraPreset] = useState<CameraPreset>('isometric');
   const [selectedLandmark, setSelectedLandmark] = useState<{
+    key: string;
     name: string;
     description: string;
     significance: string;
@@ -47,6 +51,8 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
   const [isAudioActive, setIsAudioActive] = useState(false);
   const [cruiseSpeed, setCruiseSpeed] = useState<number>(1);
   const [boatProgress, setBoatProgress] = useState<number>(0);
+  const [isPhygitalOpen, setIsPhygitalOpen] = useState(false);
+  const [isCuratorOpen, setIsCuratorOpen] = useState(false);
 
   // References for Three.js lifecycle
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -199,7 +205,10 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
           if (obj.userData?.landmark) {
             const key = obj.userData.landmark as keyof typeof LANDMARKS_DATA;
             if (LANDMARKS_DATA[key]) {
-              setSelectedLandmark(LANDMARKS_DATA[key]);
+              setSelectedLandmark({
+                key,
+                ...LANDMARKS_DATA[key]
+              });
               return;
             }
           }
@@ -678,6 +687,16 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
             <RotateCcw size={16} />
           </button>
 
+          {/* Phygital Twin IoT Gateway Button */}
+          <button
+            onClick={() => setIsPhygitalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 rounded-2xl text-xs font-mono font-bold transition-all cursor-pointer shadow-lg shadow-amber-500/10"
+            title="Buka Konsol Jembatan Phygital IoT & Digital Twin"
+          >
+            <Cpu size={15} className="animate-pulse text-amber-400" />
+            <span className="hidden sm:inline">Phygital IoT</span>
+          </button>
+
           {onClose && (
             <button
               onClick={onClose}
@@ -777,7 +796,14 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="space-y-2">
+              <button
+                onClick={() => setIsCuratorOpen(true)}
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-600 to-amber-500 hover:brightness-110 text-black font-mono text-[10px] uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-amber-500/20"
+              >
+                <Sparkles size={13} className="text-black" />
+                Bedah Sejarah dengan AI Curator
+              </button>
               <button
                 onClick={() => {
                   if (onNodeSelect) onNodeSelect(selectedLandmark.name);
@@ -793,11 +819,33 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
         )}
       </AnimatePresence>
 
+      {/* In-Situ AI Archaeological Curator Drawer */}
+      <AICuratorDrawer
+        isOpen={isCuratorOpen && !!selectedLandmark}
+        onClose={() => setIsCuratorOpen(false)}
+        landmarkKey={selectedLandmark?.key || 'ampera'}
+        landmarkName={selectedLandmark?.name || ''}
+        onExploreNode={() => {
+          if (onNodeSelect && selectedLandmark) onNodeSelect(selectedLandmark.name);
+          setIsCuratorOpen(false);
+          setSelectedLandmark(null);
+        }}
+      />
+
       {/* Bottom Hint Banner */}
       <div className="absolute top-20 left-6 hidden md:flex items-center gap-2 px-3 py-1 bg-black/40 backdrop-blur-sm rounded-full border border-white/5 text-[10px] text-white/50 pointer-events-none">
         <Sparkles size={11} className="text-amber-300" />
         <span>Tarik mouse untuk rotasi 360° • Scroll untuk zoom • Klik objek 3D untuk info</span>
       </div>
+
+      {/* Phygital IoT Console & Hardware Twin Blueprint Modal */}
+      <PhygitalConsoleModal
+        isOpen={isPhygitalOpen}
+        onClose={() => setIsPhygitalOpen(false)}
+        currentWeather={timeOfDay}
+        onWeatherChange={handleTimeChange}
+        onFocusLandmark={(lm) => applyCameraPreset(lm as CameraPreset)}
+      />
     </div>
   );
 }

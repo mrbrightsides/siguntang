@@ -86,10 +86,10 @@ export function AIGuide() {
             }}
             className={cn(
               "bg-white flex flex-col overflow-hidden shadow-2xl border border-black/10 transition-all box-border",
-              // Mobile layout: Dynamic bottom sheet docking, firmly contained
-              "inset-x-0 bottom-0 w-full max-w-full h-[88vh] max-h-[640px] rounded-t-[2rem] rounded-b-none",
-              // Tablet & Desktop layout: Firmly pinned to bottom-right corner above the button
-              "md:inset-x-auto md:left-auto md:right-6 md:bottom-24 md:w-[420px] md:h-[600px] md:max-h-[calc(100vh-130px)] md:rounded-3xl"
+              // Mobile layout: Elevated hovering card, never stuck to the floor
+              "inset-x-3 bottom-6 sm:bottom-24 w-auto max-w-[calc(100vw-1.5rem)] h-[82vh] max-h-[620px] rounded-3xl",
+              // Tablet & Desktop layout: Pinned to bottom-right corner hovering above button
+              "md:inset-x-auto md:left-auto md:right-6 md:bottom-28 md:w-[420px] md:h-[600px] md:max-h-[calc(100vh-140px)] md:rounded-3xl"
             )}
           >
             {/* Header */}
@@ -130,7 +130,7 @@ export function AIGuide() {
             </div>
 
             {/* Messages Area - strictly overflow-x-hidden with min-w-0 container */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 space-y-4 bg-stone-50/50 w-full min-w-0">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-5 space-y-3.5 bg-stone-50/50 w-full min-w-0">
               {messages.map((msg, idx) => (
                 <div 
                   key={idx} 
@@ -146,7 +146,7 @@ export function AIGuide() {
                     {msg.role === 'user' ? <User size={15} /> : <Bot size={15} />}
                   </div>
                   <div className={cn(
-                    "min-w-0 max-w-[calc(100%-42px)] sm:max-w-[78%] p-3 sm:p-4 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-sm whitespace-pre-wrap break-words [overflow-wrap:anywhere]",
+                    "min-w-0 max-w-[82%] sm:max-w-[78%] p-3 sm:p-4 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-xs whitespace-pre-wrap break-words [overflow-wrap:anywhere]",
                     msg.role === 'user' 
                       ? "bg-[#1a1a1a] text-white rounded-tr-xs" 
                       : "bg-[#f5f2ed] text-[#1a1a1a] rounded-tl-xs border border-black/5"
@@ -220,27 +220,34 @@ export function AIGuide() {
         )}
       </AnimatePresence>
 
-      {/* Floating Action Button - Locked strictly to bottom-right corner of viewport */}
+      {/* Floating Action Button - Hovering comfortably above bottom with smooth levitation motion */}
       <motion.button
+        animate={{
+          y: [0, -6, 0]
+        }}
+        transition={{
+          repeat: Infinity,
+          duration: 3.2,
+          ease: "easeInOut"
+        }}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
         onClick={() => setIsOpen(!isOpen)}
         style={{
           position: 'fixed',
-          right: '1.5rem',
-          bottom: '1.5rem',
           zIndex: 9999,
         }}
         className={cn(
-          "w-14 h-14 bg-[#8b0000] text-white rounded-2xl shadow-2xl shadow-red-950/35 flex items-center justify-center overflow-hidden border border-white/20 touch-manipulation cursor-pointer transition-shadow",
+          "w-13 h-13 sm:w-14 sm:h-14 bg-gradient-to-tr from-[#700000] via-[#8b0000] to-[#b30000] text-white rounded-2xl shadow-[0_10px_30px_rgba(139,0,0,0.45)] ring-2 ring-white/20 flex items-center justify-center overflow-hidden touch-manipulation cursor-pointer transition-all",
+          "right-4 sm:right-6 bottom-20 sm:bottom-8",
           isOpen ? "max-md:hidden" : "flex"
         )}
         aria-label={isOpen ? "Tutup SIGUNTANG AI" : "Buka SIGUNTANG AI"}
       >
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
-        {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
+        {isOpen ? <X size={22} className="sm:size-6" /> : <MessageSquare size={22} className="sm:size-6" />}
         {!isOpen && (
-          <div className="pointer-events-none absolute top-2 right-2 w-3 h-3 bg-amber-400 rounded-full border-2 border-[#8b0000] animate-pulse" />
+          <div className="pointer-events-none absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-amber-400 rounded-full border-2 border-[#8b0000] animate-pulse" />
         )}
       </motion.button>
     </>
