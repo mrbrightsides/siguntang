@@ -23,7 +23,8 @@ import {
   MapPin,
   ChevronRight,
   X,
-  Cpu
+  Cpu,
+  Scroll
 } from 'lucide-react';
 import { musiAudio, MusiWeatherType } from '../services/musiAudioEngine';
 import { motion, AnimatePresence } from 'motion/react';
@@ -32,12 +33,13 @@ import { AICuratorDrawer } from './AICuratorDrawer';
 
 interface Musi3DDioramaProps {
   onNodeSelect?: (nodeName: string) => void;
+  onOpenPrasasti?: () => void;
   onClose?: () => void;
 }
 
 type CameraPreset = 'isometric' | 'boat' | 'ampera' | 'kemaro' | 'siguntang';
 
-export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
+export function Musi3DDiorama({ onNodeSelect, onOpenPrasasti, onClose }: Musi3DDioramaProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [timeOfDay, setTimeOfDay] = useState<MusiWeatherType>('senja');
   const [cameraPreset, setCameraPreset] = useState<CameraPreset>('isometric');
@@ -97,6 +99,18 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
       description: 'Transportasi air tradisional khas Palembang bertenaga mesin tempel dengan suara khas "tek-tek-tek". Menghubungkan kampung-kampung terapung di sepanjang 750 km Sungai Musi.',
       significance: 'Warisan moda mobilitas kearifan lokal masyarakat sungai Sriwijaya.',
       stcRole: 'Unit pelacakan rute geospasial real-time dan perhitungan jejak karbon wisata.'
+    },
+    bkb: {
+      name: 'Benteng Kuto Besak (Kawasan Bahari SMB)',
+      description: 'Benteng pertahanan batu abad ke-18 era Kesultanan Palembang Darussalam yang menghadap langsung ke Sungai Musi.',
+      significance: 'Pusat pertahanan militer maritim dan cagar budaya Kesultanan Palembang.',
+      stcRole: 'Simpul kurasi cagar budaya dan sertifikasi Proof-of-Visit SBT pertahanan bahari.'
+    },
+    almunawar: {
+      name: 'Kampung Arab Assegaf (Heritage Jl. Assegaf 16 Ulu)',
+      description: 'Pemukiman cagar budaya bersejarah di koridor Jalan Assegaf dan tepian Sungai Musi 16 Ulu, Tangga Takat, pusat tradisi Ziarah Kubro dan rumah-rumah Limas kuno.',
+      significance: 'Simbol akulturasi budaya Islam maritim dan kelestarian arsitektur Limas tepian Musi.',
+      stcRole: 'Simpul warisan komunitas lokal dan verifikasi donasi pelestarian cagar budaya.'
     }
   };
 
@@ -167,21 +181,26 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
     if (preset === 'isometric') {
       camera.position.set(45, 35, 45);
       controls.target.set(0, 0, 0);
+      setSelectedLandmark(null);
     } else if (preset === 'ampera') {
       camera.position.set(-8, 12, 18);
       controls.target.set(-8, 6, 0);
+      setSelectedLandmark({ key: 'ampera', ...LANDMARKS_DATA.ampera });
     } else if (preset === 'kemaro') {
       camera.position.set(28, 14, -10);
       controls.target.set(24, 5, -8);
+      setSelectedLandmark({ key: 'kemaro', ...LANDMARKS_DATA.kemaro });
     } else if (preset === 'siguntang') {
       camera.position.set(-25, 12, -18);
       controls.target.set(-20, 4, -15);
+      setSelectedLandmark({ key: 'siguntang', ...LANDMARKS_DATA.siguntang });
     } else if (preset === 'boat') {
       if (boatGroupRef.current) {
         const bp = boatGroupRef.current.position;
         camera.position.set(bp.x - 6, bp.y + 4, bp.z + 6);
         controls.target.copy(bp);
       }
+      setSelectedLandmark({ key: 'ketek', ...LANDMARKS_DATA.ketek });
     }
     controls.update();
   };
@@ -687,6 +706,20 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
             <RotateCcw size={16} />
           </button>
 
+          {/* Bedah Sejarah AI Curator Quick Launcher */}
+          <button
+            onClick={() => {
+              const key = cameraPreset === 'boat' ? 'ketek' : cameraPreset === 'ampera' ? 'ampera' : cameraPreset === 'kemaro' ? 'kemaro' : cameraPreset === 'siguntang' ? 'siguntang' : 'ampera';
+              setSelectedLandmark({ key, ...LANDMARKS_DATA[key as keyof typeof LANDMARKS_DATA] });
+              setIsCuratorOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-2.5 bg-gradient-to-r from-amber-600/30 to-amber-500/20 hover:from-amber-600/50 hover:to-amber-500/40 border border-amber-400/50 text-amber-300 rounded-2xl text-xs font-mono font-bold transition-all cursor-pointer shadow-lg shadow-amber-500/10"
+            title="Bedah Sejarah dengan AI Curator untuk Landmark Aktif"
+          >
+            <Sparkles size={15} className="text-amber-400 animate-pulse" />
+            <span className="hidden sm:inline">Bedah Sejarah AI</span>
+          </button>
+
           {/* Phygital Twin IoT Gateway Button */}
           <button
             onClick={() => setIsPhygitalOpen(true)}
@@ -731,23 +764,26 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
         ))}
       </div>
 
-      {/* Floating Bottom Right: Camera Landmark Presets */}
-      <div className="absolute bottom-6 right-6 hidden sm:flex items-center gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 z-10">
-        <span className="font-mono text-[9px] text-white/40 uppercase pl-2 pr-1">Fokus 3D:</span>
+      {/* Floating Bottom: Camera Landmark Presets (Responsive on mobile & desktop) */}
+      <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 max-w-[calc(100%-2rem)] flex items-center gap-1.5 sm:gap-2 bg-black/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/15 z-10 overflow-x-auto no-scrollbar shadow-2xl">
+        <span className="font-mono text-[9px] text-amber-400 font-bold uppercase pl-2 pr-1 shrink-0 flex items-center gap-1">
+          <Compass size={11} className="text-amber-400" />
+          Fokus Simpul:
+        </span>
         {[
           { key: 'isometric', label: 'Overview' },
-          { key: 'boat', label: 'Perahu Ketek' },
-          { key: 'ampera', label: 'Ampera' },
-          { key: 'kemaro', label: 'Kemaro' },
-          { key: 'siguntang', label: 'Siguntang' }
+          { key: 'ampera', label: '🌉 Ampera' },
+          { key: 'kemaro', label: '🏯 Kemaro' },
+          { key: 'siguntang', label: '🏛️ Siguntang' },
+          { key: 'boat', label: '⛵ Ketek' }
         ].map(preset => (
           <button
             key={preset.key}
             onClick={() => applyCameraPreset(preset.key as CameraPreset)}
-            className={`px-3 py-1.5 rounded-xl font-mono text-[10px] uppercase font-semibold transition-all cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-mono text-[10px] uppercase font-semibold transition-all shrink-0 cursor-pointer ${
               cameraPreset === preset.key 
-                ? 'bg-white text-black font-bold' 
-                : 'text-white/70 hover:text-white hover:bg-white/10'
+                ? 'bg-amber-400 text-stone-950 font-bold shadow-md shadow-amber-400/20' 
+                : 'text-white/80 hover:text-white hover:bg-white/10'
             }`}
           >
             {preset.label}
@@ -755,27 +791,28 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
         ))}
       </div>
 
-      {/* Interactive Landmark Detail Modal/Drawer (When clicking on 3D objects) */}
+      {/* Interactive Landmark Detail Modal/Drawer (When clicking on 3D objects or selecting preset) */}
       <AnimatePresence>
         {selectedLandmark && (
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 30 }}
-            className="absolute top-24 left-6 right-6 sm:left-auto sm:right-6 sm:w-96 bg-[#141414]/95 backdrop-blur-xl p-6 rounded-3xl border border-white/15 text-white shadow-2xl z-20"
+            className="absolute top-20 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 max-h-[75vh] overflow-y-auto bg-[#141414]/95 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-amber-500/30 text-white shadow-2xl z-20"
           >
             <div className="flex items-start justify-between gap-3 mb-3">
               <div>
-                <span className="font-mono text-[9px] text-[#ff5252] font-bold uppercase tracking-wider block mb-1">
+                <span className="font-mono text-[9px] text-amber-400 font-bold uppercase tracking-wider block mb-1">
                   LANDMARK TERSOROT
                 </span>
-                <h4 className="font-serif text-xl font-bold leading-tight">
+                <h4 className="font-serif text-lg sm:text-xl font-bold leading-tight text-white">
                   {selectedLandmark.name}
                 </h4>
               </div>
               <button 
                 onClick={() => setSelectedLandmark(null)}
-                className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 hover:text-white"
+                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white shrink-0 cursor-pointer"
+                title="Tutup Kartu"
               >
                 <X size={16} />
               </button>
@@ -798,22 +835,37 @@ export function Musi3DDiorama({ onNodeSelect, onClose }: Musi3DDioramaProps) {
 
             <div className="space-y-2">
               <button
+                onClick={() => {
+                  if (onNodeSelect) onNodeSelect(selectedLandmark.name);
+                  setSelectedLandmark(null);
+                }}
+                className="w-full py-3 px-4 bg-gradient-to-r from-[#8b0000] via-[#a00000] to-[#b30000] hover:brightness-125 text-white font-mono text-[11px] uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#8b0000]/40 border border-red-500/40 active:scale-98"
+              >
+                <Compass size={14} className="text-amber-300" />
+                <span>Eksplorasi Simpul Ini</span>
+                <ChevronRight size={14} />
+              </button>
+
+              <button
                 onClick={() => setIsCuratorOpen(true)}
                 className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-600 to-amber-500 hover:brightness-110 text-black font-mono text-[10px] uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-amber-500/20"
               >
                 <Sparkles size={13} className="text-black" />
                 Bedah Sejarah dengan AI Curator
               </button>
-              <button
-                onClick={() => {
-                  if (onNodeSelect) onNodeSelect(selectedLandmark.name);
-                  setSelectedLandmark(null);
-                }}
-                className="w-full py-2.5 px-4 bg-[#8b0000] hover:bg-[#a50000] text-white font-mono text-[10px] uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#8b0000]/30"
-              >
-                Eksplorasi Simpul Ini
-                <ChevronRight size={13} />
-              </button>
+
+              {selectedLandmark.key === 'siguntang' && onOpenPrasasti && (
+                <button
+                  onClick={() => {
+                    onOpenPrasasti();
+                    setSelectedLandmark(null);
+                  }}
+                  className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-900 to-stone-900 hover:brightness-125 text-amber-200 border border-amber-500/30 font-mono text-[10px] uppercase font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-amber-950/40"
+                >
+                  <Scroll size={13} className="text-amber-400" />
+                  Pahat Prasasti Digital (Aksara Pallawa)
+                </button>
+              )}
             </div>
           </motion.div>
         )}

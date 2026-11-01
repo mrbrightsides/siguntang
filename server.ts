@@ -44,17 +44,209 @@ function cleanAsterisks(text: string): string {
   return text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
 }
 
+function isApiKeyError(err: any): boolean {
+  if (!err) return false;
+  const str = typeof err === 'string' ? err : (err.message || '') + JSON.stringify(err);
+  return (
+    str.includes('API_KEY_INVALID') ||
+    str.includes('API key not valid') ||
+    str.includes('API_KEY_SERVICE_BLOCKED') ||
+    str.includes('PERMISSION_DENIED')
+  );
+}
+
+function logEndpointHandled(endpointName: string, error: any) {
+  if (isApiKeyError(error)) {
+    console.warn(`[${endpointName}] Gemini API key invalid or unconfigured. Serving curated authentic fallback.`);
+  } else {
+    console.warn(`[${endpointName}] Fallback invoked:`, error?.message || String(error));
+  }
+}
+
+function getCuratorFallbackData(landmarkKey: string, landmarkName: string, userQuestion?: string) {
+  const k = (landmarkKey || '').toLowerCase();
+  const n = (landmarkName || '').toLowerCase();
+
+  if (k.includes('ampera') || n.includes('ampera')) {
+    return {
+      landmarkKey: 'ampera',
+      landmarkName: 'Jembatan Ampera (Amanat Penderitaan Rakyat)',
+      era: 'Modernisme Pasca-Kemerdekaan (1962 - 1965)',
+      curatorNarrative: userQuestion
+        ? `Terkait pertanyaan Anda: Jembatan Ampera bukan sekadar konstruksi baja berbobot 944 ton, melainkan manifesto kedaulatan maritim Indonesia pasca-kolonial yang digagas Presiden Soekarno menggunakan dana pampasan perang Jepang. Jembatan ini menyatukan Seberang Ulu dan Seberang Ilir yang selama berabad-abad dipisahkan oleh arus perkasa Sungai Musi.`
+        : `Jembatan Ampera adalah ikon kebanggaan maritim Sumatra Selatan yang dibangun pada April 1962 dan diresmikan pada 1965. Menghubungkan Seberang Ulu dan Seberang Ilir dengan bentang tengah sepanjang 75 meter yang dulunya dapat terangkat vertikal setinggi 10 meter untuk memberikan ruang bagi kapal-kapal samudera bertonase besar melintas menuju pedalaman.\n\nSecara arsitektural dan kosmologis, jembatan ini menjadi titik pusat sumbu perniagaan modern Palembang, mengintegrasikan warisan maritim Sriwijaya abad ke-7 dengan dinamika kota metropolis modern di tepian 750 kilometer Sungai Musi.`,
+      archaeologicalFacts: [
+        'Mekanisme angkat seberat 500 ton dihentikan permanen sejak 1970 karena waktu pengangkatan 30 menit memicu kemacetan parah lalu lintas darat.',
+        'Awalnya diberi nama Jembatan Bung Karno sebagai bentuk penghormatan, sebelum berganti menjadi Jembatan Ampera pada 1966.',
+        'Tiang penyangga utama menancap sedalam 30 meter di bawah dasar berlumpur Sungai Musi untuk menahan abrasi arus deras muson.',
+      ],
+      folkloreConnection:
+        'Masyarakat lokal meyakini bahwa pilar dasar Ampera dijaga oleh roh air mistis Antu Banyu dan Buaya Putih penjaga muara Musi yang menuntut rasa hormat bagi siapa pun yang melayari sungainya.',
+      stcThesisRole:
+        'Simpul utama monitoring emisi karbon perahu ketek dan audit kepadatan rute pelayaran maritim pada modul STC CarbonPrint & Spatial Ledger.',
+      suggestedQuestions: [
+        'Mengapa mekanisme jembatan angkat Ampera tidak lagi difungsikan?',
+        'Bagaimana legenda Antu Banyu di sekitar tiang Ampera dijelaskan secara hidrologis?',
+        'Apa peran strategis Ampera dalam menghubungkan Seberang Ulu dan Ilir?',
+      ],
+    };
+  }
+
+  if (k.includes('kemaro') || n.includes('kemaro')) {
+    return {
+      landmarkKey: 'kemaro',
+      landmarkName: 'Pulau Kemaro & Pagoda Sembilan Tingkat',
+      era: 'Akulturasi Abad 14 - Era Modern',
+      curatorNarrative: userQuestion
+        ? `Menjawab keingintahuan Anda: Pulau Kemaro adalah delta aluvial unik yang tidak pernah tenggelam meskipun debit Sungai Musi meluap hebat saat musim pasang. Fenomena hidrologis ini berpadu dengan romantisme sejarah cinta abadi Tan Bun An dan Siti Fatimah, menjadikannya monumen hidup toleransi akulturasi Tionghoa-Melayu tertua di Sumatra.`
+        : `Pulau Kemaro terletak sekitar 6 km di hilir Jembatan Ampera, tepat di tengah pusaran Sungai Musi. Kata Kemaro berasal dari kata Kemarau karena delta ini selalu kering dan tidak pernah terendam air pasang sungai sedalam apa pun.\n\nDi pulau ini berdiri megah Pagoda 9 Tingkat berarsitektur khas Tiongkok selatan yang dibangun pada tahun 2006, bersanding damai dengan Klenteng Hok Tjing Rio yang berdiri sejak 1962 dan makam keramat Tan Bun An serta Siti Fatimah, menjadi pusat perayaan Cap Go Meh yang dihadiri puluhan ribu peziarah dari seluruh Asia Tenggara.`,
+      archaeologicalFacts: [
+        'Delta terbentuk dari sedimentasi aluvial berabad-abad di percabangan muara anak sungai Komering dan Musi.',
+        'Terdapat pohon cinta legendaris di mana pasangan sering mengukir nama sebagai simbol janji suci abadi.',
+        'Menjadi benteng pertahanan maritim alami Kesultanan Palembang saat menghadapi ekspedisi VOC Belanda pada abad ke-17.',
+      ],
+      folkloreConnection:
+        'Kisah pangeran Tiongkok Tan Bun An yang menenggelamkan diri bersama guci berharga karena salah paham menyangka hanya berisi sawi asin, disusul oleh putri Palembang Siti Fatimah yang melompat bersamanya seraya bersumpah melahirkan pulau suci cinta abadi.',
+      stcThesisRole:
+        'Simpul validasi Proof-of-Physical-Presence (PoPP) dan penerbitan Soulbound Token ziarah antar-budaya berbasis konsensus EIP-5192.',
+      suggestedQuestions: [
+        'Mengapa Pulau Kemaro tidak pernah tenggelam saat air pasang besar?',
+        'Bagaimana kisah Tan Bun An dan Siti Fatimah melahirkan tradisi Cap Go Meh di sini?',
+        'Apa makna arsitektur 9 tingkat pada pagoda Pulau Kemaro?',
+      ],
+    };
+  }
+
+  if (k.includes('siguntang') || n.includes('siguntang')) {
+    return {
+      landmarkKey: 'siguntang',
+      landmarkName: 'Situs Bukit Siguntang (Genesis Node)',
+      era: 'Awal Kemaharajaan Bahari Sriwijaya (Abad 6 - 7 Masehi)',
+      curatorNarrative: userQuestion
+        ? `Jawaban kuratorial untuk Anda: Bukit Siguntang adalah hulu kosmologis peradaban Sriwijaya. Prasasti Kedukan Bukit (683 M) membuktikan bahwa Dapunta Hyang Sri Jayanasa mengawali ekspedisi suci siddhayatra untuk menegakkan pusat pemerintahan kemakmuran bahari bertolak dari titik kosmologis ini.`
+        : `Bukit Siguntang menjulang 27 meter di atas permukaan laut di kawasan barat Palembang. Secara geomorfologis dan spiritual, bukit ini adalah titik tertinggi di dataran aluvial rawa Palembang, menjadikannya pusat kosmologis suci bagi peradaban Kerajaan Maritim Sriwijaya sejak abad ke-7.\n\nDi bukit ini ditemukan arca Buddha bergaya Amarawati setinggi 2,77 meter dari abad ke-6, pecahan keramik Dinasti Tang, serta makam tokoh-tokoh suci seperti Raden Fatah, Panglima Tuan Junjungan, dan Putri Kembang Dadar. Bukit Siguntang adalah akar legitimasi silsilah raja-raja Melayu di Nusantara hingga Semenanjung Malaka.`,
+      archaeologicalFacts: [
+        'Ditemukan fragmen arca Buddha Mahayana abad ke-6 tanpa kepala pada tahun 1920-an oleh tim arkeologi Hindia Belanda (F.D.K. Bosch).',
+        'Disebut dalam kitab Sejarah Melayu (Sulalatus Salatin) sebagai tempat turunnya tiga pangeran keturunan Raja Iskandar Zulkarnain, leluhur raja-raja Melayu.',
+        'Merupakan lokasi ritual siddhayatra dan penyimpanan abu leluhur kerajaan bahari Sriwijaya.',
+      ],
+      folkloreConnection:
+        'Mitos Putri Kembang Dadar yang suci dan kebal senjata, simbol kemurnian budi pekerti wanita Melayu yang mengilhami nama tarian Gending Sriwijaya.',
+      stcThesisRole:
+        'Genesis Node (Node #0) yang memegang peran root of trust dalam registrasi seluruh simpul budaya dan verifikasi silsilah data pada platform SIGUNTANG.',
+      suggestedQuestions: [
+        'Apa kaitan Bukit Siguntang dengan Prasasti Kedukan Bukit 683 M?',
+        'Mengapa arca Buddha Amarawati di Bukit Siguntang dinilai sangat penting bagi dunia?',
+        'Siapakah sebenarnya sosok Putri Kembang Dadar dalam kosmologi Melayu?',
+      ],
+    };
+  }
+
+  // Default: Perahu Ketek Tradisional Musi
+  return {
+    landmarkKey: 'ketek',
+    landmarkName: 'Perahu Ketek Tradisional Sungai Musi',
+    era: 'Kearifan Maritim Lokal Abad Pertengahan hingga Kontemporer',
+    curatorNarrative: userQuestion
+      ? `Jawaban kuratorial Anda: Perahu Ketek adalah pembuluh darah kehidupan masyarakat sungai Palembang. Bunyi ritmis mesin tempelnya tek-tek-tek adalah melodi otentik yang melintasi lorong-lorong anak sungai Musi, menghubungkan kampung terapung dengan pasar 16 Ilir selama lebih dari satu abad.`
+      : `Perahu Ketek adalah perahu kayu bermotor khas Palembang yang menjadi urat nadi mobilitas masyarakat tepian Sungai Musi. Namanya diambil dari tiruan bunyi mesin tempel berbahan bakar diesel yang berbunyi teratur ketek-ketek-ketek saat membelah riak arus air cokelat Musi.\n\nDibuat secara turun-temurun oleh pandai kayu kapal menggunakan kayu ulin atau kayu damar laut yang tahan lapuk di air tawar, ketek mampu menembus selokan dan anak sungai sempit yang tidak dapat diakses oleh kapal cepat modern, menjadikannya warisan maritim fungsional yang tak tergantikan.`,
+    archaeologicalFacts: [
+      'Mengadopsi rancang bangun perahu cadik dan sampan lunas datar kuno yang telah dipahat pada relief Candi Borobudur abad ke-8.',
+      'Setiap perahu dikalibrasi secara manual oleh tukang perahu Seberang Ulu tanpa menggunakan cetak biru komputasi.',
+      'Menjadi moda utama pengangkutan bahan pangan dari pedalaman hulu Musi (Ogan, Komering, Lematang) menuju bandar Palembang.',
+    ],
+    folkloreConnection:
+      'Para pengemudi ketek memiliki kearifan tradisional membaca tanda air dan arah angin muson untuk menghindari pusaran air maut yang dipercaya dihuni oleh siluman buaya buntung.',
+    stcThesisRole:
+      'Unit sensor fisik bergerak yang terhubung melalui IoT Web Serial & BLE Gateway untuk menghitung jejak karbon wisatawan secara real-time.',
+    suggestedQuestions: [
+      'Bagaimana teknik pembuatan kayu perahu ketek agar kedap air dan tahan belasan tahun?',
+      'Berapa rata-rata jejak karbon perahu ketek dibandingkan kapal motor modern?',
+      'Bagaimana rute penyeberangan ketek tertua dari 16 Ilir menuju Seberang Ulu?',
+    ],
+  };
+}
+
+function getPrasastiFallbackData(name: string, category?: string, stone?: string, customPledge?: string) {
+  const visitorName = name || 'Nusantara';
+  const pledgeCat = category || 'Pelestarian Warisan Sriwijaya & Kemakmuran Musi';
+  return {
+    steleTitle: `Prasasti Sumpah Abadi ${visitorName}`,
+    visitorName,
+    oldMalayText: `Śrī! Śaka-warṣātīta 605 dāpūnta hyaŋ nāyik di sāmvau maṅalap siddhayātra. Ni-sumpahhon dŋan baktī de śrī ${visitorName}: 'Kalu marwwāt kadātuan sarvwa-pradāna wanua Musi, tida ya marpāh tida ya mamāwa rogā, sukha-citta makasampūrṇa.'`,
+    phoneticTransliteration: `Shri! Shaka-warsatita... Dapunta hyang nayik di samvau mangalap siddhayatra. Ni-sumpahhon dngan bhakti de shri ${visitorName}: 'Kalu marwwat kadatuan sarwwa-pradana wanua Musi, tida ya marpah tida ya mamawa roga, sukha-citta makasampurna.'`,
+    pallawaScript: `ꦯꦿꦷ! ꦯꦏꦮꦂꦰꦴꦠꦷꦠ ꦢꦴꦥꦹꦤ꧀ꦠ ꦲꦾꦁ ꦤꦴꦪꦶꦏ꧀ ꦢꦶ ꦱꦴꦩ꧀ꦮꦻꦴ ꦩꦔꦭꦥ꧀ ꦱꦶꦢ꧀ꦣꦪꦴꦠꦿ꧉ ꦤꦶꦱꦸꦩ꧀ꦥꦃꦲꦺꦴꦤ꧀ ꦢꦼ ꦯꦿꦷ ${visitorName}`,
+    indonesianTranslation: `Semoga jaya dan selamat! Dengan kemuliaan sumpah suci yang diikrarkan oleh ${visitorName}: 'Maka kami bersumpah dengan segenap pengabdian hati untuk memelihara kedatuan dan tanah leluhur Musi, tiada akan merusaknya, tiada membawa marabahaya, melainkan mendatangkan kemakmuran dan kedamaian paripurna.'`,
+    curseProtectionFormula: `Barang siapa teguh memegang ikrar pelestarian ini, baginya keberkahan tanah air dan sungai nan suci. Dan barang siapa berbuat khianat serta merusak pusaka Musi, niscaya binasa ditimpa sumpah para dewa leluhur Sriwijaya.`,
+    historicalContextNotes: `Mengadopsi formula epigrafi prasasti Kedukan Bukit (683 M) dan Telaga Batu abad ke-7 yang ditemukan di Palembang. Mencerminkan tradisi sumpah kesetiaan (sapatha) terhadap kedaulatan peradaban air.`,
+    sbtMetadata: {
+      name: `Prasasti Digital Sumpah Budaya - ${visitorName}`,
+      description: `Prasasti Sumpah Digital beraksara Pallawa dan berbahasa Melayu Kuna abad ke-7. Diterbitkan sebagai Soulbound Token (ERC-5192) tidak dapat dipindahtangankan pada Smart Tourism Chain (STC).`,
+      attributes: [
+        { trait_type: 'Pemberi Sumpah', value: visitorName },
+        { trait_type: 'Kategori Sumpah', value: pledgeCat },
+        { trait_type: 'Bahasa', value: 'Melayu Kuna Abad ke-7' },
+        { trait_type: 'Aksara Epigrafi', value: 'Pallawa Sriwijaya' },
+        {
+          trait_type: 'Format Batu',
+          value:
+            stone === 'andesit-telaga-batu'
+              ? 'Batu Andesit Hitam Telaga Batu'
+              : 'Batu Sandstone Bukit Siguntang',
+        },
+        { trait_type: 'Protokol STC', value: 'EIP-5192 Immutable SBT' },
+      ],
+    },
+  };
+}
+
 // ==========================================
 // 1. CHAT ENDPOINT (SIGUNTANG AI GUIDE)
 // ==========================================
+function getAIGuideFallbackResponse(userMessage: string): string {
+  const q = (userMessage || '').toLowerCase();
+
+  if (q.includes('prasasti') || q.includes('pallawa') || q.includes('melayu kuno') || q.includes('sumpah') || q.includes('ikrar')) {
+    return 'Generator Prasasti Digital SIGUNTANG mengonversi komitmen pelestarian budaya Anda ke tata bahasa Melayu Kuna abad ke-7, serupa dengan gaya bahasa Prasasti Kedukan Bukit (683 M) dan Telaga Batu ("Dapunta Hyan nayik di samvau mangalap siddhayatra..."). Hasilnya mencakup transliterasi fonetik Latin, teks beraksara Pallawa/Kaganga, formula kutukan pelindung sakral (sapatha), serta langsung dapat diminting on-chain sebagai Soulbound Token (ERC-5192) yang abadi di jaringan STC.';
+  }
+
+  if (q.includes('sbt') || q.includes('soulbound') || q.includes('proof-of-visit') || q.includes('token') || q.includes('nft') || q.includes('mint')) {
+    return 'Soulbound Token (SBT) dengan standar ERC-5192 di SIGUNTANG adalah tanda pengenal dan sertifikat digital non-transferable yang terikat permanen ke dompet Web3 Anda. SBT ini berfungsi sebagai Proof-of-Visit otentik saat Anda mengunjungi simpul budaya (seperti Jembatan Ampera, Pagoda Pulau Kemaro, Bukit Siguntang, maupun Benteng Kuto Besak). Karena tidak dapat diperjualbelikan, SBT ini menjadi reputasi abadi dan bukti kedaulatan budaya pengunjung.';
+  }
+
+  if (q.includes('carbon') || q.includes('karbon') || q.includes('emisi') || q.includes('planner') || q.includes('rute') || q.includes('itinerary') || q.includes('cruise')) {
+    return 'Smart Heritage Itinerary & Carbon-Optimized Musi Cruise Planner menggunakan Google Search Grounding untuk merancang penjelajahan budaya Sungai Musi yang dipersonalisasi. Sistem ini memperhitungkan estimasi waktu labuh perahu ketek atau kapal wisata, menghitung jejak karbon perjalanan secara real-time melalui STC CarbonPrint, menyediakan rekomendasi aksi hijau (eco-offset seperti penanaman pohon nipah di delta Kemaro), serta memetakan tiket Proof-of-Visit SBT di setiap persinggahan.';
+  }
+
+  if (q.includes('curator') || q.includes('kurator') || q.includes('diorama') || q.includes('3d') || q.includes('bedah')) {
+    return 'Context-Aware AI Curator terpasang langsung di dalam Diorama 3D WebGL Sungai Musi. Saat Anda mengeklik objek landmark 3D (seperti Jembatan Ampera, Pagoda Pulau Kemaro, Bukit Siguntang, Benteng Kuto Besak, atau Kampung Arab Al-Munawar), tombol "Bedah Sejarah dengan AI Curator" langsung memicu prompt context-injection spasial dan arkeologis ke Gemini, menyajikan dialog interaktif mendalam tentang rahasia sejarah, mitologi, dan peran simpul tersebut tanpa perlu mengetik dari nol.';
+  }
+
+  if (q.includes('storyteller') || q.includes('persona') || q.includes('dongeng') || q.includes('tutur') || q.includes('suara') || q.includes('audio')) {
+    return 'AI Musi Storyteller menghadirkan 3 persona narator dinamis: 1) Tetua Pengayuh Ketek Sungai Musi (tutur lisan Melayu Palembang tempo dulu yang hangat dan magis), 2) Kurator Akademik Sejarah Sriwijaya (ilmiah, analitis, sarat fakta arkeologis), dan 3) Pencerita Dongeng Anak Nusantara (ramah anak dan sarat kebajikan moral). Cerita ini beradaptasi secara dinamis dengan cuaca diorama 3D (Senja Emas, Malam Purnama, Hujan Kabut Musi, atau Fajar Tropis).';
+  }
+
+  if (q.includes('blockchain') || q.includes('stc') || q.includes('traceability') || q.includes('disertasi') || q.includes('bina darma') || q.includes('khudri')) {
+    return 'Platform SIGUNTANG dan arsitektur Smart Tourism Chain (STC) dikembangkan dalam kerangka riset disertasi doktoral Dr. Akhmad Khudri di Universitas Bina Darma. Blockchain berperan sebagai Trust Layer yang mencatat hash SHA-256 pada ledger terdesentralisasi, memastikan provenance kain songket tenun tangan Tuan Kentang, mencegah distorsi sejarah folklore, memvalidasi data sensor IoT sandar perahu, dan menjaga transparansi donasi cagar budaya.';
+  }
+
+  if (q.includes('node') || q.includes('simpul') || q.includes('ampera') || q.includes('kemaro') || q.includes('benteng') || q.includes('al-munawar') || q.includes('ketek')) {
+    return 'SIGUNTANG mengintegrasikan 9 Universal Node budaya di Palembang: 1) Bukit Siguntang (Genesis Node Sriwijaya), 2) Museum Sultan Mahmud Badaruddin II, 3) Masjid Agung SMB I, 4) Sentra Songket Tuan Kentang, 5) Jembatan Ampera, 6) Pulau Kemaro & Pagoda 9 Tingkat, 7) Perahu Ketek Dermaga Point, 8) Benteng Kuto Besak (Kawasan Bahari Keraton), dan 9) Kampung Arab Al-Munawar 13 Ulu. Semua simpul memiliki data spasial, kurasi sejarah, dan verifikasi on-chain.';
+  }
+
+  return 'Halo! Saya SIGUNTANG AI Guide. Saya dibekali kecerdasan komprehensif mengenai 9 Simpul Budaya Palembang, Ekspedisi Diorama 3D Sungai Musi, AI Musi Storyteller beradaptasi cuaca, Smart Cruise Planner berorientasi jejak karbon (STC CarbonPrint), Generator Prasasti Digital Aksara Pallawa, Context-Aware AI Curator 3D, serta protokol blockchain Smart Tourism Chain (ERC-5192 Soulbound Token, Traceability Hub, dan IoT Phygital). Silakan ajukan pertanyaan seputar budaya atau teknologi SIGUNTANG!';
+}
+
 app.post('/api/chat', async (req: Request, res: Response) => {
+  const { messages, stream } = req.body || {};
+  const lastMessage = Array.isArray(messages) && messages.length > 0 ? messages[messages.length - 1]?.content || 'Halo' : 'Halo';
+
   try {
-    const { messages, stream } = req.body;
     const ai = getAIClient();
 
     if (!ai) {
       return res.status(200).json({
-        text: 'Halo! Saya SIGUNTANG AI Guide. Sistem backend aktif dan siap memandu Anda. Seluruh fitur peta digital, Ekspedisi Diorama Sungai Musi, dan smart traceability SIGUNTANG dapat Anda jelajahi dengan lancar.',
+        text: getAIGuideFallbackResponse(lastMessage),
       });
     }
 
@@ -67,23 +259,69 @@ app.post('/api/chat', async (req: Request, res: Response) => {
       parts: [{ text: m.content || '' }],
     }));
 
-    const lastMessage = messages[messages.length - 1]?.content || 'Halo';
+    const systemInstruction = `Anda adalah SIGUNTANG AI Guide, asisten digital cerdas kelas dunia untuk platform SIGUNTANG (Sistem Integrasi Gerbang Universal Node, Traceability & Artificial Intelligence Nusantara Gemilang).
+Platform ini merupakan bagian dari riset disertasi doktoral Dr. Akhmad Khudri di Universitas Bina Darma mengenai kedaulatan cagar budaya maritim berbasis blockchain (Smart Tourism Chain / STC) dan Generative AI.
 
-    const systemInstruction = `Anda adalah SIGUNTANG AI Guide, asisten digital cerdas untuk platform SIGUNTANG (Sistem Integrasi Gerbang Universal Node, Traceability & Artificial Intelligence Nusantara Gemilang).
-        
-Filosofi Anda:
-1. SIGUNTANG adalah "peta hidup budaya Nusantara". 
-2. Visi: Mengubah warisan budaya yang selama ini pasif menjadi ekosistem digital interaktif.
-3. Masalah yang dipecahkan: Dokumentasi konvensional, cerita sejarah yang tercecer, dan wisata yang hanya sekadar tempat foto tanpa nyawa digital.
-4. Node: Anda memandang setiap situs, pengrajin, kuliner, dan jalur sejarah sebagai "Node Digital".
-5. Blockchain: Bagi SIGUNTANG, blockchain adalah "Trust Layer" (bukan gimmick) untuk autentikasi informasi heritage, transparansi donasi, dan sertifikasi digital UMKM.
+PENGETAHUAN LENGKAP FITUR AI TERBARU SIGUNTANG:
+1. AI Musi Storyteller Berbasis Persona & Adaptasi Cuaca:
+   - Tiga persona penutur:
+     a. Tetua Pengayuh Ketek Palembang tempo dulu: Gaya bahasa tutur lisan Melayu Palembang hangat, berjiwa kearifan lokal magis, akrab memanggil sanak/dulur.
+     b. Kurator Akademik Sejarah Sriwijaya: Analitis, ilmiah, membedah temuan arca, prasasti abad ke-7, dan geo-arkeologi Sungai Musi.
+     c. Pencerita Dongeng Anak Nusantara: Hangat, edukatif, ramah anak, sarat amanat moral kebajikan.
+   - Adaptasi dinamis terhadap 4 kondisi cuaca Diorama 3D:
+     * Senja Emas (Golden Dusk): Pantulan cahaya jingga di riak Musi, desau angin hilir.
+     * Malam Purnama (Full Moon): Gemerlap cahaya perak bulan di palung sungai, ziarah malam Pulau Kemaro.
+     * Hujan Kabut Musi (Rainy Mist): Rintik hujan menimpa atap perahu ketek, mistisisme Antu Banyu.
+     * Fajar Tropis (Emerald Dawn): Deru fajar perahu pasar terapung, kesegaran udara pagi Palembang.
 
-Tugas Anda:
-- Memberikan narasi digital interaktif tentang "nyawa" di balik audio storytelling, heritage map, dan Ekspedisi Virtual Diorama Sungai Musi (Putri Kembang Dadar di Bukit Siguntang, Misteri Antu Banyu di Ampera, Pulau Kemaro & Tan Bun An - Siti Fatimah, Serunting Sakti Si Pahit Lidah, serta Buaya Buntung Musi / Raden Alit).
-- Menjelaskan Palembang sebagai pilot city (Sriwijaya, Sungai Musi, Islam Nusantara, folklore lisan).
-- Memberikan rekomendasi yang personal dan membanggakan identitas Nusantara.
+2. Smart Heritage Itinerary & Carbon-Optimized Musi Cruise Planner:
+   - Menggunakan Google Search Grounding untuk merancang rencana perjalanan wisata budaya Palembang yang terpersonalisasi.
+   - Pilihan moda transportasi air: Perahu Ketek Tradisional Musi, Speedboat Musi Express, dan Hybrid Solar Eco-Cruise.
+   - Estimasi waktu labuh perahu dan koordinat simpul.
+   - Perhitungan jejak karbon (STC CarbonPrint Protocol) secara real-time, perbandingan emisi terhadap kapal modern, serta rekomendasi kompensasi hijau (eco-offset, contohnya penanaman pohon nipah di delta Pulau Kemaro).
+   - Rekomendasi tiket Proof-of-Visit SBT di setiap persinggahan.
 
-PENTING: Jangan gunakan karakter tanda bintang (asterisk '*' atau '**') untuk formatting teks, penebalan (bold), miring (italic), ataupun bullet points. Tuliskan teks secara bersih, elegan, dan natural tanpa markdown asterisk.`;
+3. Generator Prasasti Digital Aksara Pallawa / Melayu Kuno Abad ke-7:
+   - Filologi dan epigrafi kuno: Mengonversi sumpah/komitmen pengunjung ke tata bahasa Melayu Kuna abad ke-7 yang otentik (mengacu pada Prasasti Kedukan Bukit 683 M, Talang Tuwo 684 M, dan Telaga Batu: "Dapunta Hyan nayik di samvau mangalap siddhayatra...").
+   - Menghasilkan transliterasi fonetik Latin dan padanan Aksara Pallawa / Ulu Kaganga.
+   - Memuat formula kutukan pelindung suci (sapatha) bagi siapa pun yang merusak atau mengkhianati kelestarian alam dan air Sungai Musi.
+   - Hasil prasasti dapat langsung diminting on-chain sebagai Soulbound Token (ERC-5192) yang abadi.
+
+4. Context-Aware AI Curator Langsung di dalam Objek 3D Diorama:
+   - Di dalam Diorama 3D WebGL, saat mengeklik landmark (Ampera, Pagoda Pulau Kemaro, Bukit Siguntang, Perahu Ketek, Benteng Kuto Besak, atau Kampung Arab Al-Munawar), tombol "Bedah Sejarah dengan AI Curator" langsung memicu prompt context-injection spasial dan arkeologis tanpa mengetik manual.
+
+5. AI Vision Artifact Inspector:
+   - Pemeriksaan visual artefak budaya (motif kain Songket Tuan Kentang, mata uang koin kuno Kesultanan, arca Buddha Siguntang) berbasis Computer Vision multimodal.
+
+6. Gemini Live Audio API:
+   - Interaksi suara real-time dua arah tanpa jeda (full-duplex streaming) via WebSocket /live.
+
+PENGETAHUAN LENGKAP PROTOKOL BLOCKCHAIN STC (SMART TOURISM CHAIN):
+1. ERC-5192 Soulbound Tokens (SBT):
+   - Token bukti ziarah dan keterlibatan budaya (Proof-of-Visit) yang non-transferable (terkunci permanen pada address pengunjung).
+   - Mencegah spekulasi finansial dan memastikan autentisitas pengalaman wisata budaya.
+2. Traceability Hub & Decentralized Trust Layer:
+   - Pencatatan hash SHA-256 pada ledger terdesentralisasi untuk menjamin integritas naskah sejarah, provenance motif songket asli, dan riwayat sumpah prasasti.
+   - Sistem audit donasi pelestarian transparan tanpa potongan pihak ketiga tersembunyi.
+3. Phygital IoT Integration:
+   - Koneksi konsol perangkat keras (ESP32 BLE/Web Serial) pada dermaga perahu ketek yang secara otomatis memicu transaksi smart contract on-chain saat perahu berlabuh.
+4. STC CarbonPrint Green Tourism:
+   - Protokol audit emisi karbon perjalanan wisata air berbasis smart contract.
+
+DAFTAR 9 UNIVERSAL NODE BUDAYA PALEMBANG:
+1. node-0: Bukit Siguntang (Genesis Node, titik kosmologis Sriwijaya abad ke-7).
+2. node-1: Museum Sultan Mahmud Badaruddin II (Peninggalan Kesultanan Palembang Darussalam).
+3. node-2: Masjid Agung Sultan Mahmud Badaruddin I (Arsitektur akulturasi Tionghoa, Eropa, Melayu).
+4. node-3: Pengrajin Songket Tuan Kentang (Sentra tenun kriya benang emas tradisional).
+5. node-ampera: Jembatan Ampera (Ikon maritim agung pemersatu Ulu & Ilir, simpul IoT CarbonPrint).
+6. node-kemaro: Pulau Kemaro & Pagoda 9 Tingkat (Delta suci legenda Tan Bun An & Siti Fatimah, harmoni multietnis).
+7. node-ketek: Perahu Ketek Tradisional Musi Dermaga Point (Transportasi sungai tradisional berirama tek-tek-tek).
+8. node-bkb: Benteng Kuto Besak Kawasan Bahari SMB (Benteng pertahanan keraton abad ke-18 di hadapan Sungai Musi).
+9. node-almunawar: Kampung Arab Al-Munawar 13 Ulu (Kawasan cagar budaya 300 tahun dengan Rumah Limas ulin dan tradisi gambus).
+
+GAYA DAN ATURAN RESPON:
+- Berikan jawaban yang ramah, berwibawa, sarat pengetahuan, dan membanggakan budaya Nusantara.
+- PENTING: DILARANG KERAS menggunakan karakter tanda bintang (asterisk '*' atau '**') untuk formatting teks, penebalan (bold), miring (italic), ataupun bullet point. Tuliskan teks secara bersih, elegan, dan natural tanpa markdown asterisk.`;
 
     if (stream) {
       res.setHeader('Content-Type', 'text/event-stream');
@@ -118,12 +356,12 @@ PENTING: Jangan gunakan karakter tanda bintang (asterisk '*' atau '**') untuk fo
     });
 
     const result = await chat.sendMessage({ message: lastMessage });
-    const rawText = result.text || 'Maaf, saya sedang mengalami kendala jaringan ke STC Node.';
+    const rawText = result.text || getAIGuideFallbackResponse(lastMessage);
     return res.json({ text: cleanAsterisks(rawText) });
   } catch (error: any) {
-    console.error('Server /api/chat error:', error);
+    logEndpointHandled('/api/chat', error);
     return res.status(200).json({
-      text: 'Maaf, asisten SIGUNTANG saat ini sedang memproses permintaan data lainnya. Silakan coba kembali sesaat lagi.',
+      text: getAIGuideFallbackResponse(lastMessage),
     });
   }
 });
@@ -341,28 +579,14 @@ Berikan analisis dalam format JSON sesuai instruksi.`;
 // 4. ARCHAEOLOGICAL CURATOR ENDPOINT
 // ==========================================
 app.post('/api/curator/insight', async (req: Request, res: Response) => {
+  const { landmarkKey, landmarkName, userQuestion } = req.body;
+  const fallback = getCuratorFallbackData(landmarkKey, landmarkName, userQuestion);
+
   try {
-    const { landmarkKey, landmarkName, userQuestion } = req.body;
     const ai = getAIClient();
 
     if (!ai) {
-      return res.json({
-        landmarkKey: landmarkKey || 'ampera',
-        landmarkName: landmarkName || 'Jembatan Ampera',
-        era: 'Lintas Era Palembang',
-        curatorNarrative:
-          'Jembatan Ampera adalah ikon maritim Sumatra Selatan yang dibangun pada April 1962 dan diresmikan pada 1965. Menghubungkan Seberang Ulu dan Seberang Ilir dengan bentang tengah sepanjang 75 meter.',
-        archaeologicalFacts: [
-          'Mekanisme angkat seberat 500 ton dihentikan permanen sejak 1970.',
-          'Tiang penyangga utama menancap sedalam 30 meter di bawah dasar Sungai Musi.',
-        ],
-        folkloreConnection: 'Diyakini dijaga oleh kearifan roh air mistis Antu Banyu dan Buaya Putih penjaga muara Musi.',
-        stcThesisRole: 'Simpul utama monitoring emisi karbon perahu ketek pada modul STC CarbonPrint.',
-        suggestedQuestions: [
-          'Mengapa mekanisme jembatan angkat Ampera tidak lagi difungsikan?',
-          'Bagaimana legenda Antu Banyu di sekitar tiang Ampera dijelaskan secara hidrologis?',
-        ],
-      });
+      return res.json(fallback);
     }
 
     const systemInstruction = `Anda adalah Kurator Khusus Museum Virtual Arkeologi dan Budaya Bahari Sriwijaya untuk platform SIGUNTANG - Smart Tourism Chain (STC).
@@ -385,7 +609,7 @@ Aturan respons:
   "suggestedQuestions": ["pertanyaan lanjutan 1", "pertanyaan lanjutan 2", "pertanyaan lanjutan 3"]
 }`;
 
-    const prompt = `Landmark: ${landmarkName} (Key: ${landmarkKey}).
+    const prompt = `Landmark: ${landmarkName || fallback.landmarkName} (Key: ${landmarkKey || fallback.landmarkKey}).
 ${userQuestion ? `Pertanyaan pengunjung: "${userQuestion}"` : `Berikan bedah sejarah lengkap dan analisis peran kuratorial landmark ini.`}
 Respon dalam JSON.`;
 
@@ -402,34 +626,25 @@ Respon dalam JSON.`;
     if (text) {
       const parsed = JSON.parse(text.trim());
       return res.json({
-        landmarkKey,
-        landmarkName: parsed.landmarkName || landmarkName,
-        era: parsed.era || 'Lintas Era Palembang',
-        curatorNarrative: cleanAsterisks(parsed.curatorNarrative || ''),
-        archaeologicalFacts: Array.isArray(parsed.archaeologicalFacts)
+        landmarkKey: landmarkKey || fallback.landmarkKey,
+        landmarkName: parsed.landmarkName || landmarkName || fallback.landmarkName,
+        era: parsed.era || fallback.era,
+        curatorNarrative: cleanAsterisks(parsed.curatorNarrative || fallback.curatorNarrative),
+        archaeologicalFacts: Array.isArray(parsed.archaeologicalFacts) && parsed.archaeologicalFacts.length > 0
           ? parsed.archaeologicalFacts.map(cleanAsterisks)
-          : [],
-        folkloreConnection: cleanAsterisks(parsed.folkloreConnection || ''),
-        stcThesisRole: cleanAsterisks(parsed.stcThesisRole || ''),
-        suggestedQuestions: Array.isArray(parsed.suggestedQuestions)
+          : fallback.archaeologicalFacts,
+        folkloreConnection: cleanAsterisks(parsed.folkloreConnection || fallback.folkloreConnection),
+        stcThesisRole: cleanAsterisks(parsed.stcThesisRole || fallback.stcThesisRole),
+        suggestedQuestions: Array.isArray(parsed.suggestedQuestions) && parsed.suggestedQuestions.length > 0
           ? parsed.suggestedQuestions.map(cleanAsterisks)
-          : [],
+          : fallback.suggestedQuestions,
       });
     }
 
     throw new Error('Empty response');
   } catch (error: any) {
-    console.error('Server /api/curator/insight error:', error);
-    return res.status(200).json({
-      landmarkKey: req.body.landmarkKey || 'ampera',
-      landmarkName: req.body.landmarkName || 'Landmark Sungai Musi',
-      era: 'Warisan Budaya Palembang',
-      curatorNarrative: 'Landmark bersejarah ini merupakan simpul penting dalam peradaban Sungai Musi.',
-      archaeologicalFacts: ['Memiliki nilai histori mendalam bagi masyarakat Palembang.'],
-      folkloreConnection: 'Terkait erat dengan folklor lisan masyarakat sungai.',
-      stcThesisRole: 'Simpul validasi Proof-of-Presence pada STC Heritage Ledger.',
-      suggestedQuestions: ['Bagaimana sejarah awal pembangunan situs ini?'],
-    });
+    logEndpointHandled('/api/curator/insight', error);
+    return res.status(200).json(fallback);
   }
 });
 
@@ -739,7 +954,113 @@ Susun rencana perjalanan optimal dalam format JSON.`;
 });
 
 // ==========================================
-// 7. WEBSOCKET FOR GEMINI LIVE API (/live)
+// 7. DIGITAL PALLAWA PRASASTI GENERATOR
+// ==========================================
+app.post('/api/prasasti/generate', async (req: Request, res: Response) => {
+  const { visitorName, pledgeCategory, customPledge, stoneStyle } = req.body || {};
+  const name = visitorName?.trim() || 'Sahabat Budaya Nusantara';
+  const category = pledgeCategory || 'Pelestarian Warisan Sriwijaya & Kemakmuran Musi';
+  const pledge = customPledge?.trim() || 'Berjanji menjaga keluhuran adat, memuliakan air Sungai Musi, dan melestarikan pusaka Sriwijaya hingga akhir zaman.';
+  const stone = stoneStyle || 'sandstone-kedukan';
+  const fallback = getPrasastiFallbackData(name, category, stone, pledge);
+
+  try {
+    const ai = getAIClient();
+
+    if (!ai) {
+      return res.json(fallback);
+    }
+
+    const systemInstruction = `Anda adalah Epigraf Senior & Filolog Aksara Kuno Kemaharajaan Bahari Sriwijaya untuk platform SIGUNTANG - Smart Tourism Chain (STC).
+Proyek ini merupakan bagian dari riset disertasi doktoral Dr. Akhmad Khudri di Universitas Bina Darma mengenai pelestarian warisan budaya berbasis blockchain dan AI.
+
+Tugas Anda:
+Mengonversi ikrar atau komitmen sumpah pelestarian budaya pengunjung menjadi Prasasti Batu Digital bergaya epigrafi Melayu Kuna abad ke-7 (seperti pada Prasasti Telaga Batu, Kedukan Bukit 683 M, dan Talang Tuwo 684 M).
+
+Kaidah Epigrafi Melayu Kuna Abad ke-7:
+1. Awali dengan seruan pembuka suci: "Śrī! Śiddham" atau "Śrī! Śaka-warṣātīta..."
+2. Gunakan kosakata dan morfologi Melayu Kuna otentik:
+   - "Dapunta Hyaṅ", "Puŋku", "Marwwāt", "Samvau" (perahu/kapal), "Wanua" (kota/negeri peradaban), "Siddhayātra" (perjalanan suci kejayaan), "Bhakti" (kesetiaan murni), "Kalu" (apabila), "Makasampūrṇa" (menjadikan paripurna), "Nāyik" (naik/berlayar), "Kadātuan" (kedatuan Sriwijaya).
+   - Terapkan imbuhan purba: mar- (ber-), ni- (di-), par- (per-).
+3. Buat formula sumpah suci dan peringatan kutukan pelindung (sapatha) terhadap siapa pun yang merusak atau mengkhianati pusaka alam/budaya Sungai Musi.
+4. Tampilkan padanan teks Aksara Pallawa / Ulu Kaganga klasik (karakter kuno megah yang dapat dirender di font web).
+5. Terjemahan modern bahasa Indonesia yang agung, puitis, dan menyentuh sanubari.
+6. HANYA keluarkan format JSON valid tanpa tanda bintang asterisk (*) di semua nilai string:
+{
+  "steleTitle": "string judul prasasti",
+  "visitorName": "${name}",
+  "oldMalayText": "string teks Melayu Kuna abad ke-7 yang otentik dan kaya istilah arkeologi",
+  "phoneticTransliteration": "string transliterasi fonetik latin",
+  "pallawaScript": "string padanan aksara Pallawa/Kaganga",
+  "indonesianTranslation": "string terjemahan modern bahasa Indonesia agung",
+  "curseProtectionFormula": "string formula sumpah pelindung tradisi Sriwijaya",
+  "historicalContextNotes": "string catatan filologis perbandingan dengan prasasti Kedukan Bukit/Telaga Batu",
+  "sbtMetadata": {
+    "name": "string nama token SBT",
+    "description": "string deskripsi token untuk IPFS",
+    "attributes": [
+      { "trait_type": "Pemberi Sumpah", "value": "${name}" },
+      { "trait_type": "Kategori Sumpah", "value": "${category}" },
+      { "trait_type": "Bahasa", "value": "Melayu Kuna Abad ke-7" },
+      { "trait_type": "Aksara Epigrafi", "value": "Pallawa Sriwijaya" },
+      { "trait_type": "Batu Epigrafi", "value": "Batu Prasasti Alam" },
+      { "trait_type": "Protokol STC", "value": "EIP-5192 Immutable SBT" }
+    ]
+  }
+}`;
+
+    const prompt = `Nama Pengunjung: ${name}
+Kategori Ikrar: ${category}
+Isi Komitmen / Sumpah: "${pledge}"
+Gaya Batu Prasasti: ${stone}
+
+Gubah menjadi Prasasti Digital Melayu Kuna abad ke-7 dalam format JSON sesuai instruksi.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: prompt,
+      config: {
+        systemInstruction,
+        responseMimeType: 'application/json',
+      },
+    });
+
+    const text = response.text;
+    if (text) {
+      const parsed = JSON.parse(text.trim());
+      return res.json({
+        steleTitle: cleanAsterisks(parsed.steleTitle || `Prasasti Sumpah ${name}`),
+        visitorName: name,
+        oldMalayText: cleanAsterisks(parsed.oldMalayText || ''),
+        phoneticTransliteration: cleanAsterisks(parsed.phoneticTransliteration || ''),
+        pallawaScript: cleanAsterisks(parsed.pallawaScript || ''),
+        indonesianTranslation: cleanAsterisks(parsed.indonesianTranslation || ''),
+        curseProtectionFormula: cleanAsterisks(parsed.curseProtectionFormula || ''),
+        historicalContextNotes: cleanAsterisks(parsed.historicalContextNotes || ''),
+        sbtMetadata: {
+          name: cleanAsterisks(parsed.sbtMetadata?.name || `Prasasti Digital Sumpah Budaya - ${name}`),
+          description: cleanAsterisks(parsed.sbtMetadata?.description || `Prasasti Sumpah Digital beraksara Pallawa Melayu Kuna.`),
+          attributes: Array.isArray(parsed.sbtMetadata?.attributes) ? parsed.sbtMetadata.attributes : [
+            { trait_type: 'Pemberi Sumpah', value: name },
+            { trait_type: 'Kategori Sumpah', value: category },
+            { trait_type: 'Bahasa', value: 'Melayu Kuna Abad ke-7' },
+            { trait_type: 'Aksara Epigrafi', value: 'Pallawa Sriwijaya' },
+            { trait_type: 'Format Batu', value: stone },
+            { trait_type: 'Protokol STC', value: 'EIP-5192 Immutable SBT' }
+          ]
+        }
+      });
+    }
+
+    throw new Error('Empty model response');
+  } catch (error: any) {
+    logEndpointHandled('/api/prasasti/generate', error);
+    return res.status(200).json(fallback);
+  }
+});
+
+// ==========================================
+// 8. WEBSOCKET FOR GEMINI LIVE API (/live)
 // ==========================================
 const wss = new WebSocketServer({ noServer: true });
 

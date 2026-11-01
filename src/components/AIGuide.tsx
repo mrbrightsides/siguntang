@@ -16,7 +16,7 @@ export function AIGuide() {
   const [isOpen, setIsOpen] = useState(false);
   const [isKeyActive, setIsKeyActive] = useState(hasActiveGeminiKey());
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', content: 'Halo! Saya SIGUNTANG AI Guide. Bagaimana saya bisa membantu Anda menjelajahi warisan Nusantara Gemilang dan legenda Sungai Musi hari ini?' }
+    { role: 'model', content: 'Halo! Saya SIGUNTANG AI Guide. Saya siap memandu Anda mengeksplorasi 9 Node Budaya Palembang, fitur AI terbaru (Musi Storyteller beradaptasi cuaca, Smart Itinerary & Audit Karbon STC, Generator Prasasti Pallawa Abad ke-7, 3D In-Diorama Curator), serta arsitektur blockchain STC (Soulbound Token ERC-5192 & Traceability Hub). Ada yang ingin Anda tanyakan?' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -174,24 +174,27 @@ export function AIGuide() {
             {/* Quick Suggestion Chips */}
             <div className="px-3.5 sm:px-5 py-2.5 bg-[#f5f2ed]/90 border-t border-black/5 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0 max-w-full">
               <span className="text-[10px] text-stone-500 font-semibold shrink-0 uppercase tracking-wider flex items-center gap-1">
-                <Sparkles size={11} className="text-amber-600" /> Ide:
+                <Sparkles size={11} className="text-amber-600" /> Topik:
               </span>
               {[
-                'Cerita Antu Banyu',
-                'Legenda Pulau Kemaro',
-                'Putri Kembang Dadar',
-                'Kutukan Si Pahit Lidah',
-                'Misteri Buaya Buntung'
-              ].map((tag) => (
+                { label: 'Prasasti Pallawa Abad-7', prompt: 'Bagaimana cara kerja Generator Prasasti Digital Aksara Pallawa Melayu Kuno?' },
+                { label: 'SBT Proof-of-Visit', prompt: 'Jelaskan mekanisme Soulbound Token (ERC-5192) Proof-of-Visit di platform SIGUNTANG' },
+                { label: 'Audit Karbon STC', prompt: 'Bagaimana perhitungan jejak karbon STC CarbonPrint dan rekomendasi eco-offset perahu Musi?' },
+                { label: '3D AI Curator', prompt: 'Bagaimana fitur Context-Aware AI Curator bekerja di dalam Diorama 3D WebGL?' },
+                { label: '3 Persona Storyteller', prompt: 'Apa saja 3 persona narator AI Musi Storyteller dan bagaimana adaptasi cuacanya?' },
+                { label: '9 Node Budaya', prompt: 'Jelaskan 9 Universal Node budaya Palembang yang tercatat di SIGUNTANG' },
+                { label: 'Riset Disertasi STC', prompt: 'Jelaskan latar belakang riset disertasi doktoral Dr. Akhmad Khudri di Universitas Bina Darma' },
+                { label: 'Legenda Sungai Musi', prompt: 'Ceritakan legenda Antu Banyu dan Pulau Kemaro di Sungai Musi' }
+              ].map((item) => (
                 <button
-                  key={tag}
+                  key={item.label}
                   type="button"
                   onClick={() => {
-                    setInput(`Ceritakan tentang ${tag} di Sungai Musi`);
+                    setInput(item.prompt);
                   }}
-                  className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#8b0000] hover:text-white text-stone-700 text-[11px] font-medium rounded-full border border-black/5 transition-all shadow-2xs active:scale-95 touch-manipulation cursor-pointer"
+                  className="shrink-0 px-3 py-1.5 bg-white hover:bg-[#8b0000] hover:text-white text-stone-700 text-[11px] font-medium rounded-full border border-black/5 transition-all shadow-2xs active:scale-95 touch-manipulation cursor-pointer whitespace-nowrap"
                 >
-                  {tag}
+                  {item.label}
                 </button>
               ))}
             </div>

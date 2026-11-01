@@ -304,22 +304,23 @@ export function AICuratorDrawer({
 
           {/* Action Row */}
           <div className="flex items-center gap-2">
-            {onClaimSBT && (
-              <button
-                onClick={onClaimSBT}
-                className="flex-1 py-2 px-3 bg-[#8b0000] hover:bg-[#a00000] text-white font-mono text-[10px] font-bold uppercase rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#8b0000]/30"
-              >
-                <Award size={12} />
-                Klaim SBT (Sepolia)
-              </button>
-            )}
             {onExploreNode && (
               <button
                 onClick={onExploreNode}
-                className="py-2 px-3 bg-white/10 hover:bg-white/20 text-white font-mono text-[10px] font-bold uppercase rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
+                className="flex-1 py-2.5 px-3 bg-gradient-to-r from-[#8b0000] to-[#b30000] hover:brightness-110 text-white font-mono text-[10px] font-bold uppercase rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#8b0000]/30"
               >
-                <Compass size={12} />
-                Buka Node
+                <Compass size={12} className="text-amber-300" />
+                <span>Eksplorasi Simpul Ini</span>
+                <ChevronRight size={12} />
+              </button>
+            )}
+            {onClaimSBT && (
+              <button
+                onClick={onClaimSBT}
+                className="py-2.5 px-3 bg-white/10 hover:bg-white/20 text-white font-mono text-[10px] font-bold uppercase rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
+              >
+                <Award size={12} className="text-amber-400" />
+                <span>Klaim SBT</span>
               </button>
             )}
           </div>

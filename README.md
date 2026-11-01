@@ -1,138 +1,148 @@
 # SIGUNTANG — Gerbang Digital Cagar Budaya Nusantara
 
 > **Sistem Integrasi Gerbang Universal Node, Traceability & Artificial Intelligence Nusantara Gemilang**  
-> *A Next-Generation Cultural Heritage Preservation & Smart Tourism Infrastructure for Bumi Sriwijaya*
+> *A Next-Generation Cultural Heritage Preservation & Smart Tourism Infrastructure for Bumi Sriwijaya*  
+> *Riset Disertasi Doktoral: Dr. Akhmad Khudri — Universitas Bina Darma*
 
-SIGUNTANG adalah platform pariwisata cerdas dan pelestarian cagar budaya berbasis **Dual-Engine Architecture**: menggabungkan kedalaman **Experience Layer** (Diorama Sinematik 3D Sungai Musi, Peta Geospasial Interaktif, & AI Guide) dengan ketangguhan **Trust Layer** (Siguntang Trust Chain / STC berbasis Web3 & Smart Contracts) untuk mengabadikan dan melindungi warisan peradaban Sriwijaya serta ekonomi kreatif Kota Palembang.
+SIGUNTANG adalah platform pariwisata cerdas dan pelestarian cagar budaya berbasis **Dual-Engine Architecture**: memadukan kedalaman **Experience Layer** (Diorama Sinematik 3D WebGL Sungai Musi, AI Musi Storyteller Berbasis Persona, Perencana Pelayaran Rendah Karbon, Generator Prasasti Pallawa Abad ke-7, dan Peta Geospasial Interaktif) dengan ketangguhan **Trust Layer** (Siguntang Trust Chain / STC berbasis Web3 & Smart Contracts) untuk mengabadikan dan melindungi kedaulatan warisan peradaban maritim Sriwijaya serta ekonomi kreatif Kota Palembang.
 
 ---
 
 ## 🌐 Live Demo & Akses Resmi
 
-**Produksi Vercel:** [siguntang.vercel.app](https://siguntang.vercel.app)
+* **Produksi Vercel:** [siguntang.vercel.app](https://siguntang.vercel.app)
+* **Status Jaringan Smart Contract:** Ethereum Sepolia Testnet & EIP-5192 Soulbound Tokens (SBT)
+* **AI Core Engine:** Google Gemini (`gemini-3.8-flash` via `@google/genai`) dengan Server-Side Security Proxy & Full-Duplex Live Audio Streaming
 
 ---
 
 ## 🏛️ Mengapa SIGUNTANG Membutuhkan Web3? (Bukan Tempelan)
 
-Banyak platform digital hanya menyimpan data sejarah di database relasional (SQL/Cloud) biasa. Namun untuk cagar budaya berskala peradaban, database biasa memiliki kelemahan fatal: **Centralized Revisionism** (siapa pun pemegang akses database admin dapat merevisi catatan sejarah atau memalsukan sertifikat). 
+Banyak platform digital hanya menyimpan data sejarah di database terpusat konvensional (SQL/Cloud) biasa. Namun untuk cagar budaya berskala peradaban, basis data terpusat memiliki kelemahan fatal: **Centralized Revisionism** (siapa pun pemegang kunci akses database admin dapat merevisi catatan sejarah, mengubah kepemilikan kriya, atau memalsukan sertifikat). 
 
-SIGUNTANG menerapkan arsitektur dua lapis:
+SIGUNTANG menerapkan arsitektur dua lapis yang saling melengkapi:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│               EXPERIENCE LAYER (Web2 Engine)                │
-│   Diorama Sinematik 3D • Musi Cruise • AI Guide • Peta Spasial│
-└──────────────────────────────┬──────────────────────────────┘
-                               │ Bukti Hash & Otentisitas
-┌──────────────────────────────▼──────────────────────────────┐
-│                  TRUST LAYER (STC / Web3)                   │
-│   Immutable History • Soulbound Kriya Certificate • Donasi  │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       EXPERIENCE LAYER (Web2 & AI Engine)                   │
+│   Diorama 3D WebGL • AI Storyteller 3 Persona • Cruise Planner & Karbon     │
+│   Generator Prasasti Pallawa Abad-7 • Context-Aware 3D Curator • Peta Spasial│
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │ Bukti Hash, SBT & Verifikasi On-Chain
+┌──────────────────────────────────────▼──────────────────────────────────────┐
+│                           TRUST LAYER (STC / Web3)                          │
+│   Immutable History Ledger • Soulbound Token (ERC-5192) • Phygital IoT ESP32│
+│   Traceability Wastra Songket • STC CarbonPrint • Zero-Leakage Escrow       │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 4 Pilar Mutlak Siguntang Trust Chain (STC):
 1. **🛡️ Anti-Revisionisme Sejarah & Proof of Provenance**  
    Setiap narasi artefak (Genesis Node Bukit Siguntang, Prasasti Kedukan Bukit, manuskrip) tercatat on-chain secara *immutable*. Sejarah tidak bisa direkayasa oleh pergantian rezim, pengurus, atau peretasan server.
 2. **🧵 Perlindungan Kriya Adat (Anti-Pemalsuan Songket Palembang)**  
-   Songket asli tenun tangan bernilai tinggi sering dipalsukan oleh tekstil pabrikan murah. STC menerbitkan *Cultural Certificate (Soulbound Token / NFT)* yang membuktikan identitas penenun asli, waktu pembuatan, dan batch benang emas yang tak bisa diduplikasi.
+   Songket asli tenun tangan bernilai tinggi sering dipalsukan oleh tekstil pabrikan cetak murah. STC menerbitkan *Cultural Certificate (Soulbound Token ERC-5192)* yang membuktikan identitas penenun asli di Kampung Tuan Kentang, waktu pembuatan, dan batch benang emas yang tak dapat diduplikasi.
 3. **💰 Transparansi Dana Abadi Cagar Budaya (*Zero-Leakage Escrow*)**  
    Setiap mikro-donasi atau kontribusi pelestarian situs mengalir langsung ke dompet digital simpul cagar budaya secara *peer-to-peer* dan bisa diaudit real-time oleh publik melalui block explorer.
-4. **🏛️ Kedaulatan Multipihak (*Decentralized Custodianship*)**  
-   Data cagar budaya dipegang bersama oleh konsorsium validator (akademisi kampus, komunitas sejarawan, Balai Pelestarian Kebudayaan, dan Pemda), bukan dimonopoli oleh satu startup/korporasi swasta.
+4. **🌿 Green Heritage & STC CarbonPrint**  
+   Audit emisi karbon jelajah sungai Musi tercatat transparan dengan rekomendasi kompensasi hijau (*eco-offset* penanaman pohon nipah/mangrove di delta Pulau Kemaro).
 
 ---
 
-## 🎨 Fitur Unggulan Platform
+## 🤖 Fitur Cerdas Artificial Intelligence (Gemini AI Core)
 
-### 1. 🚤 Musi Cruise Navigator (Diorama 3D WebGL Spatial & Sinematik 2.5D)
-* **True 3D Spatial WebGL Engine (Three.js)**:
-  * **Simulasi Gelombang Air Dinamis**: Fisika permukaan air Sungai Musi dengan pergeseran vertex sinusoidal riil dan material reflektif sedimen keemasan.
-  * **Model 3D Prosedural Landmark**: Jembatan Ampera (twin tower berketinggian 14m, kabel suspensi baja melengkung, & pendar lampu merah nokturnal), Pagoda 9 Tingkat Pulau Kemaro (atap oktagonal bertingkat & pohon cinta), dan Genesis Monolith Bukit Siguntang (batu berpendar aksara Pallawa Sriwijaya).
-  * **Hero Perahu Ketek 3D**: Berlayar menyusuri kelokan kurva sungai Musi dengan simulasi fisik pitch, roll, dan oleng pelan mengikuti arus air.
-  * **Interaktivitas 360° & Raycasting**: OrbitControls bebas untuk rotasi dan zoom kamera, preset kamera fokus landmark, serta inspeksi objek 3D langsung untuk membaca peran node pada STC Trust Layer.
-  * **Siklus Atmosfer Waktu**: Pergantian pencahayaan dinamis (Senja Keemasan, Purnama Ampera, Kabut Pagi, & Hujan Musi) dengan kabut volumetrik dan efek kabut `FogExp2`.
-* **Mode Sinematik 2.5D Folklore**:
-  * Eksplorasi 5 rute cerita tutur lisan dengan senter teplok pembuka misteri tersembunyi, radar kedalaman arus, sensor gerak gyroscope smartphone, dan pengumpulan 5 pusaka paspor digital STC.
+Platform SIGUNTANG mengintegrasikan ekosistem kecerdasan buatan terlengkap untuk pelestarian warisan budaya maritim:
 
-### 2. 🤖 Panduan Budaya Cerdas (AI Cultural Guide)
-* Didukung model bahasa mutakhir **Gemini 2.5 Flash** via `@google/genai`.
-* Berperan sebagai kurator sejarah Sriwijaya interaktif yang dapat diajak berdiskusi tentang asal-usul prasasti, makna motif kain songket, kuliner khas, hingga filosofi arsitektur.
-* Tampilan responsif dinamis di desktop maupun perangkat mobile dengan penanganan bubble chat ergonomis.
+### 1. 🎭 AI Musi Storyteller Berbasis 3 Persona & Adaptasi Cuaca
+Cerita rakyat diorama Sungai Musi (*Putri Kembang Dadar, Misteri Antu Banyu, Pulau Kemaro Tan Bun An - Siti Fatimah, Si Pahit Lidah Serunting Sakti, dan Buaya Buntung*) dinarasikan secara dinamis oleh Gemini dengan:
+* **Pilihan 3 Persona Narator:**
+  * **Tetua Pengayuh Ketek Sungai Musi:** Bertutur lisan khas Melayu Palembang tempo dulu yang hangat, bijak, dan sarat kearifan lokal magis.
+  * **Kurator Akademik Sejarah Sriwijaya:** Analitis, ilmiah, membedah temuan arca, epigrafi prasasti abad ke-7, dan geo-arkeologi Sungai Musi.
+  * **Pencerita Dongeng Anak Nusantara:** Ramah anak, imajinatif, dan menekankan pesan moral budi pekerti luhur.
+* **Adaptasi Dinamis 4 Cuaca Diorama 3D:**
+  * *Senja Emas (Golden Dusk):* Gemerlap jingga di riak air Musi dan desau angin hilir.
+  * *Malam Purnama (Full Moon):* Cahaya perak bulan di palung sungai dan ziarah malam Pagoda Kemaro.
+  * *Hujan Kabut Musi (Rainy Mist):* Rintik hujan di atap perahu ketek dan mistisisme Antu Banyu.
+  * *Fajar Tropis (Emerald Dawn):* Kesegaran pagi dan denyut perahu pasar terapung.
 
-### 3. 🗺️ Peta Budaya Geospasial (Interactive Heritage Map)
-* Pemetaan presisi seluruh simpul budaya (*Universal Nodes*) di Palembang lengkap dengan koordinat, riwayat restorasi, dan penanda verifikasi on-chain.
+### 2. 🗺️ Smart Heritage Itinerary & Carbon-Optimized Musi Cruise Planner
+* **Google Search Grounding:** Perancang rencana perjalanan wisata budaya Palembang yang terpersonalisasi berdasarkan minat waktu, kuliner pempek tertua, dan ziarah sejarah.
+* **Kalkulator STC CarbonPrint:** Perhitungan jejak karbon (kg CO2) secara real-time berdasarkan moda transportasi (*Perahu Ketek Tradisional, Speedboat Musi Express, atau Hybrid Solar Eco-Cruise*), persentase penghematan emisi, serta rekomendasi tiket *Proof-of-Visit SBT*.
 
-### 4. 🔗 STC Explorer & Traceability Ledger
-* Pemantau langsung transaksi kelacakgalian budaya (*Live Traceability Ledger*).
-* Menampilkan metrik *Network Integrity*, blok blockchain, dan riwayat sertifikasi kriya.
+### 3. 📜 Generator Prasasti Digital Aksara Pallawa / Melayu Kuno Abad ke-7
+* **Epigrafi & Filologi Sriwijaya:** Mengonversi komitmen sumpah budaya pengunjung ke tata bahasa Melayu Kuna abad ke-7 otentik (mengadopsi Prasasti Kedukan Bukit 683 M, Talang Tuwo 684 M, dan Telaga Batu: *"Dapunta Hyaṅ nayik di samvau mangalap siddhayatra..."*).
+* **Transliterasi Fonetik & Aksara Pallawa / Kaganga:** Menghasilkan alih aksara font kuno dan formula kutukan pelindung (*sapatha*) bagi pelindung pusaka Musi.
+* **Minting On-Chain SBT:** Hasil prasasti dapat langsung dicetak sebagai Soulbound Token (ERC-5192) tidak dapat dipindahtangankan di jaringan STC.
 
-### 5. 🔌 STC Phygital IoT Gateway & Hardware Digital Twin
-* **Hardware-to-Web Connectivity**: Mendukung komunikasi langsung browser-ke-mikrokontroler melalui **Web Serial API** (kabel USB 115200 baud) dan **Web Bluetooth LE (BLE)** tanpa memerlukan perantara cloud server.
-* **Web NFC Mobile Scanner**: Membaca chip NFC fisik langsung dari sensor belakang smartphone pada Android Chrome.
-* **Two-Way Downlink & Uplink**:
-  * *Downlink*: Perintah web menyalakan LED WS2812B Jembatan Ampera dan klakson DFPlayer Mini pada diorama fisik.
-  * *Uplink*: Sentuhan fisik kapal di dermaga mengirimkan event real-time ke web.
-* **On-Chain Proof-of-Physical-Presence (PoPP)**: Verifikasi sentuhan chip NFC langsung mencetak Soulbound Token (ERC-5192) ke Sepolia Testnet.
-* **Firmware C++ Bawaan**: Kode Arduino siap flash (`STC_Diorama_ESP32.ino`), tabel pinout lengkap, dan panduan perakitan lab kampus Bina Darma.
+### 4. 🔍 Context-Aware AI Curator Langsung di dalam Objek 3D Diorama
+* Di dalam Diorama 3D WebGL, pengunjung dapat mengeklik langsung objek landmark (*Jembatan Ampera, Pagoda Pulau Kemaro, Bukit Siguntang, Perahu Ketek, Benteng Kuto Besak, atau Kampung Arab Al-Munawar*).
+* Tombol **"Bedah Sejarah dengan AI Curator"** langsung memicu context injection spasial dan arkeologis ke Gemini tanpa perlu mengetik manual dari nol.
+
+### 5. 👁️ AI Vision Artifact Inspector
+* Pemeriksaan keaslian motif Songket Palembang, arca Buddha Siguntang abad ke-6, dan mata uang koin kuno Kesultanan berbasis Computer Vision multimodal.
+
+### 6. 🎙️ Gemini Live Audio Streaming
+* Percakapan suara real-time dua arah (*full-duplex streaming*) tanpa jeda melalui WebSocket backend `/live`.
+
+---
+
+## 🎨 Eksplorasi 3D & 9 Universal Node Budaya Palembang
+
+Peta jaringan budaya SIGUNTANG kini seimbang sempurna dalam **Grid 3x3 (9 Node Budaya Utama)**:
+
+| ID Node | Nama Simpul Budaya | Kategori | Signifikansi Sejarah & Peran STC |
+| :--- | :--- | :--- | :--- |
+| **`node-0`** | **Bukit Siguntang (Genesis Node)** | *Heritage* | Titik kosmologis peradaban Kerajaan Maritim Sriwijaya abad ke-7, temuan arca Buddha Mahayana & akar silsilah raja-raja Melayu. |
+| **`node-1`** | **Museum Sultan Mahmud Badaruddin II** | *Heritage* | Pusat peninggalan Kesultanan Palembang Darussalam dan prasasti maritim Sriwijaya. |
+| **`node-2`** | **Masjid Agung SMB I** | *Religi* | Masjid tertua Palembang dengan mahakarya akulturasi arsitektur Nusantara, Tiongkok, dan Eropa. |
+| **`node-3`** | **Pengrajin Songket Tuan Kentang** | *UMKM* | Pusat kerajinan tenun benang emas tradisional dengan sertifikasi keaslian digital on-chain. |
+| **`node-ampera`** | **Jembatan Ampera** | *Heritage* | Ikon maritim agung pemersatu Seberang Ulu dan Ilir, simpul IoT pemantauan emisi STC CarbonPrint. |
+| **`node-kemaro`** | **Pulau Kemaro & Pagoda 9 Tingkat** | *Religi* | Delta suci legenda Tan Bun An dan Siti Fatimah, simbol harmoni akulturasi Tionghoa-Melayu dan pusat ziarah Cap Go Meh. |
+| **`node-ketek`** | **Perahu Ketek Tradisional Musi** | *UMKM* | Moda mobilitas air tradisional berirama khas *tek-tek-tek*, tulang punggung konektivitas 750 km Sungai Musi. |
+| **`node-bkb`** | **Benteng Kuto Besak (Kawasan Bahari SMB)** | *Heritage* | Benteng batu abad ke-18 era Sultan Mahmud Badaruddin I, saksi heroisme Perang Palembang melawan VOC dan pusat kedaulatan keraton bahari. |
+| **`node-almunawar`** | **Kampung Arab Al-Munawar (Heritage 13 Ulu)** | *Komunitas* | Pemukiman cagar budaya berusia >300 tahun dengan Rumah Limas kayu ulin, seni gambus, dan tradisi maritim Seberang Ulu. |
+
+---
+
+## 🔌 STC Phygital IoT Gateway (ESP32 Digital Twin)
+
+* **Hardware-to-Web Connectivity**: Komunikasi langsung browser-ke-mikrokontroler melalui **Web Serial API** (USB 115200 baud) dan **Web Bluetooth LE (BLE)** tanpa perantara server pihak ketiga.
+* **Web NFC Mobile Scanner**: Membaca tag NFC fisik langsung dari sensor smartphone Android.
+* **Two-Way Uplink & Downlink**: Sentuhan perahu fisik di dermaga memicu transaksi blockchain otomatis, sementara perintah web mengontrol LED addressable WS2812B dan audio DFPlayer Mini diorama fisik.
+* **Firmware C++ Bawaan**: Kode Arduino/ESP32 siap pakai di `src/data/esp32FirmwareCode.ts`.
 
 ---
 
 ## 📜 Arsitektur Smart Contract & Web3 Pipeline (Ethereum Sepolia Testnet)
 
-Sistem kelacakgalian dan kedaulatan data SIGUNTANG ditunjang oleh smart contracts yang dapat diverifikasi secara publik di **Sepolia Etherscan** dan **IPFS Gateway**:
+Sistem kelacakgalian budaya SIGUNTANG ditunjang oleh smart contracts yang diverifikasi di **Sepolia Etherscan**:
 
 1. **`STCCulturalSBT` Contract (ERC-5192 Minimal Soulbound Tokens)**  
-   * **Deployed Address (Sepolia):** [`0xC9F2bb2e96CE36E61935c0c8C1374EdEDfdcc302`](https://sepolia.etherscan.io/address/0xC9F2bb2e96CE36E61935c0c8C1374EdEDfdcc302)
+   * **Deployed Address:** [`0xC9F2bb2e96CE36E61935c0c8C1374EdEDfdcc302`](https://sepolia.etherscan.io/address/0xC9F2bb2e96CE36E61935c0c8C1374EdEDfdcc302)
    * **Source Code:** `contracts/STCCulturalSBT.sol`
    * **Standar:** EIP-5192 (`locked(uint256) returns (bool)`, `event Locked(uint256)`)
-   * **Fungsi:** `mintCulturalCertificate(address to, string memory ipfsUri, string memory nodeName, string memory certType)`
-   * **Sifat Token:** *Non-transferable* (terkunci permanen pada wallet penerima, tidak dapat diperjualbelikan seperti NFT komersial).
-   * **Tujuan:** Sertifikasi silsilah tenun Songket Palembang asli, tanda kunjungan resmi (*Proof-of-Visit*), dan mandat kurasi cagar budaya.
-
-2. **Decentralized IPFS Storage Pipeline (`src/services/ipfsService.ts`)**  
-   * **Standar Metadata:** JSON-LD / ERC-721 Metadata Schema diperluas dengan geospasial GIS (lat/lng), kurator tanda tangan digital, dan spesifikasi STC Trust Layer.
-   * **CID Format:** Canonical CIDv1 (`bafkrei...`) yang dapat diinspeksi melalui gateway terdistribusi seperti `https://ipfs.io/ipfs/...` atau Pinata Cloud.
-
-3. **`HeritageNodeRegistry` & Treasury Escrow**  
-   * **Heritage Treasury:** [`0x17A1e4875c125ad6e89388d9F042A361499495Da`](https://sepolia.etherscan.io/address/0x17A1e4875c125ad6e89388d9F042A361499495Da)
-   * **STC Zero-Leakage Escrow:** Donasi mikro (Sepolia ETH) ditransfer langsung secara *peer-to-treasury* tanpa perantara bank atau potongan platform swasta.
-   * **Proof-of-Visit Booking:** Reservasi kunjungan menerbitkan tiket digital langsung dalam format Soulbound Token (ERC-5192) untuk memusnahkan calo tiket dan menjamin verifikasi presisi pada analisis statistik STC.
-   * **Live On-Chain Event Poller:** Modul `TraceabilityHub` membaca riwayat event `CulturalCertificateIssued` secara langsung dari smart contract Sepolia, sehingga setiap token baru otomatis muncul di ledger publik.
-
-### ⚡ Cara Cepat Deploy Kontrak ke Sepolia via Remix IDE:
-1. Buka [remix.ethereum.org](https://remix.ethereum.org).
-2. Buat file baru `STCCulturalSBT.sol` dan salin kode dari direktori `contracts/STCCulturalSBT.sol`.
-3. Compile menggunakan Solidity versi `0.8.20`.
-4. Di tab **Deploy & Run Transactions**, ubah Environment ke **Injected Provider - MetaMask** (pastikan akun MetaMask berada di jaringan **Sepolia Testnet**).
-5. Klik tombol **Deploy** dan konfirmasi transaksi.
-6. Masukkan alamat kontrak yang terbit ke `CONTRACT_ADDRESSES.STC_CULTURAL_SBT` di `src/contractData.ts`.
-
----
-
-## 📸 Simpul Budaya Utama (Universal Nodes)
-
-* **Bukit Siguntang (Genesis Node)** — Titik pangkal peradaban dan spiritual Kerajaan Sriwijaya abad ke-7.
-* **Museum Sultan Mahmud Badaruddin II** — Pusat dokumentasi Kesultanan Palembang Darussalam.
-* **Masjid Agung Sultan Mahmud Badaruddin I** — Harmoni akulturasi arsitektur Nusantara, Tiongkok, dan Eropa.
-* **Kampung Tenun Songket Tuan Kentang** — Pusat kriya adiluhung Songket Palembang terverifikasi.
-* **Pulau Kemaro & Klenteng Hok Tjing Rio** — Simpul persaudaraan dan akulturasi budaya Tionghoa-Melayu.
-* **Kampung Arab Al-Munawar** — Kawasan cagar budaya pemukiman bersejarah tepi Sungai Musi.
+   * **Sifat Token:** *Non-transferable* (terkunci permanen pada wallet peziarah/pengunjung).
+2. **Heritage Treasury & Zero-Leakage Escrow**  
+   * **Treasury Address:** [`0x17A1e4875c125ad6e89388d9F042A361499495Da`](https://sepolia.etherscan.io/address/0x17A1e4875c125ad6e89388d9F042A361499495Da)
+   * Menjamin donasi pelestarian mengalir langsung *peer-to-treasury* tanpa potongan perantara swasta.
+3. **Decentralized IPFS Storage Pipeline (`src/services/ipfsService.ts`)**  
+   * Metadata terstandarisasi JSON-LD / ERC-721 dengan koordinat spasial GIS dan hash integritas SHA-256.
 
 ---
 
 ## 🚀 Teknologi & Tech Stack
 
-| Layer | Teknologi |
+| Layer | Teknologi Utama |
 | :--- | :--- |
 | **Frontend Framework** | React 19 + TypeScript + Vite |
-| **Artificial Intelligence** | Google Gemini API (`@google/genai` — Gemini 2.5 Flash) |
-| **Styling & Design** | Tailwind CSS + Lucide Icons |
-| **3D WebGL & Grafis Spasial** | Three.js (`three` + `OrbitControls`) |
-| **Animasi & Interaksi** | Framer Motion (`motion/react`) |
-| **Web3 & Blockchain** | Ethers.js v6 + SIWE (Sign-In with Ethereum) + MetaMask |
-| **Peta Spasial** | Leaflet + React Leaflet |
-| **Deployment** | Vercel Serverless Platform |
+| **Backend & Proxy Server** | Express + TSX Server (`server.ts`) + WebSocket (`ws`) |
+| **Artificial Intelligence** | Google Gemini API (`@google/genai` — Gemini 3.8 Flash) |
+| **AI Features** | Persona Storyteller, Search Grounding Planner, Epigraphy Pallawa, 3D Curator, Live Audio |
+| **3D WebGL Engine** | Three.js (`three` + `OrbitControls` + Procedural Geometries) |
+| **Styling & Icons** | Tailwind CSS + Lucide Icons + Motion (`motion/react`) |
+| **Web3 & Blockchain** | Ethers.js v6 + ERC-5192 Soulbound Tokens + MetaMask SIWE |
+| **Peta Spasial** | Leaflet + React Leaflet + OpenStreetMap |
+| **Hardware Phygital IoT** | Web Serial API + Web Bluetooth LE (BLE) + ESP32 C++ Firmware |
+| **Deployment** | Vercel Serverless / Google Cloud Run |
 
 ---
 
@@ -146,14 +156,15 @@ npm install
 ```
 
 ### 2. Konfigurasi Environment Variables
-Buat file `.env` di direktori utama:
+Buat file `.env` di root direktori:
 ```env
-# Gemini API Key untuk AI Cultural Guide
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
+# Gemini API Key untuk Server Proxy AI (Storyteller, Planner, Prasasti, Curator, Live)
 GEMINI_API_KEY=your_gemini_api_key_here
+PORT=3000
 ```
+*(Catatan: Semua pemanggilan Gemini API dijalankan secara aman melalui server-side proxy `/api/*` sehingga kunci API tidak pernah bocor ke client browser).*
 
-### 3. Menjalankan Server Lokal
+### 3. Menjalankan Server Lokal (Full-Stack Express + Vite)
 ```bash
 npm run dev
 ```
@@ -168,6 +179,6 @@ npm run build
 
 ## 📄 Lisensi & Hak Cipta
 
-Dikelola di bawah lisensi Apache-2.0. Seluruh dokumentasi narasi sejarah dikurasi untuk kepentingan pelestarian cagar budaya Nusantara dan kemajuan pariwisata berkelanjutan.
+Dikelola di bawah lisensi Apache-2.0. Riset dan pengembangan arsitektur SIGUNTANG didedikasikan untuk kedaulatan cagar budaya maritim Nusantara, pemajuan pariwisata berkelanjutan, dan kemaslahatan masyarakat Kota Palembang.
 
 **SIGUNTANG — Menjaga Kejayaan Sriwijaya, Menguntai Teknologi Nusantara Gemilang.**

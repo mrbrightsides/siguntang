@@ -43,6 +43,7 @@ interface MusiCruiseDioramaProps {
   onNodeSelect?: (nodeName: string) => void;
   onOpenStoryteller?: (weather: MusiWeatherType) => void;
   onOpenPlanner?: () => void;
+  onOpenPrasasti?: () => void;
 }
 
 interface FolkloreSecret {
@@ -119,7 +120,7 @@ interface WaterRipple {
   color: string;
 }
 
-export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlanner }: MusiCruiseDioramaProps) {
+export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlanner, onOpenPrasasti }: MusiCruiseDioramaProps) {
   const [currentIdx, setCurrentIdx] = useState<number>(0);
   const [isCruising, setIsCruising] = useState<boolean>(false);
   const [autoCruise, setAutoCruise] = useState<boolean>(false);
@@ -986,7 +987,7 @@ export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlann
           {/* Diorama Stage (Col 8) */}
           <div className="lg:col-span-8 flex flex-col gap-4">
             {viewMode === '3d' ? (
-              <Musi3DDiorama onNodeSelect={onNodeSelect} />
+              <Musi3DDiorama onNodeSelect={onNodeSelect} onOpenPrasasti={onOpenPrasasti} />
             ) : (
               <div
                 onPointerMove={handlePointerMove}
@@ -1425,6 +1426,17 @@ export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlann
                     : 'Klaim Paspor STC'}
                 </button>
               </div>
+
+              {onNodeSelect && (
+                <button
+                  onClick={() => onNodeSelect(activeStory.backdropVisual.keyLandmark)}
+                  className="w-full mt-2.5 py-2.5 bg-gradient-to-r from-[#8b0000] to-[#b30000] hover:brightness-110 text-white font-mono text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#8b0000]/30"
+                >
+                  <Compass size={13} className="text-amber-300" />
+                  <span>Eksplorasi Simpul ({activeStory.backdropVisual.keyLandmark})</span>
+                  <ChevronRight size={13} />
+                </button>
+              )}
             </div>
           </div>
         </div>

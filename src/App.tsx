@@ -9,7 +9,7 @@ import { Navbar } from './components/Navbar';
 import { NodeCard } from './components/NodeCard';
 import { STCDashboard } from './components/STCDashboard';
 import { AIGuide } from './components/AIGuide';
-import { PALEMBANG_NODES } from './constants';
+import { PALEMBANG_NODES, findPalembangNode } from './constants';
 import { UniversalNode, NodeType } from './types';
 import { HeritageMap } from './components/HeritageMap';
 import { TraceabilityHub } from './components/TraceabilityHub';
@@ -23,11 +23,12 @@ import { BookingModal } from './components/BookingModal';
 import { AIVisionInspectorModal } from './components/AIVisionInspectorModal';
 import { MusiStorytellerModal } from './components/MusiStorytellerModal';
 import { MusiPlannerModal } from './components/MusiPlannerModal';
+import { PrasastiDigitalModal } from './components/PrasastiDigitalModal';
 import { MusiWeatherType } from './services/musiAudioEngine';
 import { connectWallet, WalletState, recordTraceabilityTransaction } from './services/blockchainService';
 import { SEPOLIA_CONFIG } from './contractData';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass, Layers, Lock, BookOpen } from 'lucide-react';
+import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass, Layers, Lock, BookOpen, Scroll } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -49,6 +50,7 @@ export default function App() {
   const [isStorytellerOpen, setIsStorytellerOpen] = useState(false);
   const [storytellerWeather, setStorytellerWeather] = useState<MusiWeatherType>('senja');
   const [isPlannerOpen, setIsPlannerOpen] = useState(false);
+  const [isPrasastiOpen, setIsPrasastiOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window.ethereum !== 'undefined') {
@@ -237,14 +239,19 @@ export default function App() {
       {/* Musi River Cruise Folklore Diorama Section */}
       <MusiCruiseDiorama 
         onNodeSelect={(name) => {
-          const found = PALEMBANG_NODES.find(n => n.name.toLowerCase().includes(name.toLowerCase()));
-          if (found) setSelectedNode(found);
+          const found = findPalembangNode(name);
+          if (found) {
+            setSelectedNode(found);
+          } else if (PALEMBANG_NODES.length > 0) {
+            setSelectedNode(PALEMBANG_NODES[0]);
+          }
         }}
         onOpenStoryteller={(w) => {
           setStorytellerWeather(w);
           setIsStorytellerOpen(true);
         }}
         onOpenPlanner={() => setIsPlannerOpen(true)}
+        onOpenPrasasti={() => setIsPrasastiOpen(true)}
       />
 
       {/* Mission Section: Transforming Passive to Active */}
@@ -649,6 +656,18 @@ export default function App() {
                   </button>
 
                   <button 
+                    onClick={() => setIsPrasastiOpen(true)}
+                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-amber-600/10 hover:bg-amber-600/20 border border-amber-600/30 rounded-xl text-amber-950 font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
+                    title="Pahat Sumpah Pelestarian Budaya Menjadi Prasasti Digital Aksara Pallawa & Melayu Kuna"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Scroll size={14} className="text-amber-700 group-hover:scale-110 transition-transform" />
+                      <span>Prasasti Digital Pallawa</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-900 font-mono font-semibold">683 M</span>
+                  </button>
+
+                  <button 
                     onClick={() => {
                       setMintTargetNode(null);
                       setIsMintSBTOpen(true);
@@ -887,6 +906,13 @@ export default function App() {
           const found = PALEMBANG_NODES.find(n => n.name.toLowerCase().includes(nodeName.toLowerCase()));
           if (found) setSelectedNode(found);
         }}
+      />
+
+      <PrasastiDigitalModal
+        isOpen={isPrasastiOpen}
+        onClose={() => setIsPrasastiOpen(false)}
+        wallet={wallet}
+        onConnectWallet={handleConnectWallet}
       />
 
       {/* Floating AI Guide & Musi Storyteller Assistant */}
