@@ -1,9 +1,4 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, 
@@ -27,6 +22,9 @@ import {
   ArrowUpRight,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUp,
   Info
 } from 'lucide-react';
 import { STC_ECOSYSTEM_MODULES, DISSERTATION_RESEARCH_INFO, STCModule } from '../data/stcEcosystemData';
@@ -41,6 +39,11 @@ export function STCEcosystemModal({ isOpen, onClose, initialFilter = 'Semua' }: 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialFilter);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
+  const [isResearchContextOpen, setIsResearchContextOpen] = useState<boolean>(true);
+  const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
+
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const mainScrollRef = useRef<HTMLDivElement>(null);
 
   const categories = [
     'Semua',
@@ -49,6 +52,27 @@ export function STCEcosystemModal({ isOpen, onClose, initialFilter = 'Semua' }: 
     'Tourism Analytics & Impact',
     'Gas & Performance'
   ];
+
+  const scrollCategories = (direction: 'left' | 'right') => {
+    if (categoryScrollRef.current) {
+      const offset = direction === 'left' ? -200 : 200;
+      categoryScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
+
+  const handleMainScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (e.currentTarget.scrollTop > 300) {
+      setShowScrollTop(true);
+    } else {
+      setShowScrollTop(false);
+    }
+  };
+
+  const scrollToTop = () => {
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const filteredModules = useMemo(() => {
     return STC_ECOSYSTEM_MODULES.filter(mod => {
@@ -84,7 +108,7 @@ export function STCEcosystemModal({ isOpen, onClose, initialFilter = 'Semua' }: 
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[7000] flex items-center justify-center p-3 sm:p-6 overflow-hidden">
+      <div className="fixed inset-0 z-[7000] flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden">
         {/* Backdrop */}
         <motion.div 
           initial={{ opacity: 0 }}
@@ -100,31 +124,31 @@ export function STCEcosystemModal({ isOpen, onClose, initialFilter = 'Semua' }: 
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 16 }}
           transition={{ duration: 0.2 }}
-          className="relative w-full max-w-5xl bg-[#fbf9f6] text-[#1a1a1a] rounded-3xl md:rounded-[36px] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-black/10"
+          className="relative w-full max-w-5xl bg-[#fbf9f6] text-[#1a1a1a] rounded-3xl md:rounded-[36px] shadow-2xl overflow-hidden flex flex-col max-h-[94vh] border border-black/10"
         >
-          {/* Header */}
-          <div className="px-6 sm:px-8 py-5 border-b border-black/10 bg-white">
-            <div className="flex items-center justify-between gap-4 mb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-[#8b0000] text-white flex items-center justify-center shadow-lg shadow-[#8b0000]/25 shrink-0">
-                  <GraduationCap size={22} />
+          {/* Compact Fixed Header */}
+          <div className="px-5 sm:px-8 py-3.5 sm:py-4 border-b border-black/10 bg-white shrink-0">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-[#8b0000] text-white flex items-center justify-center shadow-md shadow-[#8b0000]/25 shrink-0">
+                  <GraduationCap size={20} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[10px] uppercase tracking-widest text-[#8b0000] font-bold bg-[#8b0000]/10 px-2.5 py-0.5 rounded-full">
                       Dokumentasi Disertasi Doktor
                     </span>
-                    <span className="text-[10px] text-gray-500 font-mono hidden sm:inline">
+                    <span className="text-[10px] text-gray-500 font-mono hidden md:inline">
                       {DISSERTATION_RESEARCH_INFO.institution}
                     </span>
                   </div>
-                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#1a1a1a] mt-0.5">
-                    STC Ecosystem Website
+                  <h3 className="font-serif text-lg sm:text-2xl font-bold text-[#1a1a1a] truncate mt-0.5">
+                    STC Ecosystem Website <span className="text-xs sm:text-sm font-sans font-normal text-gray-500">(12 Modul)</span>
                   </h3>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <a
                   href={DISSERTATION_RESEARCH_INFO.ecosystemShowcaseUrl}
                   target="_blank"
@@ -136,66 +160,67 @@ export function STCEcosystemModal({ isOpen, onClose, initialFilter = 'Semua' }: 
                 </a>
                 <button 
                   onClick={onClose}
-                  className="w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 text-gray-700 flex items-center justify-center transition-colors"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/5 hover:bg-black/10 text-gray-700 flex items-center justify-center transition-colors"
                   aria-label="Tutup"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
-              </div>
-            </div>
-
-            {/* Sub-header Context Banner */}
-            <div className="bg-[#f5f2ed] border border-black/5 rounded-2xl p-4 sm:p-5 mt-2">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-white text-[#8b0000] flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-                  <BookOpen size={16} />
-                </div>
-                <div className="flex-1 text-xs text-gray-700 leading-relaxed">
-                  <p className="font-semibold text-gray-900 mb-1">
-                    Mengapa SIGUNTANG "Powered by STC"?
-                  </p>
-                  <p>
-                    <strong>Smart Tourism Chain (STC)</strong> merupakan hasil kajian disertasi doktoral yang merumuskan arsitektur blockchain untuk sektor pariwisata dan pelestarian budaya. SIGUNTANG hadir sebagai <em>Cultural Experience Layer Node</em> pertama yang mengadopsi 12 modul STC—menjamin data artefak tidak dapat dipalsukan, transaksi mikro gas ramah kantong, jejak karbon terukur menuju <strong>FOLU Net Sink 2030</strong>, dan transparansi donasi berbasis bukti digital.
-                  </p>
-                  <p>
-                    SIGUNTANG merupakan platform demonstrasi digital yang mengintegrasikan teknologi blockchain, kecerdasan buatan, dan sistem informasi geospasial untuk mendukung pelestarian warisan budaya serta pengembangan pariwisata cerdas di Palembang. Platform ini dikembangkan dengan memanfaatkan pendekatan SmartTourismChain (STC), sebuah inisiatif arsitektur teknologi yang mengeksplorasi pemanfaatan smart contract, pencatatan digital, dan integrasi sistem dalam ekosistem pariwisata. Melalui SIGUNTANG, pendekatan tersebut dieksplorasi dalam konteks yang lebih spesifik: pengelolaan informasi cagar budaya, pemetaan simpul warisan sejarah, serta pengembangan konsep keterlacakan dan verifikasi digital. SIGUNTANG menghadirkan konteks penerapan; STC menyediakan landasan eksplorasi teknologinya.
-                  </p>
-                </div>
               </div>
             </div>
           </div>
 
-          {/* Controls: Search and Filter Tabs */}
-          <div className="border-b border-black/10 bg-white/70 px-6 sm:px-8 py-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-              {categories.map((cat) => {
-                const count = cat === 'Semua' 
-                  ? STC_ECOSYSTEM_MODULES.length 
-                  : STC_ECOSYSTEM_MODULES.filter(m => m.category === cat).length;
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 rounded-xl font-sans text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                      selectedCategory === cat
-                        ? 'bg-[#8b0000] text-white shadow-sm'
-                        : 'bg-black/5 text-gray-600 hover:bg-black/10'
-                    }`}
-                  >
-                    <span>{cat}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      selectedCategory === cat ? 'bg-white/20 text-white' : 'bg-black/10 text-gray-700'
-                    }`}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
+          {/* Controls: Category Sliding Toolbar & Search Box */}
+          <div className="border-b border-black/10 bg-[#faf8f5] px-4 sm:px-8 py-2.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0">
+            {/* Horizontal sliding categories with navigation */}
+            <div className="flex items-center gap-1 min-w-0 flex-1">
+              <button
+                onClick={() => scrollCategories('left')}
+                className="w-7 h-7 rounded-lg bg-black/5 hover:bg-black/10 flex items-center justify-center text-gray-600 shrink-0 transition-colors hidden sm:flex"
+                title="Geser kategori ke kiri"
+              >
+                <ChevronLeft size={16} />
+              </button>
+
+              <div 
+                ref={categoryScrollRef}
+                className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar scroll-smooth py-1 px-0.5 touch-pan-x flex-1"
+              >
+                {categories.map((cat) => {
+                  const count = cat === 'Semua' 
+                    ? STC_ECOSYSTEM_MODULES.length 
+                    : STC_ECOSYSTEM_MODULES.filter(m => m.category === cat).length;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3 py-1.5 rounded-xl font-sans text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                        selectedCategory === cat
+                          ? 'bg-[#8b0000] text-white shadow-sm'
+                          : 'bg-white border border-black/5 text-gray-600 hover:bg-black/5'
+                      }`}
+                    >
+                      <span>{cat}</span>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                        selectedCategory === cat ? 'bg-white/20 text-white' : 'bg-black/10 text-gray-700'
+                      }`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => scrollCategories('right')}
+                className="w-7 h-7 rounded-lg bg-black/5 hover:bg-black/10 flex items-center justify-center text-gray-600 shrink-0 transition-colors hidden sm:flex"
+                title="Geser kategori ke kanan"
+              >
+                <ChevronRight size={16} />
+              </button>
             </div>
 
             {/* Search Box */}
-            <div className="relative min-w-[200px] sm:w-64">
+            <div className="relative w-full sm:w-60 shrink-0">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
@@ -207,8 +232,55 @@ export function STCEcosystemModal({ isOpen, onClose, initialFilter = 'Semua' }: 
             </div>
           </div>
 
-          {/* Module Cards Grid */}
-          <div className="flex-1 overflow-y-auto p-6 sm:p-8 no-scrollbar space-y-6">
+          {/* Module Cards Grid & Research Context (Easily scrollable and slideable) */}
+          <div 
+            ref={mainScrollRef}
+            onScroll={handleMainScroll}
+            className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 custom-scrollbar scroll-smooth overscroll-contain touch-pan-y"
+          >
+            {/* Collapsible Research Context Banner (inside scroll container so viewport is never blocked) */}
+            <div className="bg-white border border-black/10 rounded-2xl shadow-xs overflow-hidden transition-all">
+              <button 
+                onClick={() => setIsResearchContextOpen(!isResearchContextOpen)}
+                className="w-full p-4 sm:p-5 flex items-center justify-between gap-3 text-left hover:bg-[#faf7f2]/50 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-[#8b0000]/10 text-[#8b0000] flex items-center justify-center shrink-0">
+                    <BookOpen size={16} />
+                  </div>
+                  <div>
+                    <h4 className="font-serif text-sm sm:text-base font-bold text-gray-900">
+                      Mengapa SIGUNTANG "Powered by STC"?
+                    </h4>
+                    <p className="text-[11px] text-gray-500">
+                      Landasan Teoretis & Arsitektur Disertasi Doktoral Smart Tourism Chain
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#8b0000] shrink-0">
+                  <span>{isResearchContextOpen ? 'Tutup Ringkasan' : 'Buka Penjelasan'}</span>
+                  {isResearchContextOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </div>
+              </button>
+
+              {isResearchContextOpen && (
+                <div className="px-5 pb-5 pt-0 text-xs text-gray-700 leading-relaxed border-t border-black/5 space-y-3 bg-[#fbf9f6]/60">
+                  <p className="pt-3">
+                    <strong>Smart Tourism Chain (STC)</strong> merupakan hasil kajian disertasi doktoral yang merumuskan arsitektur blockchain untuk sektor pariwisata dan pelestarian budaya. SIGUNTANG hadir sebagai <em>Cultural Experience Layer Node</em> pertama yang mengadopsi 12 modul STC—menjamin data artefak tidak dapat dipalsukan, transaksi mikro gas ramah kantong, jejak karbon terukur menuju <strong>FOLU Net Sink 2030</strong>, dan transparansi donasi berbasis bukti digital.
+                  </p>
+                  <p>
+                    SIGUNTANG merupakan platform demonstrasi digital yang mengintegrasikan teknologi blockchain, kecerdasan buatan, dan sistem informasi geospasial untuk mendukung pelestarian warisan budaya serta pengembangan pariwisata cerdas di Palembang. Platform ini dikembangkan dengan memanfaatkan pendekatan SmartTourismChain (STC), sebuah inisiatif arsitektur teknologi yang mengeksplorasi pemanfaatan smart contract, pencatatan digital, dan integrasi sistem dalam ekosistem pariwisata. Melalui SIGUNTANG, pendekatan tersebut dieksplorasi dalam konteks yang lebih spesifik: pengelolaan informasi cagar budaya, pemetaan simpul warisan sejarah, serta pengembangan konsep keterlacakan dan verifikasi digital. SIGUNTANG menghadirkan konteks penerapan; STC menyediakan landasan eksplorasi teknologinya.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Count & View indicator */}
+            <div className="flex items-center justify-between text-xs text-gray-500 px-1">
+              <span>Menampilkan <strong>{filteredModules.length}</strong> modul STC</span>
+              <span className="text-[11px] font-mono">Scroll halus • Sentuh / geser kartu</span>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredModules.map((module) => {
                 const isExpanded = expandedModuleId === module.id;
@@ -397,6 +469,18 @@ export function STCEcosystemModal({ isOpen, onClose, initialFilter = 'Semua' }: 
               </div>
             </div>
           </div>
+
+          {/* Floating Scroll to Top Button */}
+          {showScrollTop && (
+            <button
+              onClick={scrollToTop}
+              className="absolute bottom-5 right-5 sm:bottom-6 sm:right-8 z-20 w-10 h-10 rounded-full bg-[#8b0000] text-white shadow-lg shadow-[#8b0000]/30 hover:bg-[#a00000] flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
+              title="Kembali ke atas"
+              aria-label="Kembali ke atas"
+            >
+              <ArrowUp size={18} />
+            </button>
+          )}
         </motion.div>
       </div>
     </AnimatePresence>

@@ -65,72 +65,63 @@ export function LegalModal({ isOpen, onClose, initialTab = 'protocol', onOpenSTC
           transition={{ duration: 0.2 }}
           className="relative w-full max-w-4xl bg-[#fbf9f6] text-[#1a1a1a] rounded-3xl md:rounded-[36px] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-black/10"
         >
-          {/* Header */}
-          <div className="px-6 sm:px-8 py-5 border-b border-black/10 bg-white flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#8b0000] text-white flex items-center justify-center shadow-md shadow-[#8b0000]/20">
-                <Scale size={20} />
+          {/* Document Header (Customized per active tab without redundant nav header) */}
+          {(() => {
+            const meta = {
+              protocol: {
+                icon: <Cpu size={20} />,
+                title: 'STC Protocol & Technical Overview',
+                subtitle: 'Technical Architecture & Web3 Pipeline • Layer 1-4 Integration',
+                badge: 'Protocol Architecture'
+              },
+              sovereignty: {
+                icon: <Lock size={20} />,
+                title: 'Data Sovereignty & Heritage Data',
+                subtitle: 'Kedaulatan & Perlindungan Data Warisan Budaya • IPFS & ZK Proofs',
+                badge: 'Data Sovereignty'
+              },
+              governance: {
+                icon: <Users size={20} />,
+                title: 'Governance & Community Stewardship',
+                subtitle: 'Tata Kelola Multi-Pihak & Kebijakan Kurasi Komunitas',
+                badge: 'Stewardship & Governance'
+              }
+            }[activeTab];
+
+            return (
+              <div className="px-6 sm:px-8 py-5 border-b border-black/10 bg-white flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-2xl bg-[#8b0000] text-white flex items-center justify-center shadow-md shadow-[#8b0000]/20 shrink-0">
+                    {meta.icon}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#8b0000] bg-[#8b0000]/10 px-2.5 py-0.5 rounded-full">
+                        {meta.badge}
+                      </span>
+                    </div>
+                    <h3 className="font-serif text-lg sm:text-xl font-bold text-[#1a1a1a]">
+                      {meta.title}
+                    </h3>
+                    <p className="text-[11px] text-gray-500 font-medium hidden sm:block">
+                      {meta.subtitle}
+                    </p>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={onClose}
+                  className="w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 text-gray-700 flex items-center justify-center transition-colors shrink-0"
+                  aria-label="Tutup"
+                >
+                  <X size={20} />
+                </button>
               </div>
-              <div>
-                <h3 className="font-serif text-lg sm:text-xl font-bold text-[#1a1a1a]">
-                  Protokol & Tata Kelola SIGUNTANG
-                </h3>
-                <p className="text-[10px] uppercase tracking-widest text-[#8b0000] font-bold">
-                  Proposed Framework • Technical & Heritage Stewardship
-                </p>
-              </div>
-            </div>
-
-            <button 
-              onClick={onClose}
-              className="w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 text-gray-700 flex items-center justify-center transition-colors"
-              aria-label="Tutup"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Navigation Tabs */}
-          <div className="flex border-b border-black/10 bg-white/60 px-4 sm:px-8 gap-2 overflow-x-auto no-scrollbar">
-            <button
-              onClick={() => setActiveTab('protocol')}
-              className={`py-3.5 px-4 font-sans text-xs uppercase tracking-widest font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeTab === 'protocol'
-                  ? 'border-[#8b0000] text-[#8b0000]'
-                  : 'border-transparent text-gray-500 hover:text-black'
-              }`}
-            >
-              <Cpu size={15} />
-              STC Protocol & Technical Overview
-            </button>
-
-            <button
-              onClick={() => setActiveTab('sovereignty')}
-              className={`py-3.5 px-4 font-sans text-xs uppercase tracking-widest font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeTab === 'sovereignty'
-                  ? 'border-[#8b0000] text-[#8b0000]'
-                  : 'border-transparent text-gray-500 hover:text-black'
-              }`}
-            >
-              <Lock size={15} />
-              Data Sovereignty & Heritage Data
-            </button>
-
-            <button
-              onClick={() => setActiveTab('governance')}
-              className={`py-3.5 px-4 font-sans text-xs uppercase tracking-widest font-bold border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeTab === 'governance'
-                  ? 'border-[#8b0000] text-[#8b0000]'
-                  : 'border-transparent text-gray-500 hover:text-black'
-              }`}
-            >
-              <Users size={15} />
-              Governance & Community Stewardship
-            </button>
-          </div>
+            );
+          })()}
 
           {/* Tab Content Body */}
-          <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-8 no-scrollbar text-sm leading-relaxed">
+          <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-8 custom-scrollbar text-sm leading-relaxed scroll-smooth overscroll-contain">
             
             {/* 1. STC PROTOCOL */}
             {activeTab === 'protocol' && (

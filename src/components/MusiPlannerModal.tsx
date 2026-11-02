@@ -34,6 +34,7 @@ import {
 } from '../services/geminiPlannerService';
 import { buildSBTMetadata, pinMetadataToIPFS } from '../services/ipfsService';
 import { mintSoulboundCertificate, WalletState } from '../services/blockchainService';
+import { PhysicalCertificateModal } from './PhysicalCertificateModal';
 
 interface MusiPlannerModalProps {
   isOpen: boolean;
@@ -72,6 +73,7 @@ export function MusiPlannerModal({
   // Minting state
   const [isMinting, setIsMinting] = useState(false);
   const [mintedTxHash, setMintedTxHash] = useState<string | null>(null);
+  const [showPhysicalCert, setShowPhysicalCert] = useState(false);
 
   if (!isOpen) return null;
 
@@ -482,19 +484,29 @@ export function MusiPlannerModal({
                 {/* On-Chain Passport Minting */}
                 <div className="pt-1 print:hidden">
                   {mintedTxHash ? (
-                    <div className="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-xl flex items-center justify-between text-xs text-emerald-200">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 size={16} className="text-emerald-400" />
-                        <span>SBT Paspor Rute Cerdas Berhasil Dicatat di Sepolia!</span>
+                    <div className="space-y-2">
+                      <div className="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-xl flex items-center justify-between text-xs text-emerald-200">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 size={16} className="text-emerald-400" />
+                          <span>SBT Paspor Rute Cerdas Berhasil Dicatat di Sepolia!</span>
+                        </div>
+                        <a
+                          href={`https://sepolia.etherscan.io/tx/${mintedTxHash}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-mono text-[10px] text-amber-300 underline font-bold"
+                        >
+                          Buka Etherscan ↗
+                        </a>
                       </div>
-                      <a
-                        href={`https://sepolia.etherscan.io/tx/${mintedTxHash}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-mono text-[10px] text-amber-300 underline font-bold"
+
+                      <button
+                        onClick={() => setShowPhysicalCert(true)}
+                        className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-stone-950 font-serif font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer border border-yellow-200"
                       >
-                        Buka Etherscan ↗
-                      </a>
+                        <Award size={15} className="text-stone-950 shrink-0" />
+                        <span>Unduh & Cetak Piagam Fisik Rute Hijau (Ber-QR Code)</span>
+                      </button>
                     </div>
                   ) : (
                     <button
@@ -532,6 +544,24 @@ export function MusiPlannerModal({
           </span>
         </div>
       </motion.div>
+
+      {/* Physical Downloadable & Printable Certificate Modal */}
+      {itinerary && (
+        <PhysicalCertificateModal
+          isOpen={showPhysicalCert}
+          onClose={() => setShowPhysicalCert(false)}
+          data={{
+            recipientName: wallet?.address ? `${wallet.address.slice(0, 6)}...${wallet.address.slice(-4)}` : 'Pelancong Cerdas Sungai Musi',
+            title: `Piagam Pelayaran Budaya Rendah Karbon (${itinerary.transitModeName})`,
+            category: 'Smart Cruise Itinerary',
+            nodeName: 'Koridor Sungai Musi 750 KM',
+            indonesianTranslation: `Dengan ini disahkan bahwa pelancong telah menuntaskan penjelajahan ${itinerary.totalDurationHours} jam di Sungai Musi dengan moda ${itinerary.transitModeName}. Total jejak emisi ${itinerary.carbonMetrics.totalCarbonKg} kg CO₂e dengan komitmen aksi eco-offset: "${itinerary.carbonMetrics.offsetRecommendation}".`,
+            txHash: mintedTxHash || '0x...',
+            tokenId: 5192,
+            explorerUrl: mintedTxHash ? `https://sepolia.etherscan.io/tx/${mintedTxHash}` : undefined
+          }}
+        />
+      )}
     </div>
   );
 }

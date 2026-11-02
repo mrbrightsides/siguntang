@@ -19,13 +19,15 @@ import {
   Copy,
   Check,
   X,
-  Code2
+  Code2,
+  Award
 } from 'lucide-react';
 import { UniversalNode } from '../types';
 import { PALEMBANG_NODES } from '../constants';
 import { buildSBTMetadata, pinMetadataToIPFS, IPFSResult } from '../services/ipfsService';
 import { mintSoulboundCertificate, switchToSepoliaTestnet, WalletState } from '../services/blockchainService';
 import { CONTRACT_ADDRESSES, SEPOLIA_CONFIG } from '../contractData';
+import { PhysicalCertificateModal } from './PhysicalCertificateModal';
 
 interface MintSBTModalProps {
   isOpen: boolean;
@@ -58,6 +60,7 @@ export function MintSBTModal({
   const [showMetadataPreview, setShowMetadataPreview] = useState(false);
   const [showDeployGuide, setShowDeployGuide] = useState(false);
   const [copiedHash, setCopiedHash] = useState(false);
+  const [showPhysicalCert, setShowPhysicalCert] = useState(false);
 
   const selectedNode = PALEMBANG_NODES.find(n => n.id === selectedNodeId) || defaultNode || PALEMBANG_NODES[0];
 
@@ -275,6 +278,19 @@ export function MintSBTModal({
                       Mint Node Lain
                     </button>
                   </div>
+
+                  {/* Golden Button to Open & Download Physical Certificate */}
+                  <motion.button
+                    initial={{ scale: 0.96, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowPhysicalCert(true)}
+                    className="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-stone-950 font-serif font-bold text-xs sm:text-sm rounded-xl transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2.5 cursor-pointer border border-yellow-200 mt-2"
+                  >
+                    <Award size={18} className="text-stone-950 shrink-0" />
+                    <span>Unduh & Cetak Piagam Fisik Resmi Ber-QR Code</span>
+                  </motion.button>
                 </div>
               ) : (
                 /* Form View */
@@ -447,6 +463,12 @@ export function MintSBTModal({
                     )}
                   </div>
 
+                  {/* Physical Certificate Lock Indicator */}
+                  <div className="p-3 bg-white/5 border border-white/10 rounded-xl flex items-center gap-2.5 text-xs text-amber-200/75">
+                    <Lock size={14} className="text-amber-400 shrink-0" />
+                    <span>Piagam Fisik Cetak & Unduh Ber-QR Code baru akan terbuka setelah token di-mint ke blockchain.</span>
+                  </div>
+
                   {/* Action Button */}
                   <div className="pt-2">
                     <button
@@ -472,6 +494,25 @@ export function MintSBTModal({
             </div>
           </motion.div>
         </motion.div>
+      )}
+
+      {/* Physical Downloadable & Printable Certificate Modal */}
+      {mintResult && (
+        <PhysicalCertificateModal
+          isOpen={showPhysicalCert}
+          onClose={() => setShowPhysicalCert(false)}
+          data={{
+            recipientName: recipientName.trim() || 'Pelestari Budaya Nusantara',
+            title: `Piagam Resmi ${certType} - ${selectedNode.name}`,
+            category: selectedNode.type,
+            nodeName: selectedNode.name,
+            indonesianTranslation: `Dengan ini disahkan bahwa pemegang telah menuntaskan ziarah budaya di ${selectedNode.name} dan terdaftar sebagai simpul aktif dalam jaringan Smart Tourism Chain (STC). Sertifikat ini terikat permanen (Soulbound) pada dompet digital penerima.`,
+            txHash: mintResult.txHash,
+            tokenId: mintResult.tokenId,
+            explorerUrl: mintResult.explorerUrl,
+            ipfsUri: mintResult.ipfsResult.ipfsUri
+          }}
+        />
       )}
     </AnimatePresence>
   );

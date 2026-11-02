@@ -22,7 +22,8 @@ import {
   Feather,
   Flame,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Lock
 } from 'lucide-react';
 import { 
   generateDigitalPrasasti, 
@@ -40,6 +41,7 @@ import {
   SEPOLIA_CONFIG 
 } from '../contractData';
 import { pinMetadataToIPFS, buildSBTMetadata } from '../services/ipfsService';
+import { PhysicalCertificateModal } from './PhysicalCertificateModal';
 
 interface PrasastiDigitalModalProps {
   isOpen: boolean;
@@ -68,8 +70,10 @@ export function PrasastiDigitalModal({
   const [isMinting, setIsMinting] = useState(false);
   const [mintStep, setMintStep] = useState<'idle' | 'ipfs' | 'contract' | 'success' | 'error'>('idle');
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [mintedTokenId, setMintedTokenId] = useState<number | string>(1001);
   const [mintError, setMintError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showPhysicalCert, setShowPhysicalCert] = useState(false);
 
   // Audio Speech state
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -166,6 +170,7 @@ export function PrasastiDigitalModal({
       });
 
       setTxHash(tx.txHash);
+      if (tx.tokenId) setMintedTokenId(tx.tokenId);
       setMintStep('success');
     } catch (err: any) {
       console.error("Gagal minting SBT Prasasti:", err);
@@ -467,29 +472,49 @@ export function PrasastiDigitalModal({
                   </div>
 
                   {mintStep === 'success' && txHash ? (
-                    <div className="p-3.5 bg-emerald-950/60 border border-emerald-500/40 rounded-xl text-xs space-y-2">
-                      <div className="flex items-center gap-2 text-emerald-300 font-bold">
-                        <Check size={16} />
-                        Prasasti Berhasil Diminting On-Chain!
+                    <div className="space-y-3">
+                      <div className="p-3.5 bg-emerald-950/60 border border-emerald-500/40 rounded-xl text-xs space-y-2">
+                        <div className="flex items-center gap-2 text-emerald-300 font-bold">
+                          <Check size={16} />
+                          Prasasti Berhasil Diminting On-Chain!
+                        </div>
+                        <p className="text-[11px] text-emerald-100/80 leading-relaxed">
+                          Sumpah pelestarian budaya Anda telah terpatri abadi pada Smart Tourism Chain Ethereum Sepolia.
+                        </p>
+                        <a
+                          href={`${SEPOLIA_CONFIG.blockExplorerUrls[0]}/tx/${txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 hover:underline"
+                        >
+                          Buka di Sepolia Etherscan <ExternalLink size={12} />
+                        </a>
                       </div>
-                      <p className="text-[11px] text-emerald-100/80 leading-relaxed">
-                        Sumpah pelestarian budaya Anda telah terpatri abadi pada Smart Tourism Chain Ethereum Sepolia.
-                      </p>
-                      <a
-                        href={`${SEPOLIA_CONFIG.blockExplorerUrls[0]}/tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 hover:underline"
+
+                      {/* Button to Open & Download Physical Certificate */}
+                      <motion.button
+                        initial={{ scale: 0.96, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setShowPhysicalCert(true)}
+                        className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-stone-950 font-serif font-bold text-xs sm:text-sm rounded-xl transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 cursor-pointer border border-yellow-200"
                       >
-                        Buka di Sepolia Etherscan <ExternalLink size={12} />
-                      </a>
+                        <Award size={18} className="text-stone-950 shrink-0" />
+                        <span>Unduh & Cetak Piagam Fisik (Ber-QR Code)</span>
+                      </motion.button>
                     </div>
                   ) : mintStep === 'error' && mintError ? (
                     <div className="p-3 bg-red-950/60 border border-red-500/40 rounded-xl text-xs text-red-200">
                       <span className="font-bold block mb-1">Gagal Minting:</span>
                       {mintError}
                     </div>
-                  ) : null}
+                  ) : (
+                    <div className="p-2.5 bg-black/40 border border-white/5 rounded-xl flex items-center gap-2 text-[11px] text-amber-200/70">
+                      <Lock size={13} className="text-amber-400 shrink-0" />
+                      <span>Piagam Fisik Cetak & Unduh Ber-QR Code baru akan terbuka setelah prasasti diminting on-chain.</span>
+                    </div>
+                  )}
 
                   <button
                     onClick={handleMintSBT}
@@ -541,6 +566,27 @@ export function PrasastiDigitalModal({
 
         </div>
       </motion.div>
+
+      {/* Physical Downloadable & Printable Certificate Modal */}
+      {result && (
+        <PhysicalCertificateModal
+          isOpen={showPhysicalCert}
+          onClose={() => setShowPhysicalCert(false)}
+          data={{
+            recipientName: visitorName,
+            title: result.steleTitle,
+            category: selectedTemplate.category,
+            nodeName: 'Genesis Node Bukit Siguntang',
+            oldMalayText: result.oldMalayText,
+            pallawaScript: result.pallawaScript,
+            indonesianTranslation: result.indonesianTranslation,
+            curseProtectionFormula: result.curseProtectionFormula,
+            txHash: txHash || '0x...',
+            tokenId: mintedTokenId,
+            explorerUrl: txHash ? `${SEPOLIA_CONFIG.blockExplorerUrls[0]}/tx/${txHash}` : undefined
+          }}
+        />
+      )}
     </div>
   );
 }

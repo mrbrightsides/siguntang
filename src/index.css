@@ -24,3 +24,46 @@
   scrollbar-width: none;
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(139, 0, 0, 0.35);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 0, 0, 0.65);
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 0, 0, 0.35) rgba(0, 0, 0, 0.04);
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-stc-certificate, #printable-stc-certificate * {
+    visibility: visible;
+  }
+  #printable-stc-certificate {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-shadow: none !important;
+    border: 6px solid #8b0000 !important;
+    background: #fbf7ee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+

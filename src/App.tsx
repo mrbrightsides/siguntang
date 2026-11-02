@@ -24,6 +24,7 @@ import { AIVisionInspectorModal } from './components/AIVisionInspectorModal';
 import { MusiStorytellerModal } from './components/MusiStorytellerModal';
 import { MusiPlannerModal } from './components/MusiPlannerModal';
 import { PrasastiDigitalModal } from './components/PrasastiDigitalModal';
+import { GlossaryModal } from './components/GlossaryModal';
 import { MusiWeatherType } from './services/musiAudioEngine';
 import { connectWallet, WalletState, recordTraceabilityTransaction } from './services/blockchainService';
 import { SEPOLIA_CONFIG } from './contractData';
@@ -51,6 +52,8 @@ export default function App() {
   const [storytellerWeather, setStorytellerWeather] = useState<MusiWeatherType>('senja');
   const [isPlannerOpen, setIsPlannerOpen] = useState(false);
   const [isPrasastiOpen, setIsPrasastiOpen] = useState(false);
+  const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
+  const [glossaryCategory, setGlossaryCategory] = useState<'all' | 'blockchain' | 'culture'>('all');
 
   useEffect(() => {
     if (typeof window.ethereum !== 'undefined') {
@@ -610,6 +613,15 @@ export default function App() {
                       <span className="text-[10px] text-gray-400 font-mono">/ Stewardship</span>
                     </button>
                   </li>
+                  <li>
+                    <button 
+                      onClick={() => setIsGlossaryOpen(true)}
+                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
+                    >
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Glosarium</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ Kamus Istilah</span>
+                    </button>
+                  </li>
                 </ul>
               </div>
 
@@ -913,6 +925,12 @@ export default function App() {
         onClose={() => setIsPrasastiOpen(false)}
         wallet={wallet}
         onConnectWallet={handleConnectWallet}
+      />
+
+      <GlossaryModal
+        isOpen={isGlossaryOpen}
+        onClose={() => setIsGlossaryOpen(false)}
+        initialTab={glossaryCategory}
       />
 
       {/* Floating AI Guide & Musi Storyteller Assistant */}
