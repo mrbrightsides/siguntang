@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import * as THREE from 'three';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -27,7 +27,19 @@ import {
   Sliders,
   Navigation,
   Smartphone,
-  Info
+  Info,
+  Copy,
+  ExternalLink,
+  Image as ImageIcon,
+  CheckCircle2,
+  Target,
+  Locate,
+  LocateFixed,
+  ArrowUp,
+  ArrowUpRight,
+  Crosshair,
+  SlidersHorizontal,
+  Activity
 } from 'lucide-react';
 import { PALEMBANG_NODES } from '../constants';
 import { UniversalNode } from '../types';
@@ -39,7 +51,14 @@ import {
   getRelativeAngle,
   PALEMBANG_CENTER,
   SIGUNTANG_SUMMIT,
-  GeoCoordinate
+  GeoCoordinate,
+  AMPERA_MARKER_SAMPLE_DATA,
+  isAmperaCoordinateMatch,
+  findNearestHeritageSite,
+  getSiteCalibrationStatus,
+  getRelativeDirectionText,
+  NearestSiteResult,
+  CalibrationStatus
 } from '../services/arGeoMath';
 import { buildHeritage3DMarker } from '../services/arMarkerFactory';
 import { musiAudio } from '../services/musiAudioEngine';
@@ -53,6 +72,21 @@ interface ARHeritageViewerModalProps {
 }
 
 type CameraStatus = 'initializing' | 'active' | 'denied' | 'unsupported' | 'simulated';
+
+/**
+ * Representasi Objek Browser Lokal untuk Foto Hasil Snapshot AR
+ */
+export interface LocalBrowserSnapshot {
+  id: string;
+  objectUrl: string; // URL.createObjectURL(blob)
+  file: File;        // Browser File object untuk native Web Share API
+  blob: Blob;        // Browser Blob object
+  dataUrl: string;
+  timestamp: Date;
+  siteName: string;
+  coordinates: GeoCoordinate;
+  isCoordinateMatched: boolean;
+}
 
 export function ARHeritageViewerModal({
   isOpen,
@@ -80,6 +114,8 @@ export function ARHeritageViewerModal({
     bearing: number;
     distance: number;
     updateDistance: (d: string) => void;
+    setCoordinateMatched: (m: boolean) => void;
+    isCoordinateMatched: () => boolean;
   }>>(new Map());
 
   // Camera stream & status
@@ -90,7 +126,7 @@ export function ARHeritageViewerModal({
 
   // Geolocation & Heading State
   const [useSimulatedGPS, setUseSimulatedGPS] = useState<boolean>(true);
-  const [currentCoord, setCurrentCoord] = useState<GeoCoordinate>(PALEMBANG_CENTER);
+  const [currentCoord, setCurrentCoord] = useState<GeoCoordinate>(AMPERA_MARKER_SAMPLE_DATA.coordinates);
   const [compassHeading, setCompassHeading] = useState<number>(0);
   const [pitchAngle, setPitchAngle] = useState<number>(0);
   const [deviceOrientationActive, setDeviceOrientationActive] = useState<boolean>(false);
@@ -108,12 +144,33 @@ export function ARHeritageViewerModal({
   const [snapshotSuccess, setSnapshotSuccess] = useState<string | null>(null);
   const [isControlsCollapsed, setIsControlsCollapsed] = useState<boolean>(false);
 
+  // Ampera Sample Data Inspection Modal
+  const [isAmperaDataModalOpen, setIsAmperaDataModalOpen] = useState<boolean>(false);
+
+  // Local Browser Snapshot Objects & Sharing Modal
+  const [savedSnapshots, setSavedSnapshots] = useState<LocalBrowserSnapshot[]>([]);
+  const [activeSnapshotForShare, setActiveSnapshotForShare] = useState<LocalBrowserSnapshot | null>(null);
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+
+  // Ampera Coordinate Matching Status
+  const amperaMatchStatus = isAmperaCoordinateMatch(currentCoord);
+  const isAmperaMatched = amperaMatchStatus.isMatch;
+
   // Sync selected node with initialNode prop
   useEffect(() => {
     if (initialNode) {
       setSelectedMarkerNode(initialNode);
     }
   }, [initialNode]);
+
+  // Clean up object URLs on unmount to prevent browser memory leaks
+  useEffect(() => {
+    return () => {
+      savedSnapshots.forEach((snap) => {
+        URL.revokeObjectURL(snap.objectUrl);
+      });
+    };
+  }, [savedSnapshots]);
 
   // Raycaster for 3D marker touch/click
   const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster());
@@ -319,16 +376,21 @@ export function ARHeritageViewerModal({
       const markerObj = buildHeritage3DMarker(node, distText);
 
       // Posisi 3D pada lingkaran bola AR
-      // Sudut theta (azimuth bearing): 0° = Z negatif (Utara)
       const radBearing = (bearing * Math.PI) / 180;
-      // Jarak visual di-scale agar nyaman dilihat di viewport (16 - 32 unit)
       const visualRadius = Math.max(16, Math.min(32, 16 + Math.log10(Math.max(10, distMeters)) * 4));
 
       const x = visualRadius * Math.sin(radBearing);
       const z = -visualRadius * Math.cos(radBearing);
-      const y = -0.5 + (Math.sin(radBearing * 3) * 0.4); // Variasi elevasi alami
+      const y = -0.5 + (Math.sin(radBearing * 3) * 0.4);
 
       markerObj.group.position.set(x, y, z);
+
+      // Jika node adalah Ampera dan koordinat cocok, aktifkan state virtual overlay
+      if (node.id === 'node-ampera') {
+        const isMatch = isAmperaCoordinateMatch(origin).isMatch;
+        markerObj.setCoordinateMatched(isMatch);
+      }
+
       scene.add(markerObj.group);
 
       markersMap.set(node.id, {
@@ -348,13 +410,22 @@ export function ARHeritageViewerModal({
       const elapsed = clock.getElapsedTime();
 
       // Animasi subtle floating & pulse pada marker
-      markersMap.forEach(({ iconGroup, beaconRing, labelSprite }) => {
+      markersMap.forEach(({ iconGroup, beaconRing, labelSprite, node, isCoordinateMatched }) => {
+        const isMatched = isCoordinateMatched();
+
         // Slow continuous rotation
-        iconGroup.rotation.y = elapsed * 0.4;
+        iconGroup.rotation.y = elapsed * (isMatched ? 0.6 : 0.4);
         iconGroup.position.y = 1.0 + Math.sin(elapsed * 2 + iconGroup.id) * 0.15;
 
+        // Animate Ampera halo if present
+        const halo = iconGroup.getObjectByName('AMPERA_HALO');
+        if (halo) {
+          halo.rotation.z = elapsed * 1.2;
+          halo.scale.setScalar(1.0 + Math.sin(elapsed * 4) * 0.1);
+        }
+
         // Pulse ground beacon ring
-        beaconRing.scale.setScalar(1.0 + Math.sin(elapsed * 3) * 0.12);
+        beaconRing.scale.setScalar(1.0 + Math.sin(elapsed * (isMatched ? 4.5 : 3)) * 0.15);
 
         // Always face label towards the camera
         labelSprite.lookAt(camera.position);
@@ -367,7 +438,6 @@ export function ARHeritageViewerModal({
       const radYaw = (-totalHeading * Math.PI) / 180;
       const radPitch = (-totalPitch * Math.PI) / 180;
 
-      // Euler angle: YXZ order untuk orientasi kamera HP yang tepat
       camera.rotation.order = 'YXZ';
       camera.rotation.y = radYaw;
       camera.rotation.x = radPitch;
@@ -404,10 +474,11 @@ export function ARHeritageViewerModal({
     };
   }, [isOpen, isSoftwareGl, currentCoord]);
 
-  // Recalculate distances and update 3D marker positions when location changes
+  // Recalculate distances, positions, and coordinate match when location changes
   useEffect(() => {
     if (!markersRef.current.size) return;
     const origin = currentCoord;
+    const amperaMatch = isAmperaCoordinateMatch(origin);
 
     markersRef.current.forEach((markerData) => {
       const distMeters = calculateDistanceMeters(origin, markerData.node.location);
@@ -425,6 +496,11 @@ export function ARHeritageViewerModal({
       const z = -visualRadius * Math.cos(radBearing);
       markerData.group.position.x = x;
       markerData.group.position.z = z;
+
+      // Update Ampera coordinate match state
+      if (markerData.node.id === 'node-ampera') {
+        markerData.setCoordinateMatched(amperaMatch.isMatch);
+      }
     });
   }, [currentCoord]);
 
@@ -459,13 +535,11 @@ export function ARHeritageViewerModal({
     const deltaY = e.clientY - dragStartRef.current.y;
     dragStartRef.current = { x: e.clientX, y: e.clientY };
 
-    // Sensitivitas drag: 1px = ~0.35 derajat
     manualHeadingOffsetRef.current = (manualHeadingOffsetRef.current - deltaX * 0.35) % 360;
     manualPitchOffsetRef.current = Math.max(-75, Math.min(75, manualPitchOffsetRef.current + deltaY * 0.25));
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    // Cek apakah klik/tap singkat tanpa banyak drag (untuk raycasting objek 3D)
     isDraggingRef.current = false;
 
     if (!canvasMountRef.current || !cameraRef.current || !sceneRef.current) return;
@@ -497,14 +571,33 @@ export function ARHeritageViewerModal({
     const marker = markersRef.current.get(node.id);
     if (!marker) return;
 
-    // Set heading agar kamera langsung menatap azimuth situs ini
     const targetHeading = marker.bearing;
     manualHeadingOffsetRef.current = targetHeading - compassHeading;
     manualPitchOffsetRef.current = 0;
     musiAudio.playArrivalChime(480);
   };
 
-  // Snapshot Foto AR: Gabungkan feed kamera/latar + Three.js canvas + Stempel Cagar Budaya
+  // Set Simulated Location to Exact Ampera Coordinates
+  const handleSetExactAmperaLocation = () => {
+    setUseSimulatedGPS(true);
+    setCurrentCoord(AMPERA_MARKER_SAMPLE_DATA.coordinates);
+    const amperaNode = PALEMBANG_NODES.find((n) => n.id === 'node-ampera');
+    if (amperaNode) {
+      handleFocusSite(amperaNode);
+    }
+    musiAudio.playArrivalChime(640);
+  };
+
+  // Set Location away from Ampera to demonstrate distance/non-match
+  const handleSetFarLocation = () => {
+    setUseSimulatedGPS(true);
+    // 3.5 km away from Ampera
+    setCurrentCoord({ lat: -3.0200, lng: 104.7900 });
+  };
+
+  // =========================================================================
+  // CAPTURE SNAPSHOT FEATURE (Saves photo as a Local Browser Object for sharing)
+  // =========================================================================
   const handleCaptureARSnapshot = async () => {
     if (isSnapshotLoading) return;
     setIsSnapshotLoading(true);
@@ -521,7 +614,6 @@ export function ARHeritageViewerModal({
       if (cameraStatus === 'active' && videoRef.current && videoRef.current.readyState >= 2) {
         ctx.drawImage(videoRef.current, 0, 0, w, h);
       } else {
-        // Background Simulasi Panorama Musi Senja
         const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
         bgGrad.addColorStop(0, '#1c1917');
         bgGrad.addColorStop(0.5, '#78350f');
@@ -538,54 +630,150 @@ export function ARHeritageViewerModal({
 
       // 3. Stempel Watermark Budaya Eksklusif SIGUNTANG AR
       ctx.save();
-      // Banner gelap transparan di bawah
-      ctx.fillStyle = 'rgba(10, 8, 6, 0.75)';
-      ctx.fillRect(0, h - 85, w, 85);
+      ctx.fillStyle = 'rgba(10, 8, 6, 0.78)';
+      ctx.fillRect(0, h - 90, w, 90);
 
-      // Border aksen emas
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillRect(0, h - 88, w, 3);
+      // Border aksen emas / hijau jika cocok
+      ctx.fillStyle = isAmperaMatched ? '#10b981' : '#f59e0b';
+      ctx.fillRect(0, h - 93, w, 3);
 
       // Logo Text SIGUNTANG AR
       ctx.font = 'bold 22px serif';
       ctx.fillStyle = '#ffffff';
-      ctx.fillText('SIGUNTANG • Cagar Budaya AR Camera', 30, h - 50);
+      ctx.fillText('SIGUNTANG • Cagar Budaya AR Camera', 30, h - 52);
 
       ctx.font = '13px monospace';
-      ctx.fillStyle = '#fde68a';
-      const locText = useSimulatedGPS
-        ? 'Palembang Heritage Hub • Simulasi Jembatan Ampera'
-        : `GPS: ${currentCoord.lat.toFixed(4)}, ${currentCoord.lng.toFixed(4)}`;
-      ctx.fillText(`${locText} • Heading: ${((compassHeading + manualHeadingOffsetRef.current) % 360).toFixed(0)}°`, 30, h - 25);
+      ctx.fillStyle = isAmperaMatched ? '#6ee7b7' : '#fde68a';
+      const locText = isAmperaMatched
+        ? `📍 AMPERA BRIDGE COORDINATES MATCHED (Lat: ${currentCoord.lat.toFixed(4)}, Lng: ${currentCoord.lng.toFixed(4)})`
+        : `GPS: Lat ${currentCoord.lat.toFixed(4)}, Lng ${currentCoord.lng.toFixed(4)}`;
+      ctx.fillText(`${locText} • Heading: ${activeHeading}°`, 30, h - 25);
 
       // Stempel Kanan
       ctx.textAlign = 'right';
-      ctx.font = 'bold 14px monospace';
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillText('STC DIGITAL PROVENANCE VERIFIED', w - 30, h - 50);
+      ctx.font = 'bold 13px monospace';
+      ctx.fillStyle = isAmperaMatched ? '#10b981' : '#f59e0b';
+      ctx.fillText(
+        isAmperaMatched ? '✓ AMPERA 3D VIRTUAL OVERLAY VERIFIED' : 'STC DIGITAL PROVENANCE VERIFIED',
+        w - 30,
+        h - 52
+      );
 
-      ctx.font = '12px monospace';
+      ctx.font = '11px monospace';
       ctx.fillStyle = '#a8a29e';
       ctx.fillText(new Date().toLocaleString('id-ID'), w - 30, h - 25);
       ctx.restore();
 
-      // Trigger Download atau Web Share
+      // 4. GENERATE LOCAL BROWSER OBJECTS (Blob & File Object)
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        snapCanvas.toBlob(
+          (b) => {
+            if (b) resolve(b);
+            else reject(new Error('Canvas toBlob failed'));
+          },
+          'image/jpeg',
+          0.92
+        );
+      });
+
+      const filename = `SIGUNTANG-AR-${selectedMarkerNode?.name.split('(')[0].trim().replace(/\s+/g, '_') || 'Ampera'}-${Date.now()}.jpg`;
+      const fileObject = new File([blob], filename, { type: 'image/jpeg' });
+      const objectUrl = URL.createObjectURL(blob);
       const dataUrl = snapCanvas.toDataURL('image/jpeg', 0.92);
+
+      // Simpan sebagai objek browser lokal ke state
+      const newSnapshot: LocalBrowserSnapshot = {
+        id: `snap-${Date.now()}`,
+        objectUrl,
+        file: fileObject,
+        blob,
+        dataUrl,
+        timestamp: new Date(),
+        siteName: selectedMarkerNode?.name || 'Jembatan Ampera',
+        coordinates: currentCoord,
+        isCoordinateMatched: isAmperaMatched,
+      };
+
+      setSavedSnapshots((prev) => [newSnapshot, ...prev]);
+      setActiveSnapshotForShare(newSnapshot);
 
       // Play audio shutter
       musiAudio.playSplash(1.5);
 
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `SIGUNTANG-AR-${selectedMarkerNode?.name.replace(/\s+/g, '_') || 'Palembang'}-${Date.now()}.jpg`;
-      link.click();
-
-      setSnapshotSuccess('Foto AR berhasil ditangkap & diunduh ke galeri!');
+      setSnapshotSuccess('Foto AR disimpan sebagai objek browser lokal! Siap dibagikan.');
       setTimeout(() => setSnapshotSuccess(null), 4000);
     } catch (e) {
       console.warn('Snapshot error:', e);
     } finally {
       setIsSnapshotLoading(false);
+    }
+  };
+
+  // Web Share API Handler menggunakan Browser File Object
+  const handleNativeShare = async (snapshot: LocalBrowserSnapshot) => {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [snapshot.file] })) {
+          await navigator.share({
+            files: [snapshot.file],
+            title: `SIGUNTANG AR: ${snapshot.siteName}`,
+            text: `Lihat foto AR Cagar Budaya ${snapshot.siteName} dengan penanda 3D di SIGUNTANG!`,
+          });
+        } else {
+          await navigator.share({
+            title: `SIGUNTANG AR: ${snapshot.siteName}`,
+            text: `Foto AR Cagar Budaya ${snapshot.siteName} - SIGUNTANG Nusantara Gemilang`,
+            url: window.location.href,
+          });
+        }
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.warn('Web Share API error:', err);
+        }
+      }
+    } else {
+      // Fallback copy object link
+      handleCopyObjectUrl(snapshot.objectUrl);
+    }
+  };
+
+  // Salin Link Objek Browser (Blob URL)
+  const handleCopyObjectUrl = (url: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      setCopyFeedback('Link objek lokal browser (Blob URL) disalin!');
+      setTimeout(() => setCopyFeedback(null), 3000);
+    }
+  };
+
+  // Salin Gambar Langsung ke Clipboard
+  const handleCopyImageToClipboard = async (snapshot: LocalBrowserSnapshot) => {
+    try {
+      if (typeof ClipboardItem !== 'undefined' && navigator.clipboard) {
+        // Clipboard API memerlukan image/png
+        const img = new Image();
+        img.src = snapshot.dataUrl;
+        await new Promise((r) => (img.onload = r));
+        const c = document.createElement('canvas');
+        c.width = img.width;
+        c.height = img.height;
+        const cx = c.getContext('2d')!;
+        cx.drawImage(img, 0, 0);
+        c.toBlob(async (pngBlob) => {
+          if (pngBlob) {
+            await navigator.clipboard.write([
+              new ClipboardItem({
+                'image/png': pngBlob,
+              }),
+            ]);
+            setCopyFeedback('Gambar berhasil disalin ke clipboard!');
+            setTimeout(() => setCopyFeedback(null), 3000);
+          }
+        }, 'image/png');
+      }
+    } catch (err) {
+      console.warn('Clipboard image write error:', err);
+      handleCopyObjectUrl(snapshot.objectUrl);
     }
   };
 
@@ -611,12 +799,10 @@ export function ARHeritageViewerModal({
         {/* 2. SIMULATED CAMERA 360° SKYLINE BACKDROP (Fallback jika kamera denied/unsupported) */}
         {cameraStatus !== 'active' && (
           <div className="absolute inset-0 bg-gradient-to-b from-[#090b10] via-[#1c1917] to-[#0a0705] pointer-events-none overflow-hidden">
-            {/* Parallax Stars */}
             <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#fde68a_1px,transparent_1px)] [background-size:28px_28px]" />
-            {/* River Glow Horizon */}
             <div className="absolute bottom-0 left-0 right-0 h-2/5 bg-gradient-to-t from-amber-950/60 via-[#190d06]/40 to-transparent" />
-            <div className="absolute bottom-24 left-1/2 -translate-x-1/2 text-center pointer-events-none opacity-40">
-              <span className="font-mono text-xs text-amber-200 uppercase tracking-widest block">
+            <div className="absolute bottom-24 left-1/2 -translate-x-1/2 text-center pointer-events-none opacity-50">
+              <span className="font-mono text-xs text-amber-200 uppercase tracking-widest block font-bold">
                 Mode Simulasi Panorama 360° Palembang
               </span>
               <span className="text-[11px] text-stone-400">
@@ -635,7 +821,7 @@ export function ARHeritageViewerModal({
           className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing z-10"
         />
 
-        {/* 4. TOP AR COMPASS & RADAR HUD BAR (Zero Viewport Occlusion) */}
+        {/* 4. TOP AR COMPASS & RADAR HUD BAR */}
         <header className="relative z-20 p-3 sm:p-4 bg-gradient-to-b from-black/85 via-black/50 to-transparent flex flex-col gap-2 pointer-events-none">
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-3 pointer-events-auto">
             {/* Brand Title Pill */}
@@ -662,29 +848,33 @@ export function ARHeritageViewerModal({
 
             {/* Action Tools: Switch Cam, GPS toggle, Close */}
             <div className="flex items-center gap-1.5 sm:gap-2">
-              {/* GPS Origin Mode Switcher */}
+              {/* Tombol Buka Data Sampel Marker 3D Ampera */}
               <button
-                onClick={() => {
-                  setUseSimulatedGPS(!useSimulatedGPS);
-                  if (!useSimulatedGPS) {
-                    setCurrentCoord(PALEMBANG_CENTER);
-                  }
-                }}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-mono font-bold transition-all cursor-pointer ${
-                  useSimulatedGPS
-                    ? 'bg-amber-500/20 border-amber-400/50 text-amber-300'
-                    : 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                onClick={() => setIsAmperaDataModalOpen(true)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-mono font-bold transition-all cursor-pointer shadow-md ${
+                  isAmperaMatched
+                    ? 'bg-emerald-500/25 border-emerald-400 text-emerald-300'
+                    : 'bg-amber-500/20 border-amber-400/50 text-amber-300'
                 }`}
-                title={useSimulatedGPS ? 'Beralih ke GPS Nyata Ponsel' : 'Beralih ke Simulasi Episentrum Ampera'}
+                title="Buka Data Sampel Penanda 3D Jembatan Ampera & Uji Koordinat"
               >
-                <MapPin size={13} />
-                <span className="hidden md:inline">
-                  {useSimulatedGPS ? 'Simulasi: Jembatan Ampera' : 'GPS Nyata Aktif'}
-                </span>
-                <span className="md:hidden">
-                  {useSimulatedGPS ? 'Ampera Hub' : 'GPS'}
-                </span>
+                <Target size={13} className={isAmperaMatched ? 'text-emerald-400' : 'text-amber-400'} />
+                <span className="hidden sm:inline">Data Marker Ampera</span>
+                <span className="sm:hidden">Ampera</span>
+                {isAmperaMatched && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />}
               </button>
+
+              {/* Saved Snapshots Gallery Counter Button */}
+              {savedSnapshots.length > 0 && (
+                <button
+                  onClick={() => setActiveSnapshotForShare(savedSnapshots[0])}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-mono text-white transition-all cursor-pointer"
+                  title="Lihat Galeri Foto AR Objek Browser"
+                >
+                  <ImageIcon size={13} className="text-amber-400" />
+                  <span>{savedSnapshots.length}</span>
+                </button>
+              )}
 
               {/* Flip Camera Button */}
               {cameraStatus === 'active' && (
@@ -718,13 +908,11 @@ export function ARHeritageViewerModal({
             </div>
           </div>
 
-          {/* COMPASS HEADING RIBBON (Radar Strip Horisontal) */}
+          {/* COMPASS HEADING RIBBON */}
           <div className="max-w-md mx-auto w-full relative h-7 bg-black/50 border border-white/10 rounded-xl overflow-hidden backdrop-blur-md pointer-events-auto">
-            {/* Center target reticle */}
             <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-amber-400 z-10 pointer-events-none" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-1 bg-amber-400 rounded-b z-10 pointer-events-none" />
 
-            {/* Sliding Compass Tape */}
             <div
               className="absolute top-0 bottom-0 flex items-center transition-transform duration-100 ease-out font-mono text-[9px] text-stone-400 pointer-events-none"
               style={{
@@ -732,7 +920,6 @@ export function ARHeritageViewerModal({
                 transform: `translateX(-${activeHeading * 3}px)`,
               }}
             >
-              {/* Render 360 degrees tape with markers */}
               {Array.from({ length: 72 }, (_, i) => i * 5).map((deg) => {
                 const isCardinal = deg % 90 === 0;
                 const isSubCardinal = deg % 45 === 0 && !isCardinal;
@@ -783,12 +970,12 @@ export function ARHeritageViewerModal({
                 );
               })}
 
-              {/* Marker Pips on Tape */}
+              {/* Marker Pips on Compass */}
               {PALEMBANG_NODES.map((node) => {
                 const marker = markersRef.current.get(node.id);
                 if (!marker) return null;
-                const rel = getRelativeAngle(marker.bearing, activeHeading);
                 const isSelected = selectedMarkerNode?.id === node.id;
+                const isAmpera = node.id === 'node-ampera';
 
                 return (
                   <div
@@ -803,7 +990,9 @@ export function ARHeritageViewerModal({
                   >
                     <div
                       className={`w-3 h-3 rounded-full flex items-center justify-center transition-all ${
-                        isSelected
+                        isAmpera && isAmperaMatched
+                          ? 'bg-emerald-400 ring-2 ring-emerald-300 scale-125'
+                          : isSelected
                           ? 'bg-amber-400 ring-2 ring-amber-300 scale-125'
                           : 'bg-red-600 border border-white/60'
                       }`}
@@ -817,10 +1006,42 @@ export function ARHeritageViewerModal({
           </div>
         </header>
 
-        {/* 5. CENTER SCREEN CROSSHAIR RETICLE & HINT */}
+        {/* 5. VIRTUAL OVERLAY MARKER ACTIVE BANNER (When Coordinates Match Ampera Bridge) */}
+        {isAmperaMatched && (
+          <div className="absolute top-28 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 p-3.5 bg-emerald-950/85 border-2 border-emerald-400 rounded-2xl shadow-2xl backdrop-blur-md text-white z-20 animate-fade-in pointer-events-auto">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <span className="text-xs font-mono font-bold text-emerald-300 uppercase tracking-wider">
+                  Virtual Overlay Marker Aktif
+                </span>
+              </div>
+              <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-200 px-2 py-0.5 rounded border border-emerald-500/40">
+                Match: {Math.round(amperaMatchStatus.distanceMeters)}m
+              </span>
+            </div>
+            <h4 className="font-serif text-sm font-bold text-white mt-1">
+              Jembatan Ampera Terdeteksi di Lokasi
+            </h4>
+            <p className="text-[11px] text-emerald-200/80 mt-0.5 leading-relaxed">
+              Koordinat kamera cocok dengan koordinat Ampera Bridge (-2.9918, 104.7634). Model 3D menara kembar merah dan kabel suspensi virtual kini aktif di viewport kamera.
+            </p>
+            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-emerald-500/30">
+              <button
+                onClick={() => setIsAmperaDataModalOpen(true)}
+                className="text-[10px] font-mono font-bold text-emerald-300 hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <span>Lihat Spesifikasi 3D Marker</span>
+                <ChevronRight size={12} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Center Crosshair Reticle */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <div className="relative w-12 h-12 border border-white/20 rounded-full flex items-center justify-center opacity-60">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            <div className={`w-1.5 h-1.5 rounded-full ${isAmperaMatched ? 'bg-emerald-400 scale-125' : 'bg-amber-400'}`} />
             <div className="absolute -top-1 w-2 h-0.5 bg-white/40" />
             <div className="absolute -bottom-1 w-2 h-0.5 bg-white/40" />
             <div className="absolute -left-1 w-0.5 h-2 bg-white/40" />
@@ -828,7 +1049,7 @@ export function ARHeritageViewerModal({
           </div>
         </div>
 
-        {/* Camera Permission Warning / Retry Banner */}
+        {/* Camera Permission Warning Banner */}
         {cameraStatus === 'denied' && (
           <div className="absolute top-28 left-4 right-4 max-w-md mx-auto p-4 bg-red-950/90 border border-red-500/50 rounded-2xl text-white text-xs z-30 shadow-2xl backdrop-blur-md">
             <div className="flex items-start gap-3">
@@ -870,9 +1091,8 @@ export function ARHeritageViewerModal({
           </motion.div>
         )}
 
-        {/* 6. COLLAPSIBLE BOTTOM DOCK (Unified Zero-Occlusion Dock per threejs Skill) */}
+        {/* 6. COLLAPSIBLE BOTTOM DOCK (Unified Zero-Occlusion Dock) */}
         <footer className="relative z-20 mt-auto p-3 sm:p-4 bg-gradient-to-t from-black/95 via-black/80 to-transparent flex flex-col items-center gap-3 pointer-events-none">
-          {/* Collapse/Expand Toggle Button */}
           <button
             onClick={() => setIsControlsCollapsed(!isControlsCollapsed)}
             className="pointer-events-auto px-3 py-1 rounded-full bg-black/60 border border-white/15 text-[10px] font-mono font-bold uppercase text-stone-400 hover:text-white transition-all cursor-pointer backdrop-blur-md flex items-center gap-1.5 shadow-md active:scale-95"
@@ -882,14 +1102,18 @@ export function ARHeritageViewerModal({
 
           {!isControlsCollapsed && (
             <div className="w-full max-w-4xl mx-auto flex flex-col gap-3 pointer-events-auto">
-              {/* Selected Heritage Marker Card (if any selected) */}
+              {/* Selected Heritage Marker Card */}
               <AnimatePresence>
                 {selectedMarkerNode && (
                   <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 15 }}
-                    className="bg-[#120f0d]/95 border border-amber-500/40 rounded-3xl p-4 sm:p-5 shadow-2xl backdrop-blur-xl text-white"
+                    className={`border rounded-3xl p-4 sm:p-5 shadow-2xl backdrop-blur-xl text-white ${
+                      selectedMarkerNode.id === 'node-ampera' && isAmperaMatched
+                        ? 'bg-[#091f16]/95 border-emerald-400/60 shadow-emerald-950/50'
+                        : 'bg-[#120f0d]/95 border-amber-500/40'
+                    }`}
                   >
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       {/* Thumbnail & Meta */}
@@ -905,6 +1129,11 @@ export function ARHeritageViewerModal({
                             <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase tracking-wider">
                               {selectedMarkerNode.type}
                             </span>
+                            {selectedMarkerNode.id === 'node-ampera' && isAmperaMatched && (
+                              <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 border border-emerald-400/50 uppercase tracking-wider">
+                                ✓ Koordinat Cocok
+                              </span>
+                            )}
                             {markersRef.current.get(selectedMarkerNode.id) && (
                               <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1">
                                 <Navigation size={10} className="rotate-45" />
@@ -970,38 +1199,338 @@ export function ARHeritageViewerModal({
                     const isSelected = selectedMarkerNode?.id === node.id;
                     const marker = markersRef.current.get(node.id);
                     const distStr = marker ? formatDistance(marker.distance) : '';
+                    const isAmpera = node.id === 'node-ampera';
 
                     return (
                       <button
                         key={node.id}
                         onClick={() => handleFocusSite(node)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-mono font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-                          isSelected
+                          isAmpera && isAmperaMatched
+                            ? 'bg-emerald-500 text-stone-950 font-extrabold shadow-lg shadow-emerald-400/30 scale-105'
+                            : isSelected
                             ? 'bg-amber-400 text-stone-950 font-extrabold shadow-lg shadow-amber-400/25 scale-105'
                             : 'bg-black/60 hover:bg-white/10 text-stone-300 border border-white/10'
                         }`}
                       >
                         <span>{node.name.split('(')[0].trim()}</span>
-                        {distStr && <span className="text-[9px] opacity-75 font-normal">({distStr})</span>}
+                        {isAmpera && isAmperaMatched ? (
+                          <span className="text-[9px] bg-black/40 text-emerald-200 px-1 rounded font-bold">MATCH</span>
+                        ) : (
+                          distStr && <span className="text-[9px] opacity-75 font-normal">({distStr})</span>
+                        )}
                       </button>
                     );
                   })}
                 </div>
 
-                {/* SNAPSHOT FOTO AR BUTTON */}
+                {/* CAPTURE SNAPSHOT BUTTON */}
                 <button
                   onClick={handleCaptureARSnapshot}
                   disabled={isSnapshotLoading}
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:brightness-110 text-stone-950 font-bold text-xs font-mono uppercase tracking-wider rounded-xl transition-all shadow-xl shadow-amber-500/25 shrink-0 cursor-pointer active:scale-95 disabled:opacity-50"
-                  title="Ambil foto AR dengan overlay 3D & stempel digital STC"
+                  title="Ambil snapshot foto AR dan simpan sebagai objek browser lokal untuk dibagikan"
                 >
                   <Camera size={15} />
-                  <span className="hidden sm:inline">Foto AR</span>
+                  <span className="hidden sm:inline">Capture Snapshot</span>
+                  <span className="sm:hidden">Snapshot</span>
                 </button>
               </div>
             </div>
           )}
         </footer>
+
+        {/* =========================================================================
+            7. MODAL DETAIL DATA SAMPEL PENANDA 3D JEMBATAN AMPERA
+           ========================================================================= */}
+        <AnimatePresence>
+          {isAmperaDataModalOpen && (
+            <div className="fixed inset-0 z-[7500] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                className="relative w-full max-w-lg bg-[#0e141a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl text-stone-100 max-h-[85vh] overflow-y-auto"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between gap-4 pb-4 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-300">
+                      <Target size={22} />
+                    </div>
+                    <div>
+                      <span className="font-mono text-[10px] text-amber-400 font-bold uppercase tracking-wider block">
+                        Spesifikasi Penanda 3D Virtual AR
+                      </span>
+                      <h3 className="font-serif text-lg font-bold text-white">
+                        {AMPERA_MARKER_SAMPLE_DATA.name}
+                      </h3>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsAmperaDataModalOpen(false)}
+                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white transition-all cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Status Pencocokan Koordinat */}
+                <div className={`mt-4 p-4 rounded-2xl border ${
+                  isAmperaMatched
+                    ? 'bg-emerald-950/60 border-emerald-400/60 text-emerald-200'
+                    : 'bg-amber-950/40 border-amber-500/40 text-amber-200'
+                }`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[11px] font-bold uppercase flex items-center gap-1.5">
+                      {isAmperaMatched ? (
+                        <>
+                          <CheckCircle2 size={15} className="text-emerald-400" />
+                          Status: Koordinat Cocok (In-Range)
+                        </>
+                      ) : (
+                        <>
+                          <MapPin size={15} className="text-amber-400" />
+                          Status: Di Luar Radius Toleransi
+                        </>
+                      )}
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 border border-white/10 font-bold">
+                      Jarak: {formatDistance(amperaMatchStatus.distanceMeters)}
+                    </span>
+                  </div>
+                  <p className="text-xs mt-2 text-stone-300 leading-relaxed">
+                    {isAmperaMatched
+                      ? `Koordinat lokasi saat ini berada dalam radius toleransi ${AMPERA_MARKER_SAMPLE_DATA.toleranceRadiusMeters}m dari Jembatan Ampera. Virtual overlay marker 3D ditampilkan secara penuh di layar kamera.`
+                      : `Marker Ampera berjarak ${formatDistance(amperaMatchStatus.distanceMeters)} dari koordinat Anda saat ini. Gunakan tombol uji di bawah untuk memposisikan koordinat ke Jembatan Ampera.`}
+                  </p>
+                </div>
+
+                {/* Parameter Koordinat Geografis */}
+                <div className="mt-4 p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2.5 text-xs font-mono">
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-400">Koordinat Patokan:</span>
+                    <span className="text-amber-300 font-bold">
+                      {AMPERA_MARKER_SAMPLE_DATA.coordinates.lat}, {AMPERA_MARKER_SAMPLE_DATA.coordinates.lng}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-400">Koordinat Anda Saat Ini:</span>
+                    <span className="text-white font-bold">
+                      {currentCoord.lat.toFixed(4)}, {currentCoord.lng.toFixed(4)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-400">Radius Toleransi Match:</span>
+                    <span className="text-stone-200">{AMPERA_MARKER_SAMPLE_DATA.toleranceRadiusMeters} Meter</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-400">Tinggi Menara / Bentang:</span>
+                    <span className="text-stone-200">63 m / 1.177 m</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-400">STC Proof Hash:</span>
+                    <span className="text-amber-400 text-[10px]">{AMPERA_MARKER_SAMPLE_DATA.stcProofHash}</span>
+                  </div>
+                </div>
+
+                {/* Komponen Model 3D Prosedural */}
+                <div className="mt-4">
+                  <span className="font-mono text-[11px] font-bold uppercase text-amber-400 block mb-2">
+                    Fitur Arsitektur Model 3D Penanda:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {AMPERA_MARKER_SAMPLE_DATA.model3DFeatures.map((feat, idx) => (
+                      <div
+                        key={idx}
+                        className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-[11px] text-stone-300 flex items-center gap-2"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tombol Uji Pencocokan Koordinat */}
+                <div className="mt-6 flex flex-col sm:flex-row gap-2 pt-4 border-t border-white/10">
+                  <button
+                    onClick={() => {
+                      handleSetExactAmperaLocation();
+                      setIsAmperaDataModalOpen(false);
+                    }}
+                    className="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-stone-950 font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-600/25 active:scale-95"
+                  >
+                    <CheckCircle2 size={15} />
+                    <span>Uji: Cocokkan ke Ampera</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      handleSetFarLocation();
+                      setIsAmperaDataModalOpen(false);
+                    }}
+                    className="py-2.5 px-4 bg-white/5 hover:bg-white/10 border border-white/10 text-stone-300 font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+                  >
+                    Uji Luar Radius
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* =========================================================================
+            8. MODAL SHARING & DETAIL OBJEK BROWSER SNAPSHOT AR
+           ========================================================================= */}
+        <AnimatePresence>
+          {activeSnapshotForShare && (
+            <div className="fixed inset-0 z-[7600] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                className="relative w-full max-w-xl bg-[#0f1218] border border-amber-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl text-stone-100 max-h-[90vh] overflow-y-auto"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between gap-4 pb-4 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-300">
+                      <Share2 size={22} />
+                    </div>
+                    <div>
+                      <span className="font-mono text-[10px] text-amber-400 font-bold uppercase tracking-wider block">
+                        Objek Browser Lokal Tersimpan
+                      </span>
+                      <h3 className="font-serif text-lg font-bold text-white">
+                        Bagikan Snapshot Foto AR
+                      </h3>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveSnapshotForShare(null)}
+                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white transition-all cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {copyFeedback && (
+                  <div className="mt-3 p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-2">
+                    <Check size={14} className="text-emerald-400" />
+                    <span>{copyFeedback}</span>
+                  </div>
+                )}
+
+                {/* Image Preview */}
+                <div className="mt-4 rounded-2xl overflow-hidden border border-white/15 relative bg-black shadow-lg">
+                  <img
+                    src={activeSnapshotForShare.objectUrl}
+                    alt="Captured AR Overlay"
+                    className="w-full h-auto max-h-[340px] object-contain mx-auto"
+                  />
+                  {activeSnapshotForShare.isCoordinateMatched && (
+                    <div className="absolute top-3 left-3 px-2.5 py-1 bg-emerald-950/85 border border-emerald-400 rounded-full text-[10px] font-mono text-emerald-300 flex items-center gap-1.5 shadow-md">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                      <span>Ampera Coordinates Matched</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Local Browser Object Metadata Card */}
+                <div className="mt-4 p-3.5 rounded-2xl bg-black/40 border border-white/5 space-y-2 text-xs font-mono">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-stone-400">Nama File Objek:</span>
+                    <span className="text-white font-bold truncate max-w-[240px]">
+                      {activeSnapshotForShare.file.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-400">Ukuran Objek Browser:</span>
+                    <span className="text-amber-300 font-bold">
+                      {(activeSnapshotForShare.file.size / 1024).toFixed(1)} KB (image/jpeg)
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-400">Waktu Pengambilan:</span>
+                    <span className="text-stone-300">
+                      {activeSnapshotForShare.timestamp.toLocaleTimeString('id-ID')}
+                    </span>
+                  </div>
+                  <div className="pt-2 border-t border-white/5 flex items-center justify-between gap-2">
+                    <span className="text-stone-400 text-[10px]">Local Blob URL:</span>
+                    <button
+                      onClick={() => handleCopyObjectUrl(activeSnapshotForShare.objectUrl)}
+                      className="text-amber-400 text-[10px] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Copy size={11} />
+                      <span>Salin Blob URL</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Action Buttons: Native Share, Clipboard, Download */}
+                <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <button
+                    onClick={() => handleNativeShare(activeSnapshotForShare)}
+                    className="py-3 px-4 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:brightness-110 text-stone-950 font-bold text-xs font-mono uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/20 active:scale-95"
+                    title="Bagikan menggunakan native Web Share API ponsel"
+                  >
+                    <Share2 size={15} />
+                    <span>Bagikan Foto</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleCopyImageToClipboard(activeSnapshotForShare)}
+                    className="py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/15 text-white font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                    title="Salin gambar langsung ke clipboard untuk ditempel ke chat"
+                  >
+                    <Copy size={15} />
+                    <span>Salin Gambar</span>
+                  </button>
+
+                  <a
+                    href={activeSnapshotForShare.objectUrl}
+                    download={activeSnapshotForShare.file.name}
+                    className="py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-stone-950 font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-600/20 active:scale-95"
+                    title="Simpan foto ke penyimpanan galeri lokal perangkat"
+                  >
+                    <Download size={15} />
+                    <span>Unduh File</span>
+                  </a>
+                </div>
+
+                {/* Session Snapshots Carousel if multiple exist */}
+                {savedSnapshots.length > 1 && (
+                  <div className="mt-5 pt-4 border-t border-white/10">
+                    <span className="font-mono text-[10px] text-stone-400 uppercase tracking-wider block mb-2">
+                      Foto Lain dalam Sesi Ini ({savedSnapshots.length}):
+                    </span>
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                      {savedSnapshots.map((snap) => (
+                        <div
+                          key={snap.id}
+                          onClick={() => setActiveSnapshotForShare(snap)}
+                          className={`w-16 h-12 rounded-xl overflow-hidden border cursor-pointer shrink-0 transition-all ${
+                            activeSnapshotForShare.id === snap.id
+                              ? 'border-amber-400 ring-2 ring-amber-400/40 scale-105'
+                              : 'border-white/20 opacity-60 hover:opacity-100'
+                          }`}
+                        >
+                          <img
+                            src={snap.objectUrl}
+                            alt="Snapshot"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </AnimatePresence>
   );

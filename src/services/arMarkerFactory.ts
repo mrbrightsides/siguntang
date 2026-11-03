@@ -13,7 +13,8 @@ export function createARMarkerLabelTexture(
   title: string,
   distanceText: string,
   categoryText: string,
-  accentColor = '#f59e0b'
+  accentColor = '#f59e0b',
+  isMatched = false
 ): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
@@ -43,36 +44,37 @@ export function createARMarkerLabelTexture(
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
 
-  // Glassmorphic dark fill
-  ctx.fillStyle = 'rgba(12, 10, 8, 0.90)';
+  // Glassmorphic dark fill (Hijau zamrud jika koordinat cocok, abu gelap jika standar)
+  ctx.fillStyle = isMatched ? 'rgba(5, 42, 28, 0.95)' : 'rgba(12, 10, 8, 0.90)';
   ctx.fill();
 
-  // Border aksen emas / merah
-  ctx.strokeStyle = accentColor;
-  ctx.lineWidth = 6;
+  // Border aksen emas / emerald glow
+  ctx.strokeStyle = isMatched ? '#10b981' : accentColor;
+  ctx.lineWidth = isMatched ? 8 : 6;
   ctx.stroke();
 
   // Top Category Pill
-  ctx.fillStyle = accentColor;
+  ctx.fillStyle = isMatched ? '#10b981' : accentColor;
   ctx.beginPath();
   ctx.arc(42, 54, 10, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.font = 'bold 22px monospace';
-  ctx.fillStyle = '#fde68a';
-  ctx.fillText(categoryText.toUpperCase(), 64, 62);
+  ctx.fillStyle = isMatched ? '#a7f3d0' : '#fde68a';
+  const catLabel = isMatched ? 'KOORDINAT COCOK • LIVE OVERLAY' : categoryText.toUpperCase();
+  ctx.fillText(catLabel, 64, 62);
 
   // Distance Pill (Kanan atas)
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-  ctx.fillRect(340, 36, 130, 38);
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.fillStyle = isMatched ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.15)';
+  ctx.fillRect(330, 36, 140, 38);
+  ctx.strokeStyle = isMatched ? 'rgba(16, 185, 129, 0.7)' : 'rgba(255, 255, 255, 0.3)';
   ctx.lineWidth = 2;
-  ctx.strokeRect(340, 36, 130, 38);
+  ctx.strokeRect(330, 36, 140, 38);
 
-  ctx.font = 'bold 20px monospace';
-  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 19px monospace';
+  ctx.fillStyle = isMatched ? '#6ee7b7' : '#ffffff';
   ctx.textAlign = 'center';
-  ctx.fillText(distanceText, 405, 62);
+  ctx.fillText(isMatched ? 'IN-RANGE' : distanceText, 400, 62);
   ctx.textAlign = 'left';
 
   // Title / Heritage Name (Maksimal 2 baris jika panjang)
@@ -96,9 +98,13 @@ export function createARMarkerLabelTexture(
   }
 
   // Footer Subtext / Tap to Inspect
-  ctx.font = '18px sans-serif';
-  ctx.fillStyle = '#a8a29e';
-  ctx.fillText('Tap marker untuk melihat artefak & klaim SBT', 32, 204);
+  ctx.font = isMatched ? 'bold 18px monospace' : '18px sans-serif';
+  ctx.fillStyle = isMatched ? '#34d399' : '#a8a29e';
+  ctx.fillText(
+    isMatched ? '✓ Posisi Terverifikasi • Tap untuk Detail & Klaim SBT' : 'Tap marker untuk melihat artefak & klaim SBT',
+    32,
+    204
+  );
 
   ctx.restore();
 
@@ -108,19 +114,23 @@ export function createARMarkerLabelTexture(
   return texture;
 }
 
+export interface ARMarkerComposite {
+  group: THREE.Group;
+  iconGroup: THREE.Group;
+  beaconRing: THREE.Mesh;
+  labelSprite: THREE.Sprite;
+  updateDistance: (dist: string) => void;
+  setCoordinateMatched: (matched: boolean) => void;
+  isCoordinateMatched: () => boolean;
+}
+
 /**
  * Factory untuk membuat Model 3D Komposit (THREE.Group 3–8 parts) untuk situs cagar budaya
  */
 export function buildHeritage3DMarker(
   node: UniversalNode,
   distanceText: string
-): {
-  group: THREE.Group;
-  iconGroup: THREE.Group;
-  beaconRing: THREE.Mesh;
-  labelSprite: THREE.Sprite;
-  updateDistance: (dist: string) => void;
-} {
+): ARMarkerComposite {
   const root = new THREE.Group();
   root.name = `AR_MARKER_${node.id}`;
   root.userData = { node, isARMarker: true };
@@ -216,7 +226,35 @@ export function buildHeritage3DMarker(
     const liftBox = new THREE.Mesh(liftBoxGeo, goldMat);
     liftBox.position.set(0, 2.2, 0);
 
-    iconGroup.add(towerLeft, towerRight, crossTop, crossMid, deck, liftBox);
+    // Suspension Steel Cables
+    const cableMat = new THREE.MeshBasicMaterial({
+      color: 0xfde68a,
+      transparent: true,
+      opacity: 0.75,
+    });
+    for (let c = -1.2; c <= 1.2; c += 0.4) {
+      if (Math.abs(c) > 0.15) {
+        const cableGeo = new THREE.CylinderGeometry(0.015, 0.015, 1.8);
+        const cable = new THREE.Mesh(cableGeo, cableMat);
+        cable.position.set(c, 1.0, 0);
+        cable.rotation.z = c > 0 ? -0.32 : 0.32;
+        iconGroup.add(cable);
+      }
+    }
+
+    // Holographic STC Beacon Halo above Ampera
+    const haloGeo = new THREE.TorusGeometry(1.2, 0.04, 8, 32);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: 0xf59e0b,
+      transparent: true,
+      opacity: 0.65,
+    });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+    halo.name = 'AMPERA_HALO';
+    halo.rotation.x = Math.PI / 2;
+    halo.position.y = 2.8;
+
+    iconGroup.add(towerLeft, towerRight, crossTop, crossMid, deck, liftBox, halo);
   } else if (id.includes('kemaro')) {
     // === MODEL 3D PAGODA 9 TINGKAT PULAU KEMARO ===
     const levels = 5;
@@ -387,16 +425,54 @@ export function buildHeritage3DMarker(
   labelSprite.scale.set(3.4, 1.7, 1);
   root.add(labelSprite);
 
+  let currentMatched = false;
+  let currentDist = distanceText;
+
   const updateDistance = (newDistText: string) => {
+    currentDist = newDistText;
     labelTexture.dispose();
     labelTexture = createARMarkerLabelTexture(
       node.name,
       newDistText,
       node.type,
-      node.type === NodeType.HERITAGE ? '#f59e0b' : node.type === NodeType.RELIGION ? '#10b981' : '#ec4899'
+      node.type === NodeType.HERITAGE ? '#f59e0b' : node.type === NodeType.RELIGION ? '#10b981' : '#ec4899',
+      currentMatched
     );
     spriteMat.map = labelTexture;
     spriteMat.needsUpdate = true;
+  };
+
+  const setCoordinateMatched = (matched: boolean) => {
+    if (currentMatched === matched) return;
+    currentMatched = matched;
+
+    if (matched) {
+      beaconRing.material = new THREE.MeshBasicMaterial({
+        color: 0x10b981,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.95,
+      });
+      beam.material = new THREE.MeshBasicMaterial({
+        color: 0x10b981,
+        transparent: true,
+        opacity: 0.5,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      });
+      root.scale.set(1.2, 1.2, 1.2);
+    } else {
+      beaconRing.material = new THREE.MeshBasicMaterial({
+        color: 0xf59e0b,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.7,
+      });
+      beam.material = cyanBeamMat;
+      root.scale.set(1.0, 1.0, 1.0);
+    }
+
+    updateDistance(currentDist);
   };
 
   return {
@@ -405,5 +481,7 @@ export function buildHeritage3DMarker(
     beaconRing,
     labelSprite,
     updateDistance,
+    setCoordinateMatched,
+    isCoordinateMatched: () => currentMatched,
   };
 }
