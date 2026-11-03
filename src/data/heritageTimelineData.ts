@@ -59,15 +59,15 @@ export const HERITAGE_TIMELINE_DATA: HeritageTimelineEra[] = [
     artifacts: [
       {
         name: 'Prasasti Kedukan Bukit',
-        type: 'Inskripsi Batu Pallawa',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Kedukan_Bukit.JPG/640px-Kedukan_Bukit.JPG',
-        desc: 'Sertifikat kelahiran peradaban Sriwijaya bertanggal 16 Juni 683 Masehi.'
+        type: 'Inskripsi Batu Pallawa (683 M)',
+        image: 'https://asset.kompas.com/crops/LxTb-wNo4Ufo00RJoskQ-Wg0yWo=/0x0:1280x853/1200x1200/data/photo/2021/04/07/606d687bebfdd.jpg',
+        desc: 'Sertifikat kelahiran peradaban Sriwijaya bertanggal 16 Juni 683 Masehi yang ditemukan di Palembang.'
       },
       {
         name: 'Arca Buddha Amarawati Siguntang',
-        type: 'Arca Granit Abad VIII',
-        image: 'https://cda.1001malam.com/uploads/tour/onedaycityandmusitourpalembang_bukitsiguntang_5060.JPG',
-        desc: 'Karya seni pemahatan granit setinggi 2,77 meter dari puncak bukit tertua Palembang.'
+        type: 'Arca Granit Abad VI-VIII M',
+        image: 'https://jelajah.kompas.id/wp-content/uploads/2020/10/JELAJAH-MUSI-2010-19-11-.jpg',
+        desc: 'Karya seni pemahatan granit setinggi 2,77 meter dari puncak bukit sakral Bukit Siguntang Palembang.'
       }
     ],
     blockchainAnchor: {

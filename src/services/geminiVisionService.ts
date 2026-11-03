@@ -58,7 +58,7 @@ export const PRESET_SPECIMENS: PresetSpecimen[] = [
     title: 'Prasasti Kedukan Bukit (683 M)',
     subtitle: 'Epigrafi Batu Sandstone Dapunta Hyang Sriwijaya',
     category: 'Epigrafi Sriwijaya',
-    imageUrl: 'https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=800&q=80',
+    imageUrl: 'https://asset.kompas.com/crops/LxTb-wNo4Ufo00RJoskQ-Wg0yWo=/0x0:1280x853/1200x1200/data/photo/2021/04/07/606d687bebfdd.jpg',
     description: 'Ditemukan di tepi Sungai Tatang (anak Musi), memuat aksara Pallawa bahasa Melayu Kuna tentang ekspedisi suci (siddhayatra) membawa 20.000 bala tentara membangun wanua Sriwijaya.'
   }
 ];

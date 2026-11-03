@@ -5,6 +5,42 @@
 
 export type MusiWeatherType = 'senja' | 'kabut' | 'hujan' | 'purnama';
 
+export interface MusiAudioPreset {
+  id: string;
+  name: string;
+  desc: string;
+  url: string;
+}
+
+export const MUSI_AUDIO_PRESETS: MusiAudioPreset[] = [
+  {
+    id: 'waves-natural',
+    name: 'Desiran Ombak & Gelombang Tenang (Rekomendasi)',
+    desc: 'Rekaman desiran gelombang air alami yang lembut dan menenangkan (Natural Wave Ambiance)',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Waves.ogg',
+  },
+  {
+    id: 'brook-ripples',
+    name: 'Gemericik Aliran Sungai Jernih',
+    desc: 'Suara gemericik aliran sungai tenang berbatuan alami (Gentle Brook Sound)',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Brook_sound.ogg',
+  },
+  {
+    id: 'river-current',
+    name: 'Deru Arus Sungai Alami',
+    desc: 'Suara gemuruh arus sungai alami yang lebih berbobot (River Current Ambient)',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/3/32/Rivernoise.ogg',
+  },
+  {
+    id: 'sea-gentle',
+    name: 'Deburan Ombak Tepian Musi',
+    desc: 'Desiran gelombang air tepian sungai lapang (Gentle Shore Waves)',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Seasound.ogg',
+  },
+];
+
+export const DEFAULT_RIVER_AUDIO_URL = 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Waves.ogg';
+
 class MusiAudioEngine {
   private ctx: AudioContext | null = null;
   private isRunning: boolean = false;
@@ -13,30 +49,39 @@ class MusiAudioEngine {
   // Spatial Panner for diorama positioning
   private spatialPanner: StereoPannerNode | PannerNode | null = null;
 
-  // Water generator nodes
-  private waterGain: GainNode | null = null;
-  private waterFilter: BiquadFilterNode | null = null;
-  private waterNoiseNode: AudioBufferSourceNode | null = null;
-  private waterLfo: OscillatorNode | null = null;
-
-  // Ketek motor nodes
-  private motorGain: GainNode | null = null;
-  private motorOsc: OscillatorNode | null = null;
-  private motorPulseOsc: OscillatorNode | null = null;
-  private motorPulseGain: GainNode | null = null;
-
-  // Rain / weather generator nodes
-  private rainGain: GainNode | null = null;
-  private rainNoiseNode: AudioBufferSourceNode | null = null;
-  private rainFilter: BiquadFilterNode | null = null;
-
-  // Ambience (crickets / night drone)
-  private nightGain: GainNode | null = null;
-  private nightOsc: OscillatorNode | null = null;
+  // Real Audio Streaming Element (for URL-based waves/ripples)
+  private bgAudioEl: HTMLAudioElement | null = null;
+  private currentAudioUrl: string = DEFAULT_RIVER_AUDIO_URL;
+  private isAudioLoading: boolean = false;
+  private audioLoadError: string | null = null;
+  private volumeLevel: number = 0.5;
 
   private isCruising: boolean = false;
   private isMuted: boolean = false;
   private currentWeather: MusiWeatherType = 'senja';
+  private listeners: Set<() => void> = new Set();
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedUrl = localStorage.getItem('siguntang_musi_audio_url');
+        if (savedUrl !== null) {
+          this.currentAudioUrl = savedUrl;
+        }
+      } catch (e) {
+        console.warn('Storage read failed:', e);
+      }
+    }
+  }
+
+  public subscribe(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  private notify() {
+    this.listeners.forEach((fn) => fn());
+  }
 
   private initContext() {
     if (!this.ctx) {
@@ -45,6 +90,38 @@ class MusiAudioEngine {
     }
     if (this.ctx.state === 'suspended') {
       this.ctx.resume();
+    }
+  }
+
+  private setupBgAudioElement() {
+    if (typeof window === 'undefined') return;
+    if (!this.bgAudioEl) {
+      this.bgAudioEl = new Audio();
+      this.bgAudioEl.loop = true;
+      this.bgAudioEl.preload = 'auto';
+      this.bgAudioEl.crossOrigin = 'anonymous';
+
+      this.bgAudioEl.addEventListener('error', (e) => {
+        console.warn('Audio element failed to load stream URL:', this.currentAudioUrl, e);
+        this.audioLoadError = 'Gagal memuat URL audio. Pastikan link streaming dapat diakses secara publik.';
+        this.isAudioLoading = false;
+        this.notify();
+      });
+
+      this.bgAudioEl.addEventListener('playing', () => {
+        this.isAudioLoading = false;
+        this.audioLoadError = null;
+        this.notify();
+      });
+
+      this.bgAudioEl.addEventListener('waiting', () => {
+        this.isAudioLoading = true;
+        this.notify();
+      });
+    }
+
+    if (this.currentAudioUrl) {
+      this.bgAudioEl.src = this.currentAudioUrl;
     }
   }
 
@@ -65,119 +142,81 @@ class MusiAudioEngine {
         this.spatialPanner.pan.setValueAtTime(0, this.ctx.currentTime);
       }
 
-      const dioramaBus = this.spatialPanner ? this.spatialPanner : this.masterGain;
       if (this.spatialPanner && this.masterGain) {
         this.spatialPanner.connect(this.masterGain);
       }
 
-      // 1. Water River Generator (Gentle river flow)
-      const bufferSize = this.ctx.sampleRate * 2;
-      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
-      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-      for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        b0 = 0.99886 * b0 + white * 0.0555179;
-        b1 = 0.99332 * b1 + white * 0.0750759;
-        b2 = 0.96900 * b2 + white * 0.1538520;
-        b3 = 0.86650 * b3 + white * 0.3104856;
-        b4 = 0.55000 * b4 + white * 0.5329522;
-        b5 = -0.7616 * b5 - white * 0.0168980;
-        output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-        output[i] *= 0.08;
-        b6 = white * 0.115926;
+      // Start Natural Audio Element Stream (Pure recorded wave/river audio)
+      this.setupBgAudioElement();
+      if (this.bgAudioEl && this.currentAudioUrl) {
+        this.bgAudioEl.volume = this.isMuted ? 0 : this.volumeLevel;
+        this.isAudioLoading = true;
+        this.bgAudioEl.play().catch((err) => {
+          console.warn('HTML Audio playback error:', err);
+          this.isAudioLoading = false;
+        });
       }
-
-      this.waterNoiseNode = this.ctx.createBufferSource();
-      this.waterNoiseNode.buffer = noiseBuffer;
-      this.waterNoiseNode.loop = true;
-
-      this.waterFilter = this.ctx.createBiquadFilter();
-      this.waterFilter.type = 'lowpass';
-      this.waterFilter.frequency.setValueAtTime(450, this.ctx.currentTime);
-
-      // Water swell LFO
-      this.waterLfo = this.ctx.createOscillator();
-      this.waterLfo.frequency.setValueAtTime(0.2, this.ctx.currentTime);
-      const lfoGain = this.ctx.createGain();
-      lfoGain.gain.setValueAtTime(200, this.ctx.currentTime);
-      this.waterLfo.connect(lfoGain);
-      lfoGain.connect(this.waterFilter.frequency);
-
-      this.waterGain = this.ctx.createGain();
-      this.waterGain.gain.setValueAtTime(0.4, this.ctx.currentTime);
-
-      this.waterNoiseNode.connect(this.waterFilter);
-      this.waterFilter.connect(this.waterGain);
-      this.waterGain.connect(dioramaBus);
-
-      this.waterNoiseNode.start(0);
-      this.waterLfo.start(0);
-
-      // 2. Ketek Boat Engine Generator (Soft rhythmic thrum)
-      this.motorOsc = this.ctx.createOscillator();
-      this.motorOsc.type = 'triangle';
-      this.motorOsc.frequency.setValueAtTime(45, this.ctx.currentTime);
-
-      this.motorPulseOsc = this.ctx.createOscillator();
-      this.motorPulseOsc.type = 'square';
-      this.motorPulseOsc.frequency.setValueAtTime(4.2, this.ctx.currentTime);
-
-      this.motorPulseGain = this.ctx.createGain();
-      this.motorPulseGain.gain.setValueAtTime(0.08, this.ctx.currentTime);
-
-      this.motorGain = this.ctx.createGain();
-      this.motorGain.gain.setValueAtTime(0.12, this.ctx.currentTime);
-
-      this.motorPulseOsc.connect(this.motorPulseGain.gain);
-      this.motorOsc.connect(this.motorPulseGain);
-      this.motorPulseGain.connect(this.motorGain);
-      this.motorGain.connect(dioramaBus);
-
-      this.motorOsc.start(0);
-      this.motorPulseOsc.start(0);
-
-      // 3. Rain / Monsoon Audio Node
-      const rainBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const rainOut = rainBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        rainOut[i] = (Math.random() * 2 - 1) * 0.12;
-      }
-      this.rainNoiseNode = this.ctx.createBufferSource();
-      this.rainNoiseNode.buffer = rainBuffer;
-      this.rainNoiseNode.loop = true;
-
-      this.rainFilter = this.ctx.createBiquadFilter();
-      this.rainFilter.type = 'bandpass';
-      this.rainFilter.frequency.setValueAtTime(1400, this.ctx.currentTime);
-      this.rainFilter.Q.setValueAtTime(1.5, this.ctx.currentTime);
-
-      this.rainGain = this.ctx.createGain();
-      this.rainGain.gain.setValueAtTime(this.currentWeather === 'hujan' ? 0.35 : 0.0, this.ctx.currentTime);
-
-      this.rainNoiseNode.connect(this.rainFilter);
-      this.rainFilter.connect(this.rainGain);
-      this.rainGain.connect(this.masterGain);
-      this.rainNoiseNode.start(0);
-
-      // 4. Night Ambience Generator (subtle ethereal tone)
-      this.nightOsc = this.ctx.createOscillator();
-      this.nightOsc.type = 'sine';
-      this.nightOsc.frequency.setValueAtTime(528, this.ctx.currentTime);
-
-      this.nightGain = this.ctx.createGain();
-      this.nightGain.gain.setValueAtTime(0.015, this.ctx.currentTime);
-
-      this.nightOsc.connect(this.nightGain);
-      this.nightGain.connect(this.masterGain);
-      this.nightOsc.start(0);
 
       this.isRunning = true;
+      this.notify();
       return true;
     } catch (e) {
       console.warn('Web Audio start prevented or failed:', e);
       return false;
     }
+  }
+
+  // Update Custom Water / Wave Audio URL
+  public setCustomAudioUrl(url: string) {
+    const trimmed = url.trim();
+    this.currentAudioUrl = trimmed;
+    this.audioLoadError = null;
+
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('siguntang_musi_audio_url', trimmed);
+      } catch (e) {
+        console.warn('Storage save failed:', e);
+      }
+    }
+
+    this.setupBgAudioElement();
+
+    if (this.isRunning && this.bgAudioEl) {
+      if (trimmed) {
+        this.isAudioLoading = true;
+        this.bgAudioEl.src = trimmed;
+        this.bgAudioEl.volume = this.isMuted ? 0 : this.volumeLevel;
+        this.bgAudioEl.play().catch((err) => {
+          console.warn('Audio play error:', err);
+          this.isAudioLoading = false;
+        });
+      } else {
+        this.bgAudioEl.pause();
+        this.isAudioLoading = false;
+      }
+    }
+    this.notify();
+  }
+
+  public getAudioUrl(): string {
+    return this.currentAudioUrl;
+  }
+
+  public getPresets(): MusiAudioPreset[] {
+    return MUSI_AUDIO_PRESETS;
+  }
+
+  public isUsingRealAudio(): boolean {
+    return !!this.currentAudioUrl;
+  }
+
+  public isLoading(): boolean {
+    return this.isAudioLoading;
+  }
+
+  public getLoadError(): string | null {
+    return this.audioLoadError;
   }
 
   // Update 3D Audio Spatial Pan based on diorama tilt / cursor position (-1.0 to 1.0)
@@ -189,36 +228,10 @@ class MusiAudioEngine {
     }
   }
 
-  // Set Environmental Weather & adjust audio parameters accordingly
+  // Set Environmental Weather
   public setWeather(weather: MusiWeatherType) {
     this.currentWeather = weather;
-    if (!this.ctx || !this.isRunning) return;
-
-    const t = this.ctx.currentTime;
-    if (weather === 'hujan') {
-      this.rainGain?.gain.setTargetAtTime(0.35, t, 0.5);
-      this.waterFilter?.frequency.setTargetAtTime(600, t, 0.5);
-      this.nightGain?.gain.setTargetAtTime(0.005, t, 0.5);
-    } else if (weather === 'kabut') {
-      this.rainGain?.gain.setTargetAtTime(0, t, 0.5);
-      this.waterFilter?.frequency.setTargetAtTime(320, t, 0.5);
-      this.nightGain?.gain.setTargetAtTime(0.025, t, 0.5);
-    } else if (weather === 'purnama') {
-      this.rainGain?.gain.setTargetAtTime(0, t, 0.5);
-      this.waterFilter?.frequency.setTargetAtTime(420, t, 0.5);
-      this.nightGain?.gain.setTargetAtTime(0.03, t, 0.5);
-      if (this.nightOsc) {
-        this.nightOsc.frequency.setTargetAtTime(639, t, 0.8);
-      }
-    } else {
-      // Senja Emas (default)
-      this.rainGain?.gain.setTargetAtTime(0, t, 0.5);
-      this.waterFilter?.frequency.setTargetAtTime(450, t, 0.5);
-      this.nightGain?.gain.setTargetAtTime(0.015, t, 0.5);
-      if (this.nightOsc) {
-        this.nightOsc.frequency.setTargetAtTime(528, t, 0.8);
-      }
-    }
+    this.notify();
   }
 
   // Interactive water splash synthesis when the user clicks or waves the water
@@ -254,20 +267,6 @@ class MusiAudioEngine {
 
   public setCruising(cruising: boolean) {
     this.isCruising = cruising;
-    if (!this.ctx || !this.isRunning) return;
-
-    const t = this.ctx.currentTime;
-    if (cruising) {
-      this.motorPulseOsc?.frequency.setTargetAtTime(7.5, t, 0.4);
-      this.motorGain?.gain.setTargetAtTime(0.22, t, 0.3);
-      this.waterFilter?.frequency.setTargetAtTime(750, t, 0.5);
-      this.waterGain?.gain.setTargetAtTime(0.6, t, 0.4);
-    } else {
-      this.motorPulseOsc?.frequency.setTargetAtTime(3.8, t, 0.5);
-      this.motorGain?.gain.setTargetAtTime(0.08, t, 0.4);
-      this.waterFilter?.frequency.setTargetAtTime(400, t, 0.5);
-      this.waterGain?.gain.setTargetAtTime(0.35, t, 0.4);
-    }
   }
 
   public playArrivalChime(freq = 440) {
@@ -351,42 +350,60 @@ class MusiAudioEngine {
     if (this.ctx && this.masterGain) {
       this.masterGain.gain.setTargetAtTime(this.isMuted ? 0 : 0.35, this.ctx.currentTime, 0.1);
     }
+    if (this.bgAudioEl) {
+      this.bgAudioEl.volume = this.isMuted ? 0 : this.volumeLevel;
+    }
+    this.notify();
     return this.isMuted;
   }
 
   public setVolume(level: number) {
+    this.volumeLevel = Math.max(0, Math.min(1, level));
     if (this.ctx && this.masterGain && !this.isMuted) {
-      this.masterGain.gain.setTargetAtTime(Math.max(0, Math.min(1, level)), this.ctx.currentTime, 0.05);
+      this.masterGain.gain.setTargetAtTime(this.volumeLevel * 0.35, this.ctx.currentTime, 0.05);
     }
+    if (this.bgAudioEl && !this.isMuted) {
+      this.bgAudioEl.volume = this.volumeLevel;
+    }
+    this.notify();
+  }
+
+  public getVolume(): number {
+    return this.volumeLevel;
+  }
+
+  public isPlaying(): boolean {
+    return this.isRunning && !this.isMuted;
   }
 
   public stop() {
-    if (!this.isRunning) return;
     try {
-      this.waterNoiseNode?.stop();
-      this.waterLfo?.stop();
-      this.motorOsc?.stop();
-      this.motorPulseOsc?.stop();
-      this.rainNoiseNode?.stop();
-      this.nightOsc?.stop();
+      if (this.bgAudioEl) {
+        this.bgAudioEl.pause();
+        this.bgAudioEl.currentTime = 0;
+      }
       this.ctx?.close();
     } catch (e) {
       console.warn('Audio stop error:', e);
     } finally {
       this.ctx = null;
       this.isRunning = false;
+      this.notify();
     }
   }
 
   public getStatus() {
     return {
       isRunning: this.isRunning,
+      isPlaying: this.isRunning && !this.isMuted,
       isCruising: this.isCruising,
       isMuted: this.isMuted,
       weather: this.currentWeather,
+      audioUrl: this.currentAudioUrl,
+      isLoading: this.isAudioLoading,
+      volume: this.volumeLevel,
     };
   }
 }
 
 export const musiAudio = new MusiAudioEngine();
-

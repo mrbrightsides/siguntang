@@ -32,12 +32,15 @@ import {
   Crosshair,
   Radio,
   Box,
-  Cpu
+  Cpu,
+  Sliders,
+  Square
 } from 'lucide-react';
 import { MUSI_FOLKLORE_EXPEDITION, FolkloreStory, FolkloreHotspot, FolkloreRelic } from '../data/folkloreData';
 import { musiAudio, MusiWeatherType } from '../services/musiAudioEngine';
 import { Musi3DDiorama } from './Musi3DDiorama';
 import { PhygitalConsoleModal } from './PhygitalConsoleModal';
+import { MusiAudioSettingsModal } from './MusiAudioSettingsModal';
 
 interface MusiCruiseDioramaProps {
   onNodeSelect?: (nodeName: string) => void;
@@ -140,6 +143,7 @@ export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlann
   const [discoveredSecrets, setDiscoveredSecrets] = useState<string[]>([]);
   const [isSecretModalOpen, setIsSecretModalOpen] = useState<boolean>(false);
   const [isPhygitalOpen, setIsPhygitalOpen] = useState<boolean>(false);
+  const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState<boolean>(false);
   const [gyroActive, setGyroActive] = useState<boolean>(false);
   const [gyroSupported, setGyroSupported] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -168,6 +172,16 @@ export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlann
     if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
       setGyroSupported(true);
     }
+  }, []);
+
+  // Sync state with Musi Audio Engine
+  useEffect(() => {
+    const unsub = musiAudio.subscribe(() => {
+      const status = musiAudio.getStatus();
+      setAudioActive(status.isRunning);
+      setIsMuted(status.isMuted);
+    });
+    return unsub;
   }, []);
 
   // Safe Haptic feedback
@@ -471,21 +485,35 @@ export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlann
     };
   }, [weather]);
 
-  // Audio start/stop toggle
+  // Audio start/stop & toggle
   const handleToggleAudio = async () => {
-    if (!audioActive) {
-      const ok = await musiAudio.start();
-      if (ok) {
-        setAudioActive(true);
+    if (!audioActive || isMuted) {
+      if (!audioActive) {
+        const ok = await musiAudio.start();
+        if (ok) {
+          setAudioActive(true);
+          setIsMuted(false);
+          musiAudio.setWeather(weather);
+          triggerHaptic([30]);
+        }
+      } else {
+        musiAudio.toggleMute();
         setIsMuted(false);
-        musiAudio.setWeather(weather);
         triggerHaptic([30]);
       }
     } else {
-      const muted = musiAudio.toggleMute();
-      setIsMuted(muted);
+      musiAudio.stop();
+      setAudioActive(false);
+      setIsMuted(false);
       triggerHaptic([20]);
     }
+  };
+
+  const handleStopAudio = () => {
+    musiAudio.stop();
+    setAudioActive(false);
+    setIsMuted(false);
+    triggerHaptic([20]);
   };
 
   // Navigate between folklore halts
@@ -664,18 +692,39 @@ export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlann
 
           {/* Quick HUD controls */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* Audio Toggle */}
-            <button
-              onClick={handleToggleAudio}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all text-xs font-semibold ${
-                audioActive && !isMuted
-                  ? 'bg-amber-500/20 border-amber-400/50 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.2)]'
-                  : 'bg-white/5 border-white/10 text-stone-400 hover:text-white'
-              }`}
-            >
-              {audioActive && !isMuted ? <Volume2 size={16} /> : <VolumeX size={16} />}
-              <span>{audioActive && !isMuted ? 'Audio Spasial Nyala' : 'Aktifkan Suara Musi'}</span>
-            </button>
+            {/* Audio Controls: Pengaturan Suara & Stop/Play Suara */}
+            <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-xl p-1">
+              {/* Tombol Suara Musi -> Buka modal pengaturan suara langsung tanpa white noise */}
+              <button
+                onClick={() => setIsAudioSettingsOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/10 text-stone-300 hover:text-white transition-all text-xs font-semibold cursor-pointer border border-transparent hover:border-amber-500/20"
+                title="Buka Pengaturan Suara Ombak, Volume, & Ganti URL Audio"
+              >
+                <Sliders size={14} className="text-amber-400" />
+                <span>Suara Musi</span>
+              </button>
+
+              {/* Tombol Matikan/Mainkan Suara Berdampingan */}
+              {audioActive && !isMuted ? (
+                <button
+                  onClick={handleStopAudio}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/60 hover:bg-red-900/70 border border-red-500/50 text-red-200 transition-all text-xs font-semibold cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.3)]"
+                  title="Matikan Suara Musi (Stop Audio)"
+                >
+                  <Square size={12} fill="currentColor" className="text-red-400" />
+                  <span className="font-bold text-red-200">Stop Suara</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleToggleAudio}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-stone-400 hover:text-stone-200 transition-all text-xs font-medium cursor-pointer"
+                  title="Putar Suara Rekaman Ombak/Air Musi"
+                >
+                  <Volume2 size={14} className="text-amber-400/80" />
+                  <span>Mainkan</span>
+                </button>
+              )}
+            </div>
 
             {/* Gyro Sensor Button */}
             {gyroSupported && (
@@ -1617,6 +1666,12 @@ export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlann
           onClose={() => setIsPhygitalOpen(false)}
           currentWeather={weather}
           onWeatherChange={handleSelectWeather}
+        />
+
+        {/* Musi River Ambient Audio Settings Modal */}
+        <MusiAudioSettingsModal
+          isOpen={isAudioSettingsOpen}
+          onClose={() => setIsAudioSettingsOpen(false)}
         />
       </div>
     </section>

@@ -214,6 +214,7 @@ export function HeritageTimelineSection({
                           <img 
                             src={art.image} 
                             alt={art.name}
+                            referrerPolicy="no-referrer"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             onError={(e) => {
                               (e.currentTarget as HTMLImageElement).src = 'https://cda.1001malam.com/uploads/tour/onedaycityandmusitourpalembang_bukitsiguntang_5060.JPG';

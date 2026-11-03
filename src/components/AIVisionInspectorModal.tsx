@@ -235,6 +235,7 @@ export function AIVisionInspectorModal({
               <img
                 src={customImageBase64 ? `data:${customMimeType};base64,${customImageBase64}` : selectedSpecimen.imageUrl}
                 alt="Artefak Budaya"
+                referrerPolicy="no-referrer"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
 
