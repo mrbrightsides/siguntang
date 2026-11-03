@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Shield, MapPin, Search, Cpu, Wallet, Sparkles, Scroll, Award, Languages } from 'lucide-react';
+import { Shield, MapPin, Search, Cpu, Wallet, Sparkles, Scroll, Award, Languages, Camera } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 interface NavbarProps {
@@ -14,6 +14,7 @@ interface NavbarProps {
   onOpenAIVision?: () => void;
   onOpenSongketModal?: () => void;
   onOpenQuiz?: () => void;
+  onOpenAR?: () => void;
 }
 
 export function Navbar({ 
@@ -23,7 +24,8 @@ export function Navbar({
   onOpenMintSBT, 
   onOpenAIVision,
   onOpenSongketModal,
-  onOpenQuiz 
+  onOpenQuiz,
+  onOpenAR 
 }: NavbarProps) {
   const { language, toggleLanguage, t } = useLanguage();
 
@@ -55,6 +57,20 @@ export function Navbar({
         </div>
 
         <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* AR Heritage Camera Lens Button */}
+          {onOpenAR && (
+            <button
+              onClick={onOpenAR}
+              title="Buka Kamera AR Cagar Budaya Palembang"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-red-900/10 to-amber-700/10 hover:from-red-900/20 hover:to-amber-700/20 border border-amber-600/40 rounded-xl transition-all cursor-pointer text-[10px] font-mono font-bold text-amber-950 active:scale-95 shadow-xs"
+            >
+              <Camera size={13} className="text-[#8b0000]" />
+              <span className="hidden sm:inline">AR Lens</span>
+              <span className="sm:hidden">AR</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            </button>
+          )}
+
           {/* Language Mode Switcher */}
           <button
             onClick={toggleLanguage}

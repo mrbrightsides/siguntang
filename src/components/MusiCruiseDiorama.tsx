@@ -33,7 +33,8 @@ import {
   Radio,
   Box,
   Cpu,
-  Sliders
+  Sliders,
+  Camera
 } from 'lucide-react';
 import { MUSI_FOLKLORE_EXPEDITION, FolkloreStory, FolkloreHotspot, FolkloreRelic } from '../data/folkloreData';
 import { musiAudio, MusiWeatherType } from '../services/musiAudioEngine';
@@ -46,6 +47,7 @@ interface MusiCruiseDioramaProps {
   onOpenStoryteller?: (weather: MusiWeatherType) => void;
   onOpenPlanner?: () => void;
   onOpenPrasasti?: () => void;
+  onOpenAR?: () => void;
 }
 
 interface FolkloreSecret {
@@ -122,7 +124,7 @@ interface WaterRipple {
   color: string;
 }
 
-export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlanner, onOpenPrasasti }: MusiCruiseDioramaProps) {
+export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlanner, onOpenPrasasti, onOpenAR }: MusiCruiseDioramaProps) {
   const [currentIdx, setCurrentIdx] = useState<number>(0);
   const [isCruising, setIsCruising] = useState<boolean>(false);
   const [autoCruise, setAutoCruise] = useState<boolean>(false);
@@ -731,6 +733,18 @@ export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlann
               >
                 <Smartphone size={16} />
                 <span>{gyroActive ? 'Gyro HP Aktif' : 'Gerak Gyro'}</span>
+              </button>
+            )}
+
+            {/* WebAR Camera Heritage Viewer Button */}
+            {onOpenAR && (
+              <button
+                onClick={onOpenAR}
+                className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-red-950/60 to-amber-950/50 hover:from-red-900/70 hover:to-amber-900/60 border border-amber-500/40 rounded-xl text-xs font-semibold text-amber-200 shadow-sm transition-all cursor-pointer"
+                title="Buka Kamera AR HP untuk Melihat Penanda 3D Cagar Budaya Palembang"
+              >
+                <Camera size={14} className="text-amber-400" />
+                <span>AR Kamera</span>
               </button>
             )}
 

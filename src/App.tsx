@@ -28,12 +28,13 @@ import { GlossaryModal } from './components/GlossaryModal';
 import { HeritageTimelineSection } from './components/HeritageTimelineSection';
 import { SongketMotifModal } from './components/SongketMotifModal';
 import { HeritageQuizModal } from './components/HeritageQuizModal';
+import { ARHeritageViewerModal } from './components/ARHeritageViewerModal';
 import { useLanguage } from './context/LanguageContext';
 import { MusiWeatherType } from './services/musiAudioEngine';
 import { connectWallet, WalletState, recordTraceabilityTransaction } from './services/blockchainService';
 import { SEPOLIA_CONFIG } from './contractData';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass, Layers, Lock, BookOpen, Scroll, Award } from 'lucide-react';
+import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass, Layers, Lock, BookOpen, Scroll, Award, Camera } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -61,6 +62,8 @@ export default function App() {
   const [glossaryCategory, setGlossaryCategory] = useState<'all' | 'blockchain' | 'culture'>('all');
   const [isSongketModalOpen, setIsSongketModalOpen] = useState(false);
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
+  const [isARViewerOpen, setIsARViewerOpen] = useState(false);
+  const [arTargetNode, setArTargetNode] = useState<UniversalNode | null>(null);
 
   useEffect(() => {
     if (typeof window.ethereum !== 'undefined') {
@@ -135,6 +138,10 @@ export default function App() {
         onOpenSTCEcosystem={() => setIsSTCEcosystemOpen(true)}
         onOpenSongketModal={() => setIsSongketModalOpen(true)}
         onOpenQuiz={() => setIsQuizModalOpen(true)}
+        onOpenAR={() => {
+          setArTargetNode(null);
+          setIsARViewerOpen(true);
+        }}
       />
       
       {/* Hero Section - The Universal Gate */}
@@ -264,6 +271,10 @@ export default function App() {
         }}
         onOpenPlanner={() => setIsPlannerOpen(true)}
         onOpenPrasasti={() => setIsPrasastiOpen(true)}
+        onOpenAR={() => {
+          setArTargetNode(null);
+          setIsARViewerOpen(true);
+        }}
       />
 
       {/* Heritage Timeline: Lorong Waktu Sriwijaya ke Darussalam */}
@@ -379,6 +390,10 @@ export default function App() {
             <HeritageMap 
               nodes={PALEMBANG_NODES} 
               onNodeClick={setSelectedNode} 
+              onOpenAR={(node) => {
+                setArTargetNode(node || null);
+                setIsARViewerOpen(true);
+              }}
             />
           </ErrorBoundary>
         </div>
@@ -768,6 +783,21 @@ export default function App() {
                     </div>
                     <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#8b0000]/15 text-[#8b0000] font-mono font-semibold">ERC-5192</span>
                   </button>
+
+                  <button 
+                    onClick={() => {
+                      setArTargetNode(null);
+                      setIsARViewerOpen(true);
+                    }}
+                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-amber-600/10 hover:bg-amber-600/20 border border-amber-600/30 rounded-xl text-amber-950 font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
+                    title="Buka Kamera AR HP untuk Melihat Penanda 3D Cagar Budaya Palembang"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Camera size={14} className="text-amber-700 group-hover:scale-110 transition-transform" />
+                      <span>AR Heritage Lens</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-600/20 text-emerald-800 font-mono font-semibold">WebAR</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -888,6 +918,17 @@ export default function App() {
                   >
                     Klaim SBT Budaya (ERC-5192)
                     <Shield size={16} className="text-amber-300" />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setArTargetNode(selectedNode);
+                      setIsARViewerOpen(true);
+                      setSelectedNode(null);
+                    }}
+                    className="w-full py-3.5 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:brightness-110 text-stone-950 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 shadow-md shadow-amber-500/20 cursor-pointer"
+                  >
+                    Lihat di Kamera AR (3D Marker)
+                    <Camera size={16} />
                   </button>
                   <button 
                     onClick={() => {
@@ -1020,6 +1061,18 @@ export default function App() {
         wallet={wallet}
         onOpenMintSBT={() => {
           setMintTargetNode(null);
+          setIsMintSBTOpen(true);
+        }}
+      />
+
+      {/* WebAR Mobile Camera Heritage Viewer Modal */}
+      <ARHeritageViewerModal
+        isOpen={isARViewerOpen}
+        onClose={() => setIsARViewerOpen(false)}
+        initialNode={arTargetNode}
+        onSelectNodeDetail={(node) => setSelectedNode(node)}
+        onOpenMintSBT={(node) => {
+          setMintTargetNode(node);
           setIsMintSBTOpen(true);
         }}
       />
