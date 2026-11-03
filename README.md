@@ -80,8 +80,33 @@ Cerita rakyat diorama Sungai Musi (*Putri Kembang Dadar, Misteri Antu Banyu, Pul
 ### 5. 👁️ AI Vision Artifact Inspector
 * Pemeriksaan keaslian motif Songket Palembang, arca Buddha Siguntang abad ke-6, dan mata uang koin kuno Kesultanan berbasis Computer Vision multimodal.
 
-### 6. 🎙️ Gemini Live Audio Streaming
-* Percakapan suara real-time dua arah (*full-duplex streaming*) tanpa jeda melalui WebSocket backend `/live`.
+### 7. ⏳ Lorong Waktu Sejarah Palembang (Heritage Timeline 683 M – Kini)
+* **Kronik 4 Era Peradaban:**
+  * **Abad VII – XIV (Kemaharajaan Bahari Sriwijaya):** Dapunta Hyang Sri Jayanasa, Prasasti Kedukan Bukit (683 M), dan Bukit Siguntang sebagai poros maritim dunia.
+  * **1659 – 1823 M (Kesultanan Palembang Darussalam):** Kedaulatan Islam bahari, Sultan Mahmud Badaruddin I & II, Benteng Kuto Besak berdinding kapur putih, dan Perang Palembang 1819-1821.
+  * **Abad XX M (Perjuangan & Jembatan Ampera):** Menyatukan Seberang Ulu dan Ilir di bawah Amanat Penderitaan Rakyat, pengangkatan jembatan 944 ton dalam 3 menit.
+  * **Abad XXI M (Kedaulatan Digital & Songket Tenun Chain):** Multi-token standard ERC-1155/721 hybrid, verifikasi anti-pemalsuan kriya, dan sertifikasi ramah iklim FOLU Net Sink 2030.
+
+### 8. 🧵 Ensiklopedi & Anatomi Motif Songket Palembang
+* **Bedah Ragam Hias Sakral & Kasta Keraton:**
+  * *Songket Lepus Berekam (Tingkat Ratu):* Benang emas jantun menutupi 98% permukaan kain tanpa sela kapas, lambang kemurnian martabat budi pekerti tanpa cela.
+  * *Songket Nago Besaung (Tingkat Utama):* Akulturasi maritim Tiongkok-Melayu, naga bertarung penjaga keharmonisan Sungai Musi.
+  * *Songket Bunga Pacik (Spiritual):* Taburan motif bunga empat kelopak melambangkan kesucian batin dan keanggunan bersikap.
+  * *Songket Limar Sekar Mawar (Cual Limar):* Perpaduan ikat pakan sutra dengan benang emas lambang keabadian cinta kasih dan diplomasi damai.
+  * *Songket Pulir Bintang:* Pola geometris bintang bersudut delapan melambangkan lentera astronomi pelaut Musi dan keteguhan iman.
+* **Anatomi Sehelai Kain:** Kepala Kain (*Palepai / Tumpal Pucuk Rebung*), Badan Kain (*Awak Sewet*), Apit & Pasmen Pinggir (*Tepi Awak*), dan Rantai Gandik Ujung (*Rambu Sewet*).
+* **Bahan Alami & Komitmen FOLU Net Sink 2030:** Serutan kayu secang (*Caesalpinia sappan*), getah gambir lokal, rimpang kunyit, daun mangga, dan alat tenun gedogan kayu ulin bebas emisi listrik.
+
+### 9. 🏆 Uji Sahabat Sriwijaya (Heritage Quiz & Digital Credential Award)
+* **Tantangan Edukasi Interaktif:** 5 soal mendalam seputar sejarah prasasti Kedukan Bukit, benteng Kuto Besak, Pulau Kemaro, kriya songket, dan protokol blockchain STC.
+* **Penganugerahan Gelar & Piagam Resmi:**
+  * Gelar kehormatan: *"Duta Cagar Budaya Sriwijaya"* (*Sriwijaya Heritage Steward*).
+  * Generator piagam resolusi tinggi (1800x1200 px) dengan nama kustom penerima, nomor seri identitas piagam, cap stempel adat Kesultanan & STC Protocol, dan QR Code verifikasi on-chain.
+  * Opsi unduh langsung dalam format gambar (PNG) berkualitas cetak atau perintah cetak (*Print*).
+
+### 10. 🗣️ Mode Dwigolongan: Basa Palembang Alus (Linguistic Preservation)
+* **Pengalih Bahasa Interaktif:** Mendukung Bahasa Indonesia baku dan **Basa Palembang Alus** (bahasa tutur halus bangsawan Kesultanan Palembang).
+* Menghidupkan kembali kosakata luhur Melayu Palembang (*Lawang Agung*, *Simpul Pusako*, *Peta Idop Adat*, *Sewet Songket*, *Wong Kito*) di seluruh antarmuka navigasi dan kartu informasi.
 
 ---
 

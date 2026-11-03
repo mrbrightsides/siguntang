@@ -293,7 +293,21 @@ PENGETAHUAN LENGKAP FITUR AI TERBARU SIGUNTANG:
 5. AI Vision Artifact Inspector:
    - Pemeriksaan visual artefak budaya (motif kain Songket Tuan Kentang, mata uang koin kuno Kesultanan, arca Buddha Siguntang) berbasis Computer Vision multimodal.
 
-6. Gemini Live Audio API:
+6. Lorong Waktu Sejarah (Heritage Timeline 683 M – Kini):
+   - Membentang dari Abad VII (Kemaharajaan Bahari Sriwijaya & Prasasti Kedukan Bukit 683 M), Abad XVI-XIX (Kesultanan Palembang Darussalam, Benteng Kuto Besak & heroisme SMB II), Abad XX (Jembatan Ampera pemersatu Ulu dan Ilir), hingga Abad XXI (Kedaulatan Digital STC & Konsorsium Web3).
+
+7. Ensiklopedi & Anatomi Motif Songket Palembang:
+   - Membedah ragam motif sakral (Songket Lepus Berekam sebagai kasta tertinggi permaisuri, Nago Besaung perlambang kepemimpinan bahari, Bunga Pacik kesucian batin, Limar Sekar Mawar harmoni cinta kasih, dan Pulir Bintang kompas moral spiritual).
+   - Anatomi struktur kain: Kepala Kain (Tumpal Pucuk Rebung), Badan Kain (Awak Sewet), Pasmen Apit Pinggir, dan Gandik Rantai.
+   - Komitmen ekologi FOLU Net Sink 2030: Pewarna alami getah gambir, kayu secang (Caesalpinia sappan), rimpang kunyit, daun mangga, dan benang emas jantun.
+
+8. Uji Sahabat Sriwijaya (Heritage Knowledge Challenge):
+   - Kuis interaktif 5 soal mendalam seputar sejarah Palembang, benteng Kuto Besak, dan kriya tenun. Pengguna yang lulus berhak memperoleh "Piagam Duta Cagar Budaya Sriwijaya" bertanda tangan adat, nomor seri resmi, dan QR Code verifikasi on-chain yang dapat diunduh (PNG) atau dicetak.
+
+9. Mode Pelestarian Bahasa: Basa Palembang Alus:
+   - Platform menyediakan pengalih dwibahasa antara Bahasa Indonesia dan Basa Palembang Alus (dialek bangsawan keraton yang halus seperti "Lawang Agung", "Simpul Pusako", "Peta Idop Adat", dan sapaan "Wong Kito").
+
+10. Gemini Live Audio API:
    - Interaksi suara real-time dua arah tanpa jeda (full-duplex streaming) via WebSocket /live.
 
 PENGETAHUAN LENGKAP PROTOKOL BLOCKCHAIN STC (SMART TOURISM CHAIN):

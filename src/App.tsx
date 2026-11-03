@@ -25,14 +25,19 @@ import { MusiStorytellerModal } from './components/MusiStorytellerModal';
 import { MusiPlannerModal } from './components/MusiPlannerModal';
 import { PrasastiDigitalModal } from './components/PrasastiDigitalModal';
 import { GlossaryModal } from './components/GlossaryModal';
+import { HeritageTimelineSection } from './components/HeritageTimelineSection';
+import { SongketMotifModal } from './components/SongketMotifModal';
+import { HeritageQuizModal } from './components/HeritageQuizModal';
+import { useLanguage } from './context/LanguageContext';
 import { MusiWeatherType } from './services/musiAudioEngine';
 import { connectWallet, WalletState, recordTraceabilityTransaction } from './services/blockchainService';
 import { SEPOLIA_CONFIG } from './contractData';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass, Layers, Lock, BookOpen, Scroll } from 'lucide-react';
+import { Shield, Sparkles, ChevronRight, Globe, Database, ArrowUpRight, Map as MapIcon, X, Calendar, Wallet as DonationIcon, Download, Compass, Layers, Lock, BookOpen, Scroll, Award } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
+  const { t, language } = useLanguage();
   const [selectedNode, setSelectedNode] = useState<UniversalNode | null>(null);
   const [activeTab, setActiveTab] = useState<NodeType | 'All'>('All');
   const [showSTC, setShowSTC] = useState<UniversalNode | null>(null);
@@ -54,6 +59,8 @@ export default function App() {
   const [isPrasastiOpen, setIsPrasastiOpen] = useState(false);
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const [glossaryCategory, setGlossaryCategory] = useState<'all' | 'blockchain' | 'culture'>('all');
+  const [isSongketModalOpen, setIsSongketModalOpen] = useState(false);
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window.ethereum !== 'undefined') {
@@ -126,6 +133,8 @@ export default function App() {
         walletAddress={wallet?.address || null} 
         onConnectWallet={handleConnectWallet} 
         onOpenSTCEcosystem={() => setIsSTCEcosystemOpen(true)}
+        onOpenSongketModal={() => setIsSongketModalOpen(true)}
+        onOpenQuiz={() => setIsQuizModalOpen(true)}
       />
       
       {/* Hero Section - The Universal Gate */}
@@ -139,13 +148,13 @@ export default function App() {
                 transition={{ delay: 0.1 }}
                 className="font-serif text-5xl md:text-7xl font-bold leading-[1.1] mb-8"
               >
-                Gerbang Universal <br /> 
-                <span className="text-[#8b0000]">Node Nusantara</span>
+                {t.heroTitleMain} <br /> 
+                <span className="text-[#8b0000]">{t.heroTitleHighlight}</span>
               </motion.h1>
               
               <div className="mb-8 p-4 bg-white/40 border-l-4 border-[#8b0000] backdrop-blur-sm rounded-r-xl">
                 <p className="font-serif italic text-xl text-[#1a1a1a]">
-                  “Peta Hidup Budaya Palembang”
+                  {t.heroQuote}
                 </p>
               </div>
 
@@ -155,7 +164,7 @@ export default function App() {
                 transition={{ delay: 0.2 }}
                 className="text-lg text-gray-600 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed"
               >
-                Integrasi cerdas aset budaya, religi, dan sejarah Palembang dalam ekosistem digital berbasis blockchain dan Artifical Intelligence.
+                {t.heroDesc}
               </motion.p>
               
               <motion.div 
@@ -166,24 +175,24 @@ export default function App() {
               >
                 <button 
                   onClick={() => document.getElementById('expedition')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-4 bg-[#8b0000] text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-[#a00000] transition-all flex items-center gap-2 shadow-xl shadow-[#8b0000]/25 hover:scale-[1.02] active:scale-95"
+                  className="px-8 py-4 bg-[#8b0000] text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-[#a00000] transition-all flex items-center gap-2 shadow-xl shadow-[#8b0000]/25 hover:scale-[1.02] active:scale-95 cursor-pointer"
                 >
                   <Compass size={16} />
-                  Naik Ketek & Jelajah Musi
+                  {t.btnRideKetek}
                 </button>
                 <button 
                   onClick={() => document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-4 bg-white text-[#1a1a1a] border border-black/10 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm"
+                  className="px-8 py-4 bg-white text-[#1a1a1a] border border-black/10 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
                 >
-                  Explore Heritage Nodes
+                  {t.btnExploreNodes}
                   <ChevronRight size={16} />
                 </button>
                 <button 
                   onClick={() => setIsExplorerOpen(true)}
-                  className="px-6 py-4 bg-black/5 text-[#1a1a1a] hover:bg-black/10 rounded-2xl font-bold text-xs uppercase tracking-widest transition-colors flex items-center gap-2"
+                  className="px-6 py-4 bg-black/5 text-[#1a1a1a] hover:bg-black/10 rounded-2xl font-bold text-xs uppercase tracking-widest transition-colors flex items-center gap-2 cursor-pointer"
                 >
                   <Globe size={16} />
-                  Network
+                  {t.btnNetwork}
                 </button>
               </motion.div>
 
@@ -194,18 +203,18 @@ export default function App() {
                 className="mt-12 flex items-center justify-center lg:justify-start gap-8"
               >
                 <div className="flex flex-col items-center lg:items-start">
-                  <span className="font-serif text-3xl font-bold text-[#8b0000]">5 Rute</span>
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Folklore Musi</span>
+                  <span className="font-serif text-3xl font-bold text-[#8b0000]">{t.metricRoutes}</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">{t.metricRoutesLabel}</span>
                 </div>
                 <div className="w-px h-10 bg-black/10" />
                 <div className="flex flex-col items-center lg:items-start">
-                  <span className="font-serif text-3xl font-bold text-[#8b0000]">120+</span>
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Cultural Nodes</span>
+                  <span className="font-serif text-3xl font-bold text-[#8b0000]">{t.metricNodes}</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">{t.metricNodesLabel}</span>
                 </div>
                 <div className="w-px h-10 bg-black/10" />
                 <div className="flex flex-col items-center lg:items-start">
-                  <span className="font-serif text-3xl font-bold text-[#8b0000]">100%</span>
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Traceable STC</span>
+                  <span className="font-serif text-3xl font-bold text-[#8b0000]">{t.metricTraceable}</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">{t.metricTraceableLabel}</span>
                 </div>
               </motion.div>
             </div>
@@ -226,7 +235,7 @@ export default function App() {
                 <div className="absolute -bottom-6 -left-6 p-6 bg-[#1a1a1a] text-white rounded-3xl shadow-2xl -rotate-6">
                   <div className="flex items-center gap-3 mb-2">
                     <Shield className="text-[#8b0000]" size={20} />
-                    <span className="font-mono text-[10px] uppercase tracking-widest font-bold">STC AUTHENTICATED</span>
+                    <span className="font-mono text-[10px] uppercase tracking-widest font-bold">{t.heroBadge}</span>
                   </div>
                   <p className="font-serif text-lg">Ampera Heritage Node</p>
                 </div>
@@ -257,21 +266,35 @@ export default function App() {
         onOpenPrasasti={() => setIsPrasastiOpen(true)}
       />
 
+      {/* Heritage Timeline: Lorong Waktu Sriwijaya ke Darussalam */}
+      <HeritageTimelineSection 
+        onSelectNodeByName={(name) => {
+          const found = findPalembangNode(name);
+          if (found) {
+            setSelectedNode(found);
+          } else if (PALEMBANG_NODES.length > 0) {
+            setSelectedNode(PALEMBANG_NODES[0]);
+          }
+        }}
+        onOpenQuiz={() => setIsQuizModalOpen(true)}
+        onOpenSongketModal={() => setIsSongketModalOpen(true)}
+      />
+
       {/* Mission Section: Transforming Passive to Active */}
       <section className="py-24 bg-[#8b0000] text-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="font-serif text-4xl md:text-5xl font-bold mb-8 leading-tight">
-                Menghidupkan Kembali <br />
-                <span className="opacity-60 underline decoration-white/30 decoration-2">Node Budaya</span>
+                {t.sectionMissionTitle} <br />
+                <span className="opacity-60 underline decoration-white/30 decoration-2">{t.sectionMissionHighlight}</span>
               </h2>
               <div className="space-y-6 text-white/80">
                 <p className="text-lg">
-                  Warisan budaya selama ini seringkali bersifat pasif—hanya menjadi latar foto tanpa narasi yang mendalam.
+                  {t.sectionMissionP1}
                 </p>
                 <p className="text-lg">
-                  SIGUNTANG hadir untuk memecahkan masalah dokumentasi konvensional dan cerita sejarah yang tercecer, mengubahnya menjadi <strong>ekosistem digital interaktif</strong> yang hidup.
+                  {t.sectionMissionP2}
                 </p>
               </div>
             </div>
@@ -615,6 +638,35 @@ export default function App() {
                   </li>
                   <li>
                     <button 
+                      onClick={() => {
+                        document.getElementById('heritage-timeline')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
+                    >
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Linimasa Sejarah</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ 683 M – Kini</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => setIsSongketModalOpen(true)}
+                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
+                    >
+                      <span className="font-semibold text-[#8b0000] group-hover:underline">Ensiklopedi Songket</span>
+                      <span className="text-[10px] bg-amber-500/15 text-amber-800 font-mono px-1.5 py-0.2 rounded font-bold">Kriya</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => setIsQuizModalOpen(true)}
+                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
+                    >
+                      <span className="font-semibold text-[#8b0000] group-hover:underline">Uji Sahabat Sriwijaya</span>
+                      <span className="text-[10px] bg-[#8b0000]/10 text-[#8b0000] font-mono px-1.5 py-0.2 rounded font-bold">Piagam</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button 
                       onClick={() => setIsGlossaryOpen(true)}
                       className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
                     >
@@ -628,9 +680,32 @@ export default function App() {
               <div>
                 <h4 className="font-bold text-xs uppercase tracking-widest mb-4 text-[#1a1a1a] flex items-center gap-1.5">
                   <Sparkles size={13} className="text-[#8b0000]" />
-                  Blockchain & AI
+                  {t.footerAI}
                 </h4>
                 <div className="flex flex-col gap-2.5">
+                  <button 
+                    onClick={() => setIsQuizModalOpen(true)}
+                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-[#8b0000]/10 hover:bg-[#8b0000]/20 border border-[#8b0000]/30 rounded-xl text-[#8b0000] font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
+                    title="Uji Pengetahuan Sejarah Palembang & Dapatkan Piagam Digital"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Award size={14} className="text-[#8b0000] group-hover:scale-110 transition-transform" />
+                      <span>Uji Sahabat Sriwijaya</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#8b0000]/15 text-[#8b0000] font-mono font-semibold">Award</span>
+                  </button>
+
+                  <button 
+                    onClick={() => setIsSongketModalOpen(true)}
+                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-600/30 rounded-xl text-amber-950 font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
+                    title="Katalog & Filosofi Motif Songket Palembang"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sparkles size={14} className="text-amber-600 group-hover:scale-110 transition-transform" />
+                      <span>Anatomi & Motif Songket</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-800 font-mono font-semibold">Kriya</span>
+                  </button>
                   <button 
                     onClick={() => setIsAIVisionOpen(true)}
                     className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-600/30 rounded-xl text-amber-950 font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
@@ -931,6 +1006,22 @@ export default function App() {
         isOpen={isGlossaryOpen}
         onClose={() => setIsGlossaryOpen(false)}
         initialTab={glossaryCategory}
+      />
+
+      <SongketMotifModal
+        isOpen={isSongketModalOpen}
+        onClose={() => setIsSongketModalOpen(false)}
+        onOpenAIVision={() => setIsAIVisionOpen(true)}
+      />
+
+      <HeritageQuizModal
+        isOpen={isQuizModalOpen}
+        onClose={() => setIsQuizModalOpen(false)}
+        wallet={wallet}
+        onOpenMintSBT={() => {
+          setMintTargetNode(null);
+          setIsMintSBTOpen(true);
+        }}
       />
 
       {/* Floating AI Guide & Musi Storyteller Assistant */}

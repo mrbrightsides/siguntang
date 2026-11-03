@@ -177,6 +177,10 @@ export function AIGuide() {
                 <Sparkles size={11} className="text-amber-600" /> Topik:
               </span>
               {[
+                { label: 'Linimasa Sriwijaya 683 M', prompt: 'Ceritakan kronologi sejarah Palembang dari era Sriwijaya 683 M hingga Kesultanan Palembang Darussalam' },
+                { label: 'Filosofi Songket Lepus', prompt: 'Apa makna filosofis dan hierarki adat kain Songket Lepus Berekam dan Nago Besaung?' },
+                { label: 'Uji Sahabat Sriwijaya', prompt: 'Bagaimana cara mengikuti Uji Sahabat Sriwijaya dan memperoleh Piagam Duta Cagar Budaya?' },
+                { label: 'Basa Palembang Alus', prompt: 'Jelaskan istilah-istilah Basa Palembang Alus dan sejarah tata krama kesultanan tempo dulu' },
                 { label: 'Prasasti Pallawa Abad-7', prompt: 'Bagaimana cara kerja Generator Prasasti Digital Aksara Pallawa Melayu Kuno?' },
                 { label: 'SBT Proof-of-Visit', prompt: 'Jelaskan mekanisme Soulbound Token (ERC-5192) Proof-of-Visit di platform SIGUNTANG' },
                 { label: 'Audit Karbon STC', prompt: 'Bagaimana perhitungan jejak karbon STC CarbonPrint dan rekomendasi eco-offset perahu Musi?' },
