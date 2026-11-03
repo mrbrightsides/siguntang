@@ -33,8 +33,7 @@ import {
   Radio,
   Box,
   Cpu,
-  Sliders,
-  Square
+  Sliders
 } from 'lucide-react';
 import { MUSI_FOLKLORE_EXPEDITION, FolkloreStory, FolkloreHotspot, FolkloreRelic } from '../data/folkloreData';
 import { musiAudio, MusiWeatherType } from '../services/musiAudioEngine';
@@ -692,39 +691,32 @@ export function MusiCruiseDiorama({ onNodeSelect, onOpenStoryteller, onOpenPlann
 
           {/* Quick HUD controls */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* Audio Controls: Pengaturan Suara & Stop/Play Suara */}
-            <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-xl p-1">
-              {/* Tombol Suara Musi -> Buka modal pengaturan suara langsung tanpa white noise */}
-              <button
-                onClick={() => setIsAudioSettingsOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/10 text-stone-300 hover:text-white transition-all text-xs font-semibold cursor-pointer border border-transparent hover:border-amber-500/20"
-                title="Buka Pengaturan Suara Ombak, Volume, & Ganti URL Audio"
-              >
-                <Sliders size={14} className="text-amber-400" />
-                <span>Suara Musi</span>
-              </button>
-
-              {/* Tombol Matikan/Mainkan Suara Berdampingan */}
+            {/* Single Unified Audio Button for Musi Ambience */}
+            <button
+              onClick={() => setIsAudioSettingsOpen(true)}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                audioActive && !isMuted
+                  ? 'bg-amber-500/15 border-amber-400/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                  : 'bg-white/5 border-white/10 text-stone-300 hover:text-white hover:border-amber-500/30'
+              }`}
+              title="Buka Pengaturan Suara Ombak & Rekaman Musi"
+            >
               {audioActive && !isMuted ? (
-                <button
-                  onClick={handleStopAudio}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/60 hover:bg-red-900/70 border border-red-500/50 text-red-200 transition-all text-xs font-semibold cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.3)]"
-                  title="Matikan Suara Musi (Stop Audio)"
-                >
-                  <Square size={12} fill="currentColor" className="text-red-400" />
-                  <span className="font-bold text-red-200">Stop Suara</span>
-                </button>
+                <>
+                  <Volume2 size={15} className="text-amber-400 animate-pulse" />
+                  <span>Suara Musi</span>
+                  <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-mono bg-emerald-500/25 text-emerald-300 border border-emerald-500/40">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    Aktif
+                  </span>
+                </>
               ) : (
-                <button
-                  onClick={handleToggleAudio}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-stone-400 hover:text-stone-200 transition-all text-xs font-medium cursor-pointer"
-                  title="Putar Suara Rekaman Ombak/Air Musi"
-                >
-                  <Volume2 size={14} className="text-amber-400/80" />
-                  <span>Mainkan</span>
-                </button>
+                <>
+                  <Sliders size={15} className="text-amber-400" />
+                  <span>Suara Musi</span>
+                </>
               )}
-            </div>
+            </button>
 
             {/* Gyro Sensor Button */}
             {gyroSupported && (

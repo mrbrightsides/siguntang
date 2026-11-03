@@ -16,23 +16,18 @@ import {
   RotateCcw, 
   Ship, 
   Sparkles, 
-  Volume2, 
-  VolumeX, 
   Layers, 
   Info,
   MapPin,
   ChevronRight,
   X,
   Cpu,
-  Scroll,
-  Sliders,
-  Square
+  Scroll
 } from 'lucide-react';
 import { musiAudio, MusiWeatherType } from '../services/musiAudioEngine';
 import { motion, AnimatePresence } from 'motion/react';
 import { PhygitalConsoleModal } from './PhygitalConsoleModal';
 import { AICuratorDrawer } from './AICuratorDrawer';
-import { MusiAudioSettingsModal } from './MusiAudioSettingsModal';
 
 interface Musi3DDioramaProps {
   onNodeSelect?: (nodeName: string) => void;
@@ -53,8 +48,7 @@ export function Musi3DDiorama({ onNodeSelect, onOpenPrasasti, onClose }: Musi3DD
     significance: string;
     stcRole: string;
   } | null>(null);
-  const [isAudioActive, setIsAudioActive] = useState(false);
-  const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
+
   const [cruiseSpeed, setCruiseSpeed] = useState<number>(1);
   const [boatProgress, setBoatProgress] = useState<number>(0);
   const [isPhygitalOpen, setIsPhygitalOpen] = useState(false);
@@ -118,28 +112,7 @@ export function Musi3DDiorama({ onNodeSelect, onOpenPrasasti, onClose }: Musi3DD
     }
   };
 
-  // Sync with audio engine
-  useEffect(() => {
-    const unsub = musiAudio.subscribe(() => {
-      const status = musiAudio.getStatus();
-      setIsAudioActive(status.isRunning && !status.isMuted);
-    });
-    return unsub;
-  }, []);
 
-  // Sound toggle (Start / Stop)
-  const toggleAudio = async () => {
-    if (!isAudioActive) {
-      const ok = await musiAudio.start();
-      if (ok) {
-        musiAudio.setWeather(timeOfDay);
-        setIsAudioActive(true);
-      }
-    } else {
-      musiAudio.stop();
-      setIsAudioActive(false);
-    }
-  };
 
   // Weather switch
   const handleTimeChange = (w: MusiWeatherType) => {
@@ -699,39 +672,7 @@ export function Musi3DDiorama({ onNodeSelect, onOpenPrasasti, onClose }: Musi3DD
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 pointer-events-auto">
-          {/* Audio toggle & Settings */}
-          <div className="flex items-center gap-1.5 bg-black/60 border border-white/10 rounded-2xl p-1">
-            {/* Tombol Suara Musi: Langsung buka pengaturan modal */}
-            <button
-              onClick={() => setIsAudioSettingsOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 text-xs font-mono transition-all cursor-pointer border border-transparent hover:border-amber-500/30"
-              title="Buka Pengaturan Suara Ombak & Ganti URL Audio"
-            >
-              <Sliders size={14} className="text-amber-400" />
-              <span>Suara Musi</span>
-            </button>
 
-            {/* Tombol Stop / Mainkan Suara Berdampingan */}
-            {isAudioActive ? (
-              <button
-                onClick={toggleAudio}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-950/70 border border-red-500/60 text-red-200 hover:bg-red-900/80 text-xs font-mono font-bold transition-all cursor-pointer shadow-lg shadow-red-950/40"
-                title="Hentikan / Matikan Suara Musi"
-              >
-                <Square size={12} fill="currentColor" className="text-red-400" />
-                <span>Stop</span>
-              </button>
-            ) : (
-              <button
-                onClick={toggleAudio}
-                className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 text-xs font-mono transition-all cursor-pointer"
-                title="Putar Suara Rekaman Ombak/Air Musi"
-              >
-                <Volume2 size={14} className="text-amber-400" />
-                <span>Mainkan</span>
-              </button>
-            )}
-          </div>
 
           {/* Reset View */}
           <button
@@ -935,11 +876,7 @@ export function Musi3DDiorama({ onNodeSelect, onOpenPrasasti, onClose }: Musi3DD
         onFocusLandmark={(lm) => applyCameraPreset(lm as CameraPreset)}
       />
 
-      {/* Musi River Ambient Audio Settings Modal */}
-      <MusiAudioSettingsModal
-        isOpen={isAudioSettingsOpen}
-        onClose={() => setIsAudioSettingsOpen(false)}
-      />
+
     </div>
   );
 }
