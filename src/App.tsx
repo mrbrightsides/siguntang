@@ -472,22 +472,6 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="mt-10 pt-6 border-t border-white/10 flex flex-wrap items-center gap-3">
-                <button
-                  onClick={() => setIsSTCEcosystemOpen(true)}
-                  className="px-6 py-3.5 bg-[#8b0000] hover:bg-[#a00000] text-white rounded-2xl font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-[#8b0000]/30 active:scale-95 cursor-pointer"
-                >
-                  <Layers size={16} />
-                  Jelajahi 12 Modul STC Ecosystem
-                </button>
-                <button
-                  onClick={() => setLegalModalTab('protocol')}
-                  className="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold text-xs uppercase tracking-widest transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  Baca Dokumen Protokol
-                  <ChevronRight size={14} />
-                </button>
-              </div>
             </div>
             
             <div className="bg-white rounded-[40px] p-8 sm:p-10 text-[#1a1a1a] shadow-2xl">
@@ -530,23 +514,6 @@ export default function App() {
                   ))}
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button 
-                  onClick={() => setIsExplorerOpen(true)}
-                  className="py-3.5 bg-[#1a1a1a] text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-black transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  Explorer Console
-                  <ArrowUpRight size={14} />
-                </button>
-                <button 
-                  onClick={() => setIsSTCEcosystemOpen(true)}
-                  className="py-3.5 bg-[#8b0000]/10 text-[#8b0000] hover:bg-[#8b0000]/20 rounded-2xl font-bold text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  12 Modul STC
-                  <Layers size={14} />
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -572,41 +539,41 @@ export default function App() {
                 <ul className="space-y-2.5 text-sm text-gray-500">
                   <li>
                     <a 
-                      href="#explorer" 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="hover:text-[#8b0000] flex items-center gap-2 transition-colors group"
+                      href="https://elpeef.com/" 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-[#8b0000] flex items-center gap-1.5 transition-colors group"
+                      title="Kunjungi Portal Utama Elpeef (STC Ecosystem)"
                     >
-                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Explorer</span>
-                      <span className="text-[10px] text-gray-400 font-mono">/ Simpul Budaya</span>
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Elpeef</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ elpeef.com</span>
+                      <ArrowUpRight size={12} className="text-gray-400 group-hover:text-[#8b0000] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </a>
                   </li>
                   <li>
                     <a 
-                      href="#map" 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        document.getElementById('map')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="hover:text-[#8b0000] flex items-center gap-2 transition-colors group"
+                      href="https://rantai.elpeef.com/" 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-[#8b0000] flex items-center gap-1.5 transition-colors group"
+                      title="Kunjungi Rantai Elpeef (STC Blockchain Hub)"
                     >
-                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Heritage Map</span>
-                      <span className="text-[10px] text-gray-400 font-mono">/ Peta Interaktif</span>
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Rantai Elpeef</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ Blockchain</span>
+                      <ArrowUpRight size={12} className="text-gray-400 group-hover:text-[#8b0000] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </a>
                   </li>
                   <li>
                     <a 
-                      href="#traceability" 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        document.getElementById('traceability')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="hover:text-[#8b0000] flex items-center gap-2 transition-colors group"
+                      href="https://smartourism.elpeef.com/" 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-[#8b0000] flex items-center gap-1.5 transition-colors group"
+                      title="Kunjungi Smart Tourism Elpeef (Smart Tourism Chain Platform)"
                     >
-                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Traceability</span>
-                      <span className="text-[10px] text-gray-400 font-mono">/ Verifikasi Hash</span>
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Smart Tourism</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ STC Platform</span>
+                      <ArrowUpRight size={12} className="text-gray-400 group-hover:text-[#8b0000] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </a>
                   </li>
                 </ul>
@@ -615,15 +582,6 @@ export default function App() {
               <div>
                 <h4 className="font-bold text-xs uppercase tracking-widest mb-4 text-[#1a1a1a]">Knowledge & Protocol</h4>
                 <ul className="space-y-2.5 text-sm text-gray-500">
-                  <li>
-                    <button 
-                      onClick={() => setIsSTCEcosystemOpen(true)}
-                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
-                    >
-                      <span className="font-semibold text-[#8b0000] group-hover:underline">STC Ecosystem (12 Modul)</span>
-                      <span className="text-[10px] bg-[#8b0000]/10 text-[#8b0000] font-mono px-1.5 py-0.2 rounded font-bold">Riset</span>
-                    </button>
-                  </li>
                   <li>
                     <button 
                       onClick={() => setLegalModalTab('protocol')}
@@ -669,29 +627,6 @@ export default function App() {
                   {t.footerAI}
                 </h4>
                 <div className="flex flex-col gap-2.5">
-                  <button 
-                    onClick={() => setIsQuizModalOpen(true)}
-                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-[#8b0000]/10 hover:bg-[#8b0000]/20 border border-[#8b0000]/30 rounded-xl text-[#8b0000] font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
-                    title="Uji Pengetahuan Sejarah Palembang & Dapatkan Piagam Digital"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Award size={14} className="text-[#8b0000] group-hover:scale-110 transition-transform" />
-                      <span>Uji Sahabat Sriwijaya</span>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#8b0000]/15 text-[#8b0000] font-mono font-semibold">Award</span>
-                  </button>
-
-                  <button 
-                    onClick={() => setIsSongketModalOpen(true)}
-                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-600/30 rounded-xl text-amber-950 font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
-                    title="Katalog & Filosofi Motif Songket Palembang"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Sparkles size={14} className="text-amber-600 group-hover:scale-110 transition-transform" />
-                      <span>Anatomi & Motif Songket</span>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-800 font-mono font-semibold">Kriya</span>
-                  </button>
                   <button 
                     onClick={() => setIsAIVisionOpen(true)}
                     className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-600/30 rounded-xl text-amber-950 font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
@@ -740,35 +675,6 @@ export default function App() {
                     <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-900 font-mono font-semibold">683 M</span>
                   </button>
 
-                  <button 
-                    onClick={() => {
-                      setMintTargetNode(null);
-                      setIsMintSBTOpen(true);
-                    }}
-                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-[#8b0000]/10 hover:bg-[#8b0000]/20 border border-[#8b0000]/30 rounded-xl text-[#8b0000] font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
-                    title="Klaim Sertifikat Budaya Soulbound Token (ERC-5192) Sepolia"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Shield size={14} className="text-[#8b0000] group-hover:scale-110 transition-transform" />
-                      <span>Klaim SBT Budaya</span>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#8b0000]/15 text-[#8b0000] font-mono font-semibold">ERC-5192</span>
-                  </button>
-
-                  <button 
-                    onClick={() => {
-                      setArTargetNode(null);
-                      setIsARViewerOpen(true);
-                    }}
-                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-amber-600/10 hover:bg-amber-600/20 border border-amber-600/30 rounded-xl text-amber-950 font-mono text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95 text-left group"
-                    title="Buka Kamera AR HP untuk Melihat Penanda 3D Cagar Budaya Palembang"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Camera size={14} className="text-amber-700 group-hover:scale-110 transition-transform" />
-                      <span>AR Heritage Lens</span>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-600/20 text-emerald-800 font-mono font-semibold">WebAR</span>
-                  </button>
                 </div>
               </div>
             </div>
@@ -786,7 +692,7 @@ export default function App() {
             </p>
             <div className="flex items-center gap-2">
               <Shield size={14} className="text-[#8b0000]" />
-              <span className="text-[10px] font-mono text-gray-400">V.2.4.0-STC_MAINNET</span>
+              <span className="text-[10px] font-mono text-gray-400">V.2.4.0-STC</span>
             </div>
           </div>
         </div>
