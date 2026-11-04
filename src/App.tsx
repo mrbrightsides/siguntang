@@ -545,8 +545,8 @@ export default function App() {
                       className="hover:text-[#8b0000] flex items-center gap-1.5 transition-colors group"
                       title="Kunjungi Portal Utama Elpeef (STC Ecosystem)"
                     >
-                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Elpeef</span>
-                      <span className="text-[10px] text-gray-400 font-mono">/ elpeef.com</span>
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">ELPEEF</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ Portal Ekosistem Utama</span>
                       <ArrowUpRight size={12} className="text-gray-400 group-hover:text-[#8b0000] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </a>
                   </li>
@@ -558,8 +558,8 @@ export default function App() {
                       className="hover:text-[#8b0000] flex items-center gap-1.5 transition-colors group"
                       title="Kunjungi Rantai Elpeef (STC Blockchain Hub)"
                     >
-                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Rantai Elpeef</span>
-                      <span className="text-[10px] text-gray-400 font-mono">/ Blockchain</span>
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">RANTAI</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ Infrastruktur Blockchain STC</span>
                       <ArrowUpRight size={12} className="text-gray-400 group-hover:text-[#8b0000] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </a>
                   </li>
@@ -571,8 +571,8 @@ export default function App() {
                       className="hover:text-[#8b0000] flex items-center gap-1.5 transition-colors group"
                       title="Kunjungi Smart Tourism Elpeef (Smart Tourism Chain Platform)"
                     >
-                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Smart Tourism</span>
-                      <span className="text-[10px] text-gray-400 font-mono">/ STC Platform</span>
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">STC</span>
+                      <span className="text-[10px] text-gray-400 font-mono">/ Smart Tourism CHain</span>
                       <ArrowUpRight size={12} className="text-gray-400 group-hover:text-[#8b0000] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </a>
                   </li>
