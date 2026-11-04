@@ -653,35 +653,6 @@ export default function App() {
                   </li>
                   <li>
                     <button 
-                      onClick={() => {
-                        document.getElementById('heritage-timeline')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
-                    >
-                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Linimasa Sejarah</span>
-                      <span className="text-[10px] text-gray-400 font-mono">/ 683 M – Kini</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      onClick={() => setIsSongketModalOpen(true)}
-                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
-                    >
-                      <span className="font-semibold text-[#8b0000] group-hover:underline">Ensiklopedi Songket</span>
-                      <span className="text-[10px] bg-amber-500/15 text-amber-800 font-mono px-1.5 py-0.2 rounded font-bold">Kriya</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      onClick={() => setIsQuizModalOpen(true)}
-                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
-                    >
-                      <span className="font-semibold text-[#8b0000] group-hover:underline">Uji Sahabat Sriwijaya</span>
-                      <span className="text-[10px] bg-[#8b0000]/10 text-[#8b0000] font-mono px-1.5 py-0.2 rounded font-bold">Piagam</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button 
                       onClick={() => setIsGlossaryOpen(true)}
                       className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
                     >

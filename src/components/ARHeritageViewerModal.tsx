@@ -124,9 +124,11 @@ export function ARHeritageViewerModal({
   const [cameraErrorMsg, setCameraErrorMsg] = useState<string | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
-  // Geolocation & Heading State
-  const [useSimulatedGPS, setUseSimulatedGPS] = useState<boolean>(true);
-  const [currentCoord, setCurrentCoord] = useState<GeoCoordinate>(AMPERA_MARKER_SAMPLE_DATA.coordinates);
+  // Geolocation & Heading State (Default ke Bukit Siguntang / initialNode, bukan Ampera!)
+  const [useSimulatedGPS, setUseSimulatedGPS] = useState<boolean>(false);
+  const [currentCoord, setCurrentCoord] = useState<GeoCoordinate>(
+    initialNode ? initialNode.location : SIGUNTANG_SUMMIT
+  );
   const [compassHeading, setCompassHeading] = useState<number>(0);
   const [pitchAngle, setPitchAngle] = useState<number>(0);
   const [deviceOrientationActive, setDeviceOrientationActive] = useState<boolean>(false);
@@ -154,7 +156,9 @@ export function ARHeritageViewerModal({
 
   // Ampera Coordinate Matching Status
   const amperaMatchStatus = isAmperaCoordinateMatch(currentCoord);
-  const isAmperaMatched = amperaMatchStatus.isMatch;
+  const isAmperaCoordMatch = amperaMatchStatus.isMatch;
+  // Overlay marker aktif & terverifikasi hanya jika koordinat cocok DAN kamera aktif!
+  const isAmperaMatched = isAmperaCoordMatch && cameraStatus === 'active';
 
   // Sync selected node with initialNode prop
   useEffect(() => {
@@ -291,25 +295,43 @@ export function ARHeritageViewerModal({
     }
   };
 
-  // 3. Real GPS Watcher
+  // 3. Real GPS Initializer & Watcher
   useEffect(() => {
-    if (!isOpen || useSimulatedGPS) return;
+    if (!isOpen) return;
 
     if (!('geolocation' in navigator)) {
       setUseSimulatedGPS(true);
       return;
     }
 
-    const watchId = navigator.geolocation.watchPosition(
+    // Ambil posisi riil perangkat segera saat modal dibuka
+    navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCurrentCoord({
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         });
+        setUseSimulatedGPS(false);
+      },
+      (err) => {
+        console.warn('Initial GPS check error:', err.message);
+        // Jika akses GPS ditolak, gunakan mode simulasi (di Bukit Siguntang, bukan Ampera!)
+        setUseSimulatedGPS(true);
+      },
+      { enableHighAccuracy: true, timeout: 6000 }
+    );
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        if (!useSimulatedGPS) {
+          setCurrentCoord({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          });
+        }
       },
       (err) => {
         console.warn('GPS location error:', err);
-        setUseSimulatedGPS(true);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
     );
@@ -385,10 +407,10 @@ export function ARHeritageViewerModal({
 
       markerObj.group.position.set(x, y, z);
 
-      // Jika node adalah Ampera dan koordinat cocok, aktifkan state virtual overlay
+      // Jika node adalah Ampera dan koordinat cocok serta kamera aktif, aktifkan state virtual overlay
       if (node.id === 'node-ampera') {
         const isMatch = isAmperaCoordinateMatch(origin).isMatch;
-        markerObj.setCoordinateMatched(isMatch);
+        markerObj.setCoordinateMatched(isMatch && cameraStatus === 'active');
       }
 
       scene.add(markerObj.group);
@@ -497,12 +519,12 @@ export function ARHeritageViewerModal({
       markerData.group.position.x = x;
       markerData.group.position.z = z;
 
-      // Update Ampera coordinate match state
+      // Update Ampera coordinate match state (hanya aktif jika kamera aktif!)
       if (markerData.node.id === 'node-ampera') {
-        markerData.setCoordinateMatched(amperaMatch.isMatch);
+        markerData.setCoordinateMatched(amperaMatch.isMatch && cameraStatus === 'active');
       }
     });
-  }, [currentCoord]);
+  }, [currentCoord, cameraStatus]);
 
   // Start Camera when Modal Opens
   useEffect(() => {
@@ -846,8 +868,6 @@ export function ARHeritageViewerModal({
     }
   };
 
-  if (!isOpen) return null;
-
   const activeHeading = Math.round((compassHeading + manualHeadingOffsetRef.current + 360) % 360);
   const activePitch = Math.round(pitchAngle + manualPitchOffsetRef.current);
 
@@ -876,6 +896,8 @@ export function ARHeritageViewerModal({
     if (selectedDistanceMeters === null) return null;
     return getSiteCalibrationStatus(selectedDistanceMeters, 350);
   }, [selectedDistanceMeters]);
+
+  if (!isOpen) return null;
 
   return (
     <AnimatePresence>
@@ -1205,30 +1227,66 @@ export function ARHeritageViewerModal({
           </div>
         )}
 
-        {/* 5B. VIRTUAL OVERLAY MARKER ACTIVE BANNER (When Coordinates Match Ampera Bridge) */}
-        {isAmperaMatched && (
-          <div className="absolute top-44 sm:top-28 right-3 sm:right-6 sm:w-80 p-3 bg-emerald-950/85 border-2 border-emerald-400 rounded-2xl shadow-2xl backdrop-blur-md text-white z-20 animate-fade-in pointer-events-auto">
+        {/* 5B. VIRTUAL OVERLAY MARKER ACTIVE BANNER (Hanya tampil jika koordinat memang cocok dengan Ampera!) */}
+        {isAmperaCoordMatch && (
+          <div
+            className={`absolute top-44 sm:top-28 right-3 sm:right-6 sm:w-80 p-3 rounded-2xl shadow-2xl backdrop-blur-md text-white z-20 animate-fade-in pointer-events-auto ${
+              cameraStatus === 'active'
+                ? useSimulatedGPS
+                  ? 'bg-amber-950/85 border-2 border-amber-400'
+                  : 'bg-emerald-950/85 border-2 border-emerald-400'
+                : 'bg-stone-900/90 border-2 border-amber-500/50'
+            }`}
+          >
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                <span className="text-xs font-mono font-bold text-emerald-300 uppercase tracking-wider">
-                  Overlay Ampera Aktif
+                <span
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    cameraStatus === 'active'
+                      ? useSimulatedGPS
+                        ? 'bg-amber-400'
+                        : 'bg-emerald-400 animate-ping'
+                      : 'bg-stone-400'
+                  }`}
+                />
+                <span
+                  className={`text-xs font-mono font-bold uppercase tracking-wider ${
+                    cameraStatus === 'active'
+                      ? useSimulatedGPS
+                        ? 'text-amber-300'
+                        : 'text-emerald-300'
+                      : 'text-stone-300'
+                  }`}
+                >
+                  {cameraStatus === 'active'
+                    ? useSimulatedGPS
+                      ? 'Simulasi Overlay Ampera'
+                      : 'Overlay Ampera Terverifikasi'
+                    : 'Simulasi (Kamera Belum Aktif)'}
                 </span>
               </div>
-              <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-200 px-2 py-0.5 rounded border border-emerald-500/40">
-                Match: {Math.round(amperaMatchStatus.distanceMeters)}m
+              <span className="text-[10px] font-mono bg-white/10 text-stone-200 px-2 py-0.5 rounded border border-white/20">
+                Jarak: {Math.round(amperaMatchStatus.distanceMeters)}m
               </span>
             </div>
             <h4 className="font-serif text-xs font-bold text-white mt-1">
-              Jembatan Ampera Terverifikasi di Lokasi
+              {cameraStatus === 'active'
+                ? useSimulatedGPS
+                  ? 'Uji Coba Penanda 3D Jembatan Ampera'
+                  : 'Jembatan Ampera Terverifikasi di Lokasi Fisik'
+                : 'Koordinat Diset ke Jembatan Ampera'}
             </h4>
-            <p className="text-[10px] text-emerald-200/80 mt-0.5 leading-relaxed">
-              Koordinat kamera cocok (-2.9918, 104.7634). Model 3D menara kembar merah virtual aktif di viewport.
+            <p className="text-[10px] text-stone-300 mt-0.5 leading-relaxed">
+              {cameraStatus === 'active'
+                ? useSimulatedGPS
+                  ? 'Mode simulasi GPS aktif. Penanda 3D Jembatan Ampera ditampilkan di viewport kamera.'
+                  : 'Kamera aktif dan koordinat GPS fisik Anda cocok dengan Jembatan Ampera. Model 3D virtual overlay aktif.'
+                : 'Kamera tidak terdeteksi atau belum diizinkan. Aktifkan kamera untuk memverifikasi penanda 3D di lokasi nyata.'}
             </p>
-            <div className="flex items-center gap-2 mt-2 pt-1.5 border-t border-emerald-500/30">
+            <div className="flex items-center gap-2 mt-2 pt-1.5 border-t border-white/15">
               <button
                 onClick={() => setIsAmperaDataModalOpen(true)}
-                className="text-[10px] font-mono font-bold text-emerald-300 hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-[10px] font-mono font-bold text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <span>Lihat Spesifikasi Marker</span>
                 <ChevronRight size={12} />
