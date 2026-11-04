@@ -595,6 +595,75 @@ export function ARHeritageViewerModal({
     setCurrentCoord({ lat: -3.0200, lng: 104.7900 });
   };
 
+  // Calibration Toast Notification
+  const [calibrationToast, setCalibrationToast] = useState<string | null>(null);
+
+  // Calibrate user coordinates to exact location of any selected node (Sets distance to 0m)
+  const handleCalibrateToSite = (node: UniversalNode) => {
+    setUseSimulatedGPS(true);
+    setCurrentCoord({
+      lat: node.location.lat,
+      lng: node.location.lng,
+    });
+    handleFocusSite(node);
+    musiAudio.playArrivalChime(640);
+    setCalibrationToast(`Koordinat berhasil dikalibrasi ke ${node.name.split('(')[0].trim()} (Jarak: 0m • Kalibrasi Presisi)`);
+    setTimeout(() => setCalibrationToast(null), 3500);
+  };
+
+  // Fine tune distance relative to selected site (e.g. +50m or -50m)
+  const handleFineTuneDistance = (deltaMeters: number) => {
+    if (!selectedMarkerNode) return;
+    const target = selectedMarkerNode.location;
+    const currentDist = calculateDistanceMeters(currentCoord, target);
+    
+    let newDist = currentDist + deltaMeters;
+    if (newDist < 0) newDist = 0;
+
+    if (currentDist < 1) {
+      const degOffset = newDist / 111320;
+      setCurrentCoord({
+        lat: target.lat + degOffset,
+        lng: target.lng,
+      });
+    } else {
+      const ratio = newDist / currentDist;
+      const newLat = target.lat + (currentCoord.lat - target.lat) * ratio;
+      const newLng = target.lng + (currentCoord.lng - target.lng) * ratio;
+      setCurrentCoord({ lat: newLat, lng: newLng });
+    }
+
+    setCalibrationToast(`Jarak disesuaikan menjadi ${Math.round(newDist)} meter (${deltaMeters > 0 ? '+50m' : '-50m'})`);
+    setTimeout(() => setCalibrationToast(null), 3000);
+  };
+
+  // Re-sync with real device GPS hardware
+  const handleSyncRealGPS = () => {
+    if (!navigator.geolocation) {
+      setCalibrationToast('Perangkat tidak mendukung sensor GPS.');
+      setTimeout(() => setCalibrationToast(null), 3000);
+      return;
+    }
+
+    setCalibrationToast('Membaca sensor GPS perangkat...');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUseSimulatedGPS(false);
+        setCurrentCoord({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+        setCalibrationToast(`GPS Asli Terkunci: ±${Math.round(pos.coords.accuracy || 10)}m akurasi.`);
+        setTimeout(() => setCalibrationToast(null), 3500);
+      },
+      (err) => {
+        setCalibrationToast(`Gagal membaca GPS: ${err.message}. Tetap di koordinat kalibrasi.`);
+        setTimeout(() => setCalibrationToast(null), 3500);
+      },
+      { enableHighAccuracy: true, timeout: 7000 }
+    );
+  };
+
   // =========================================================================
   // CAPTURE SNAPSHOT FEATURE (Saves photo as a Local Browser Object for sharing)
   // =========================================================================
@@ -781,6 +850,32 @@ export function ARHeritageViewerModal({
 
   const activeHeading = Math.round((compassHeading + manualHeadingOffsetRef.current + 360) % 360);
   const activePitch = Math.round(pitchAngle + manualPitchOffsetRef.current);
+
+  // 1. Situs Cagar Budaya Palembang Terdekat & Arah Relatif Kompas Kamera
+  const nearestSite = useMemo(() => {
+    return findNearestHeritageSite(currentCoord, PALEMBANG_NODES, activeHeading);
+  }, [currentCoord, activeHeading]);
+
+  // 2. Indikator Jarak Eksak & Telemetri Kalibrasi Spasial untuk Marker Terpilih
+  const selectedDistanceMeters = useMemo(() => {
+    if (!selectedMarkerNode) return null;
+    return calculateDistanceMeters(currentCoord, selectedMarkerNode.location);
+  }, [currentCoord, selectedMarkerNode]);
+
+  const selectedBearing = useMemo(() => {
+    if (!selectedMarkerNode) return null;
+    return calculateBearingDegrees(currentCoord, selectedMarkerNode.location);
+  }, [currentCoord, selectedMarkerNode]);
+
+  const selectedRelativeAngle = useMemo(() => {
+    if (selectedBearing === null) return null;
+    return getRelativeAngle(selectedBearing, activeHeading);
+  }, [selectedBearing, activeHeading]);
+
+  const selectedCalibration = useMemo(() => {
+    if (selectedDistanceMeters === null) return null;
+    return getSiteCalibrationStatus(selectedDistanceMeters, 350);
+  }, [selectedDistanceMeters]);
 
   return (
     <AnimatePresence>
@@ -1006,40 +1101,144 @@ export function ARHeritageViewerModal({
           </div>
         </header>
 
-        {/* 5. VIRTUAL OVERLAY MARKER ACTIVE BANNER (When Coordinates Match Ampera Bridge) */}
+        {/* Calibration Toast Notification */}
+        {calibrationToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-20 left-1/2 -translate-x-1/2 px-4 py-2 bg-amber-950/90 border border-amber-400 text-amber-200 rounded-2xl text-xs font-mono font-bold flex items-center gap-2 shadow-2xl z-50 backdrop-blur-md"
+          >
+            <LocateFixed size={15} className="text-amber-400 animate-pulse" />
+            <span>{calibrationToast}</span>
+          </motion.div>
+        )}
+
+        {/* 5A. VISUAL COMPASS & DIRECTIONAL ARROW (Points toward Nearest Registered Palembang Heritage Site) */}
+        {nearestSite && (
+          <div
+            onClick={() => handleFocusSite(nearestSite.node)}
+            className="absolute top-28 sm:top-24 left-3 sm:left-4 z-20 flex items-center gap-2.5 p-2 sm:p-2.5 bg-black/80 hover:bg-black/90 border border-amber-500/40 hover:border-amber-400 rounded-2xl shadow-2xl backdrop-blur-md text-white cursor-pointer group transition-all max-w-[270px] sm:max-w-xs pointer-events-auto"
+            title={`Arah kompas menunjuk ke situs cagar budaya terdekat: ${nearestSite.node.name}. Klik untuk mengarahkan kamera.`}
+          >
+            {/* Circular Compass Dial with Animated Directional Arrow Needle */}
+            <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-stone-950 border-2 border-amber-400/60 flex items-center justify-center shrink-0 shadow-inner overflow-hidden">
+              {/* Cardinal ticks */}
+              <div className="absolute top-0.5 text-[7px] font-mono font-bold text-amber-400/80">U</div>
+              <div className="absolute bottom-0.5 text-[7px] font-mono text-stone-500">S</div>
+              <div className="absolute left-1 text-[7px] font-mono text-stone-500">B</div>
+              <div className="absolute right-1 text-[7px] font-mono text-stone-500">T</div>
+              <div className="absolute inset-1 rounded-full border border-white/5" />
+
+              {/* Pulsing indicator when aligned within ±15 degrees */}
+              {Math.abs(nearestSite.relativeAngle) <= 15 && (
+                <span className="absolute inset-0 rounded-full border-2 border-emerald-400 animate-ping opacity-75" />
+              )}
+
+              {/* Rotating Directional Needle */}
+              <div
+                className="absolute inset-0 flex items-center justify-center transition-transform duration-200 ease-out"
+                style={{
+                  transform: `rotate(${nearestSite.relativeAngle}deg)`,
+                }}
+              >
+                <div className="flex flex-col items-center">
+                  {/* Arrowhead */}
+                  <div
+                    className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[16px] drop-shadow-[0_0_6px_rgba(245,158,11,0.8)] ${
+                      Math.abs(nearestSite.relativeAngle) <= 15
+                        ? 'border-b-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.9)]'
+                        : 'border-b-amber-400'
+                    }`}
+                  />
+                  {/* Stem */}
+                  <div
+                    className={`w-1 h-3 -mt-0.5 rounded-b ${
+                      Math.abs(nearestSite.relativeAngle) <= 15 ? 'bg-emerald-400' : 'bg-amber-400'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Center Pivot */}
+              <div
+                className={`w-2 h-2 rounded-full z-10 ${
+                  Math.abs(nearestSite.relativeAngle) <= 15
+                    ? 'bg-emerald-400 shadow-[0_0_6px_#10b981]'
+                    : 'bg-amber-400'
+                }`}
+              />
+            </div>
+
+            {/* Nearest Site Telemetry */}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
+                  <Compass size={10} className="text-amber-400 animate-spin-slow" />
+                  Situs Terdekat
+                </span>
+                {Math.abs(nearestSite.relativeAngle) <= 15 && (
+                  <span className="text-[8px] font-mono font-bold px-1 py-0.2 rounded bg-emerald-500/25 text-emerald-300 border border-emerald-500/40">
+                    LURUS
+                  </span>
+                )}
+              </div>
+
+              <h5 className="font-serif text-xs font-bold text-white truncate group-hover:text-amber-300 transition-colors">
+                {nearestSite.node.name.split('(')[0].trim()}
+              </h5>
+
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span
+                  className={`font-mono text-xs font-black ${
+                    nearestSite.distanceMeters <= 350 ? 'text-emerald-400' : 'text-amber-400'
+                  }`}
+                >
+                  {Math.round(nearestSite.distanceMeters)} m
+                </span>
+                <span className="text-stone-500 text-[10px]">•</span>
+                <span className="font-mono text-[10px] text-stone-300 truncate">
+                  {nearestSite.relativeDirectionText}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 5B. VIRTUAL OVERLAY MARKER ACTIVE BANNER (When Coordinates Match Ampera Bridge) */}
         {isAmperaMatched && (
-          <div className="absolute top-28 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 p-3.5 bg-emerald-950/85 border-2 border-emerald-400 rounded-2xl shadow-2xl backdrop-blur-md text-white z-20 animate-fade-in pointer-events-auto">
+          <div className="absolute top-44 sm:top-28 right-3 sm:right-6 sm:w-80 p-3 bg-emerald-950/85 border-2 border-emerald-400 rounded-2xl shadow-2xl backdrop-blur-md text-white z-20 animate-fade-in pointer-events-auto">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
                 <span className="text-xs font-mono font-bold text-emerald-300 uppercase tracking-wider">
-                  Virtual Overlay Marker Aktif
+                  Overlay Ampera Aktif
                 </span>
               </div>
               <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-200 px-2 py-0.5 rounded border border-emerald-500/40">
                 Match: {Math.round(amperaMatchStatus.distanceMeters)}m
               </span>
             </div>
-            <h4 className="font-serif text-sm font-bold text-white mt-1">
-              Jembatan Ampera Terdeteksi di Lokasi
+            <h4 className="font-serif text-xs font-bold text-white mt-1">
+              Jembatan Ampera Terverifikasi di Lokasi
             </h4>
-            <p className="text-[11px] text-emerald-200/80 mt-0.5 leading-relaxed">
-              Koordinat kamera cocok dengan koordinat Ampera Bridge (-2.9918, 104.7634). Model 3D menara kembar merah dan kabel suspensi virtual kini aktif di viewport kamera.
+            <p className="text-[10px] text-emerald-200/80 mt-0.5 leading-relaxed">
+              Koordinat kamera cocok (-2.9918, 104.7634). Model 3D menara kembar merah virtual aktif di viewport.
             </p>
-            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-emerald-500/30">
+            <div className="flex items-center gap-2 mt-2 pt-1.5 border-t border-emerald-500/30">
               <button
                 onClick={() => setIsAmperaDataModalOpen(true)}
                 className="text-[10px] font-mono font-bold text-emerald-300 hover:underline flex items-center gap-1 cursor-pointer"
               >
-                <span>Lihat Spesifikasi 3D Marker</span>
+                <span>Lihat Spesifikasi Marker</span>
                 <ChevronRight size={12} />
               </button>
             </div>
           </div>
         )}
 
-        {/* Center Crosshair Reticle */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+        {/* Center Crosshair Reticle & Floating Distance Calibration Pill */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
           <div className="relative w-12 h-12 border border-white/20 rounded-full flex items-center justify-center opacity-60">
             <div className={`w-1.5 h-1.5 rounded-full ${isAmperaMatched ? 'bg-emerald-400 scale-125' : 'bg-amber-400'}`} />
             <div className="absolute -top-1 w-2 h-0.5 bg-white/40" />
@@ -1047,6 +1246,40 @@ export function ARHeritageViewerModal({
             <div className="absolute -left-1 w-0.5 h-2 bg-white/40" />
             <div className="absolute -right-1 w-0.5 h-2 bg-white/40" />
           </div>
+
+          {/* Floating Distance Indicator for Selected Marker */}
+          {selectedMarkerNode && selectedDistanceMeters !== null && selectedCalibration && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-3 pointer-events-auto flex items-center gap-2 px-3 py-1.5 bg-black/85 backdrop-blur-md border border-amber-500/40 rounded-2xl shadow-xl text-white text-xs font-mono"
+            >
+              <div className="flex items-center gap-1.5">
+                <MapPin size={12} className="text-amber-400 shrink-0" />
+                <span className="text-stone-300 truncate max-w-[120px] sm:max-w-none">
+                  {selectedMarkerNode.name.split('(')[0].trim()}:
+                </span>
+                <span
+                  className={`font-black ${
+                    selectedCalibration.isCalibrated ? 'text-emerald-400' : 'text-amber-300'
+                  }`}
+                >
+                  {Math.round(selectedDistanceMeters)} meter
+                </span>
+              </div>
+
+              <span className="text-stone-600">|</span>
+
+              <button
+                onClick={() => handleCalibrateToSite(selectedMarkerNode)}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-white border border-amber-400/40 text-[10px] font-bold uppercase transition-all cursor-pointer active:scale-95"
+                title="Kalibrasi posisi pengguna ke titik koordinat situs ini (jarak 0m)"
+              >
+                <LocateFixed size={10} className="text-amber-400" />
+                <span>Kalibrasi (0m)</span>
+              </button>
+            </motion.div>
+          )}
         </div>
 
         {/* Camera Permission Warning Banner */}
@@ -1184,6 +1417,91 @@ export function ARHeritageViewerModal({
                         )}
                       </div>
                     </div>
+
+                    {/* DISTANCE INDICATOR & SPATIAL CALIBRATION SECTION */}
+                    {selectedDistanceMeters !== null && selectedCalibration && (
+                      <div className="mt-4 pt-3.5 border-t border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-black/40 rounded-2xl p-3 border border-white/5">
+                        {/* Distance in Meters & Proximity Zone */}
+                        <div className="flex items-center gap-3">
+                          <div className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-400/40 text-amber-300 shrink-0">
+                            <LocateFixed size={18} className="animate-pulse" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider font-semibold">
+                                Jarak ke Situs:
+                              </span>
+                              <span
+                                className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase"
+                                style={{
+                                  backgroundColor: `${selectedCalibration.badgeColor}25`,
+                                  color: selectedCalibration.badgeColor,
+                                  border: `1px solid ${selectedCalibration.badgeColor}50`,
+                                }}
+                              >
+                                {selectedCalibration.zoneLabel}
+                              </span>
+                            </div>
+                            <div className="flex items-baseline gap-1.5 mt-0.5">
+                              <span className="text-xl sm:text-2xl font-mono font-black text-white">
+                                {Math.round(selectedDistanceMeters)}
+                              </span>
+                              <span className="text-xs font-mono font-bold text-amber-400 uppercase">
+                                METER
+                              </span>
+                              <span className="text-stone-500 text-xs font-mono">
+                                ({formatDistance(selectedDistanceMeters)})
+                              </span>
+                              {selectedBearing !== null && (
+                                <span className="text-stone-400 text-[11px] font-mono hidden sm:inline">
+                                  • Azimuth: {selectedBearing.toFixed(0)}° ({bearingToCardinal(selectedBearing)})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Calibration Action Controls */}
+                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                          {/* Snap to Site (0m) */}
+                          <button
+                            onClick={() => handleCalibrateToSite(selectedMarkerNode)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-stone-950 font-mono font-bold text-[11px] uppercase rounded-xl transition-all shadow-md shadow-emerald-600/25 cursor-pointer active:scale-95"
+                            title="Kalibrasi koordinat lokasi pengguna ke titik situs ini (0 meter)"
+                          >
+                            <LocateFixed size={12} />
+                            <span>Kalibrasi Titik (0m)</span>
+                          </button>
+
+                          {/* Fine tune -50m */}
+                          <button
+                            onClick={() => handleFineTuneDistance(-50)}
+                            className="px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-stone-200 font-mono text-[10px] font-bold rounded-xl border border-white/10 transition-all cursor-pointer"
+                            title="Dekatkan posisi 50 meter ke situs"
+                          >
+                            -50m
+                          </button>
+
+                          {/* Fine tune +50m */}
+                          <button
+                            onClick={() => handleFineTuneDistance(50)}
+                            className="px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-stone-200 font-mono text-[10px] font-bold rounded-xl border border-white/10 transition-all cursor-pointer"
+                            title="Jauhkan posisi 50 meter dari situs"
+                          >
+                            +50m
+                          </button>
+
+                          {/* Sync real GPS */}
+                          <button
+                            onClick={handleSyncRealGPS}
+                            className="p-2 bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white rounded-xl border border-white/10 transition-all cursor-pointer"
+                            title="Sinkronkan dengan sensor GPS fisik perangkat"
+                          >
+                            <Crosshair size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
