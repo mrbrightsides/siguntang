@@ -29,6 +29,7 @@ import { HeritageTimelineSection } from './components/HeritageTimelineSection';
 import { SongketMotifModal } from './components/SongketMotifModal';
 import { HeritageQuizModal } from './components/HeritageQuizModal';
 import { ARHeritageViewerModal } from './components/ARHeritageViewerModal';
+import { TermsOfServiceModal } from './components/TermsOfServiceModal';
 import { useLanguage } from './context/LanguageContext';
 import { MusiWeatherType } from './services/musiAudioEngine';
 import { connectWallet, WalletState, recordTraceabilityTransaction } from './services/blockchainService';
@@ -47,6 +48,7 @@ export default function App() {
   const [isExplorerOpen, setIsExplorerOpen] = useState(false);
   const [isSTCEcosystemOpen, setIsSTCEcosystemOpen] = useState(false);
   const [legalModalTab, setLegalModalTab] = useState<LegalTab | null>(null);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isMintSBTOpen, setIsMintSBTOpen] = useState(false);
   const [mintTargetNode, setMintTargetNode] = useState<UniversalNode | null>(null);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
@@ -64,6 +66,19 @@ export default function App() {
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
   const [isARViewerOpen, setIsARViewerOpen] = useState(false);
   const [arTargetNode, setArTargetNode] = useState<UniversalNode | null>(null);
+
+  // Direct URL Hash listener for #/terms or #/tos
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#/terms' || hash === '#/tos' || hash === '#/terms-of-service') {
+        setIsTermsOpen(true);
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
 
   useEffect(() => {
     if (typeof window.ethereum !== 'undefined') {
@@ -611,6 +626,15 @@ export default function App() {
                   </li>
                   <li>
                     <button 
+                      onClick={() => setIsTermsOpen(true)}
+                      className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
+                    >
+                      <span className="font-semibold text-gray-700 group-hover:text-[#8b0000]">Terms of Service</span>
+                      <span className="text-[10px] bg-red-500/10 text-[#8b0000] font-mono px-1.5 py-0.2 rounded font-bold">ToS</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button 
                       onClick={() => setIsGlossaryOpen(true)}
                       className="hover:text-[#8b0000] text-left transition-colors flex items-center gap-2 group cursor-pointer"
                     >
@@ -851,6 +875,12 @@ export default function App() {
           setIsSTCEcosystemOpen(true);
         }}
         onClose={() => setLegalModalTab(null)}
+      />
+
+      {/* Dedicated Terms of Service (ToS) Modal */}
+      <TermsOfServiceModal
+        isOpen={isTermsOpen}
+        onClose={() => setIsTermsOpen(false)}
       />
 
       <STCEcosystemModal
