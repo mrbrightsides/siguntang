@@ -26,10 +26,33 @@ export interface TraceabilityLog {
   hash: string;
 }
 
+export type CulturalRegion =
+  // Ibukota Provinsi
+  | 'Palembang'
+  // 3 Kota Lainnya
+  | 'Pagaralam'
+  | 'Prabumulih'
+  | 'Lubuklinggau'
+  // 13 Kabupaten
+  | 'Lahat'
+  | 'Ogan Ilir'
+  | 'Muara Enim'
+  | 'PALI'
+  | 'OKU'
+  | 'OKU Selatan'
+  | 'OKU Timur'
+  | 'OKI'
+  | 'Banyuasin'
+  | 'Musi Banyuasin'
+  | 'Musi Rawas'
+  | 'Muratara'
+  | 'Empat Lawang';
+
 export interface UniversalNode {
   id: string;
   name: string;
   type: NodeType;
+  region?: CulturalRegion;
   description: string;
   image: string;
   location: {

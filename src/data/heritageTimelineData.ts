@@ -198,7 +198,7 @@ export const HERITAGE_TIMELINE_DATA: HeritageTimelineEra[] = [
       {
         name: 'Songket Lepus Berekam On-Chain',
         type: 'Phygital Masterpiece',
-        image: 'https://bagindorentcar.com/wp-content/uploads/2018/11/IMG_0359.jpg',
+        image: 'https://sumeks.disway.id/upload/57bddaacfc0b15cdea1a12ff567fbaea.jpg',
         desc: 'Kain tenun emas bersertifikasi hash ganda dengan metadata terenkripsi IPFS.'
       },
       {

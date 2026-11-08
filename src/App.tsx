@@ -9,8 +9,17 @@ import { Navbar } from './components/Navbar';
 import { NodeCard } from './components/NodeCard';
 import { STCDashboard } from './components/STCDashboard';
 import { AIGuide } from './components/AIGuide';
-import { PALEMBANG_NODES, findPalembangNode } from './constants';
-import { UniversalNode, NodeType } from './types';
+import { 
+  PALEMBANG_NODES, 
+  ALL_CULTURAL_NODES, 
+  REGIONAL_INFO, 
+  CAPITAL_CITY_ID, 
+  OTHER_CITIES_REGIONS, 
+  REGENCIES_REGIONS,
+  ALL_SUMSEL_REGIONS,
+  findPalembangNode 
+} from './constants';
+import { UniversalNode, NodeType, CulturalRegion } from './types';
 import { HeritageMap } from './components/HeritageMap';
 import { TraceabilityHub } from './components/TraceabilityHub';
 import { STCExplorerModal } from './components/STCExplorerModal';
@@ -41,6 +50,7 @@ import { cn } from './lib/utils';
 export default function App() {
   const { t, language } = useLanguage();
   const [selectedNode, setSelectedNode] = useState<UniversalNode | null>(null);
+  const [selectedRegion, setSelectedRegion] = useState<CulturalRegion>('Palembang');
   const [activeTab, setActiveTab] = useState<NodeType | 'All'>('All');
   const [showSTC, setShowSTC] = useState<UniversalNode | null>(null);
   const [wallet, setWallet] = useState<WalletState | null>(null);
@@ -141,9 +151,11 @@ export default function App() {
     }
   };
 
-  const filteredNodes = activeTab === 'All' 
-    ? PALEMBANG_NODES 
-    : PALEMBANG_NODES.filter(n => n.type === activeTab);
+  const filteredNodes = ALL_CULTURAL_NODES.filter((n) => {
+    const matchesType = activeTab === 'All' || n.type === activeTab;
+    const matchesRegion = (n.region || 'Palembang') === selectedRegion;
+    return matchesType && matchesRegion;
+  });
 
   return (
     <div className="min-h-screen bg-[#f5f2ed] text-[#1a1a1a] font-sans selection:bg-[#8b0000] selection:text-white">
@@ -346,25 +358,157 @@ export default function App() {
       {/* Explorer Section */}
       <section id="explorer" className="py-24 bg-white/50 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#8b0000]/10 border border-[#8b0000]/20 rounded-full mb-3">
-                <Globe size={14} className="text-[#8b0000]" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b0000]">Direktori Simpul Budaya Palembang</span>
+          <div className="flex flex-col gap-6 mb-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#8b0000]/10 border border-[#8b0000]/20 rounded-full mb-3">
+                  <Globe size={14} className="text-[#8b0000]" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b0000]">
+                    Provinsi Sumatera Selatan • 4 Kota & 13 Kabupaten
+                  </span>
+                </div>
+                <h2 className="font-serif text-4xl font-bold mb-3 tracking-tight">Eksplorasi Node Nusantara</h2>
+                <p className="text-gray-500 max-w-2xl text-sm leading-relaxed">
+                  Pilih wilayah untuk menelusuri simpul budaya berdaulat masing-masing daerah secara fokus. Dimulai dari <strong>Kota Palembang</strong> sebagai ibukota, dilanjutkan <strong>3 kota otonom</strong> dan <strong>13 kabupaten</strong> se-Sumatera Selatan.
+                </p>
               </div>
-              <h2 className="font-serif text-4xl font-bold mb-4 tracking-tight">Eksplorasi Node Nusantara</h2>
-              <p className="text-gray-500 max-w-xl">Direktori simpul budaya Palembang lengkap dengan kategori, narasi kurasi, koordinat spasial, dan status verifikasi smart contract.</p>
+
+              {/* Quick Jump Selector for all 17 Administrative Regions */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase font-bold text-gray-500 hidden sm:inline">Pilih Daerah:</span>
+                <select
+                  value={selectedRegion}
+                  onChange={(e) => setSelectedRegion(e.target.value as CulturalRegion)}
+                  className="bg-white text-stone-900 border border-black/15 shadow-sm rounded-2xl px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-wider focus:outline-none focus:border-[#8b0000] focus:ring-1 focus:ring-[#8b0000] cursor-pointer"
+                >
+                  <optgroup label="🏛️ IBUKOTA PROVINSI">
+                    <option value="Palembang">Kota Palembang (Ibukota)</option>
+                  </optgroup>
+                  <optgroup label="🏙️ 3 KOTA LAINNYA">
+                    {OTHER_CITIES_REGIONS.map((id) => (
+                      <option key={id} value={id}>
+                        {REGIONAL_INFO[id].name}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="🏞️ 13 KABUPATEN">
+                    {REGENCIES_REGIONS.map((id) => (
+                      <option key={id} value={id}>
+                        {REGIONAL_INFO[id].name}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+              </div>
             </div>
-            
-            <div className="flex overflow-x-auto pb-4 gap-3 no-scrollbar">
+
+            {/* Categorized Regional Navigation Strip */}
+            <div className="flex flex-col gap-2.5 p-3 bg-white border border-black/10 rounded-3xl shadow-sm">
+              {/* Row 1: Ibukota & 3 Kota Lainnya */}
+              <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-black/5">
+                <span className="text-[9px] font-mono uppercase tracking-widest font-bold text-gray-400 px-2 shrink-0">
+                  KOTA ({1 + OTHER_CITIES_REGIONS.length}):
+                </span>
+                
+                {/* Ibukota Palembang (Default) */}
+                <button
+                  onClick={() => setSelectedRegion('Palembang')}
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5",
+                    selectedRegion === 'Palembang'
+                      ? "bg-[#8b0000] text-white shadow-md shadow-[#8b0000]/25"
+                      : "bg-[#f5f2ed] text-gray-700 hover:text-[#8b0000] hover:bg-[#8b0000]/10"
+                  )}
+                >
+                  <span>🏛️</span>
+                  <span>Kota Palembang (Ibukota)</span>
+                </button>
+
+                {/* 3 Kota Lainnya */}
+                {OTHER_CITIES_REGIONS.map((cityId) => (
+                  <button
+                    key={cityId}
+                    onClick={() => setSelectedRegion(cityId)}
+                    className={cn(
+                      "px-3.5 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5",
+                      selectedRegion === cityId
+                        ? "bg-stone-900 text-white shadow-md"
+                        : "bg-[#f5f2ed] text-gray-700 hover:text-black hover:bg-black/10"
+                    )}
+                  >
+                    <span>{REGIONAL_INFO[cityId].icon}</span>
+                    <span>{REGIONAL_INFO[cityId].name}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Row 2: 13 Kabupaten */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                <span className="text-[9px] font-mono uppercase tracking-widest font-bold text-gray-400 px-2 shrink-0">
+                  13 KABUPATEN:
+                </span>
+                {REGENCIES_REGIONS.map((regId) => (
+                  <button
+                    key={regId}
+                    onClick={() => setSelectedRegion(regId)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-1.5",
+                      selectedRegion === regId
+                        ? "bg-stone-900 text-white shadow-md"
+                        : "bg-[#f5f2ed] text-gray-600 hover:text-black hover:bg-black/10"
+                    )}
+                  >
+                    <span>{REGIONAL_INFO[regId].icon}</span>
+                    <span>{REGIONAL_INFO[regId].shortName}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Regional Spotlight Banner for the Active Region */}
+            {REGIONAL_INFO[selectedRegion] && (
+              <div className="p-6 rounded-3xl bg-white border border-black/5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-all">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-2xl">{REGIONAL_INFO[selectedRegion].icon}</span>
+                    <h3 className="font-serif text-2xl font-bold text-[#1a1a1a]">
+                      {REGIONAL_INFO[selectedRegion].name}
+                    </h3>
+                    <span className={cn("text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border", REGIONAL_INFO[selectedRegion].badgeBg)}>
+                      {REGIONAL_INFO[selectedRegion].category} • {REGIONAL_INFO[selectedRegion].motto}
+                    </span>
+                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-black/5 text-gray-600">
+                      {filteredNodes.length} Simpul Terverifikasi
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 max-w-3xl leading-relaxed">
+                    {REGIONAL_INFO[selectedRegion].description}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-6 shrink-0 border-t md:border-t-0 md:border-l border-black/5 pt-4 md:pt-0 md:pl-6">
+                  <div>
+                    <span className="block text-[9px] font-mono font-bold uppercase tracking-widest text-gray-400">Era Peninggalan</span>
+                    <span className="font-serif text-sm font-bold text-[#1a1a1a]">{REGIONAL_INFO[selectedRegion].stats.heritageEra}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[9px] font-mono font-bold uppercase tracking-widest text-gray-400">Landmark Khas</span>
+                    <span className="font-serif text-sm font-bold text-[#8b0000]">{REGIONAL_INFO[selectedRegion].stats.signatureLandmark}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* NodeType Category Tabs */}
+            <div className="flex overflow-x-auto pb-2 gap-2.5 no-scrollbar">
               {['All', ...Object.values(NodeType)].map((type) => (
                 <button
                   key={type}
                   onClick={() => setActiveTab(type as any)}
                   className={cn(
-                    "px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap",
+                    "px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap cursor-pointer",
                     activeTab === type 
-                      ? "bg-[#8b0000] border-[#8b0000] text-white shadow-lg shadow-[#8b0000]/20" 
+                      ? "bg-[#8b0000] border-[#8b0000] text-white shadow-md shadow-[#8b0000]/20" 
                       : "bg-white border-black/5 text-gray-500 hover:border-[#8b0000]/30"
                   )}
                 >
@@ -395,19 +539,27 @@ export default function App() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#8b0000]/10 border border-[#8b0000]/20 rounded-full mb-6">
               <MapIcon size={14} className="text-[#8b0000]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b0000]">Peta Interaktif Lokasi Budaya</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b0000]">Peta Interaktif Koridor Budaya</span>
             </div>
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4 tracking-tight">Peta Jaringan Nusantara</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">Peta interaktif persebaran lokasi budaya dan religi Kota Palembang dengan penanda spasial serta informasi mendalam setiap situs bersejarah.</p>
+            <p className="text-gray-500 max-w-2xl mx-auto text-sm leading-relaxed">
+              Peta interaktif persebaran lokasi cagar budaya, megalitikum purba, dan simpul religi di Palembang, Pagaralam, dan Lahat dengan koordinat spasial dan integrasi kamera AR.
+            </p>
           </div>
 
-          <ErrorBoundary fallbackTitle="Peta Budaya Palembang Sedang Dimuat">
+          <ErrorBoundary fallbackTitle="Peta Budaya Sedang Dimuat">
             <HeritageMap 
-              nodes={PALEMBANG_NODES} 
+              nodes={ALL_CULTURAL_NODES} 
               onNodeClick={setSelectedNode} 
               onOpenAR={(node) => {
                 setArTargetNode(node || null);
                 setIsARViewerOpen(true);
+              }}
+              activeRegion={selectedRegion}
+              onSelectRegion={(reg) => {
+                if (reg !== 'All') {
+                  setSelectedRegion(reg);
+                }
               }}
             />
           </ErrorBoundary>

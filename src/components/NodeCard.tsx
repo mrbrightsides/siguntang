@@ -6,6 +6,8 @@
 import { motion } from 'motion/react';
 import { MapPin, Shield, ExternalLink } from 'lucide-react';
 import { UniversalNode } from '../types';
+import { REGIONAL_INFO } from '../constants';
+import { cn } from '../lib/utils';
 
 interface NodeCardProps {
   key?: string;
@@ -15,6 +17,8 @@ interface NodeCardProps {
 }
 
 export function NodeCard({ node, onViewDetails, onViewTraceability }: NodeCardProps) {
+  const regInfo = node.region ? REGIONAL_INFO[node.region] : REGIONAL_INFO['Palembang'];
+
   return (
     <motion.div 
       whileHover={{ y: -8 }}
@@ -53,11 +57,20 @@ export function NodeCard({ node, onViewDetails, onViewTraceability }: NodeCardPr
           {node.description}
         </p>
 
-        <div className="flex items-center gap-4 text-[#8b0000] mb-6">
-          <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          <div className="flex items-center gap-1.5 text-[#8b0000]">
             <MapPin size={14} />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Palembang</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider">{node.region || 'Palembang'}</span>
           </div>
+          {regInfo ? (
+            <span className={cn("px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border", regInfo.badgeBg)}>
+              {regInfo.icon} {regInfo.motto}
+            </span>
+          ) : (
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-[#8b0000]/10 text-[#8b0000] border border-[#8b0000]/20">
+              🏛️ Simpul Utama
+            </span>
+          )}
         </div>
 
         <button 

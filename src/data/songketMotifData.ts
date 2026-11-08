@@ -80,7 +80,7 @@ export const SONGKET_MOTIFS_DATA: SongketMotifItem[] = [
     name: 'Songket Lepus Berekam (Lepus Berlian)',
     category: 'Bangsawan Keraton',
     hierarchicalRank: 'Tingkat Ratu (Mahkota)',
-    image: 'https://bagindorentcar.com/wp-content/uploads/2018/11/IMG_0359.jpg',
+    image: 'https://sumeks.disway.id/upload/57bddaacfc0b15cdea1a12ff567fbaea.jpg',
     historyAndOrigin: 'Merupakan strata songket paling agung dalam hierarki Kesultanan Palembang Darussalam. Kata "Lepus" berarti tertutup rapat, di mana benang emas menyelimuti hampir seluruh serat sutra tanpa menyisakan ruang kosong kapas.',
     philosophy: 'Melambangkan keagungan absolut, kemakmuran tanpa batas, dan kemurnian jiwa pemimpin. Seseorang yang memakai Lepus Berekam diharapkan memiliki budi pekerti yang berkilau laksana emas murni dan mampu mengayomi rakyatnya tanpa pamrih.',
     usageContext: 'Busana agung pengantin Palembang dalam prosesi Aesan Gede, pelantikan Sultan, serta upacara adat tertinggi keraton.',

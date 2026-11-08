@@ -41,8 +41,8 @@ import {
   SlidersHorizontal,
   Activity
 } from 'lucide-react';
-import { PALEMBANG_NODES } from '../constants';
-import { UniversalNode } from '../types';
+import { PALEMBANG_NODES, ALL_SUMSEL_REGIONS, REGIONAL_INFO } from '../constants';
+import { UniversalNode, CulturalRegion } from '../types';
 import {
   calculateDistanceMeters,
   calculateBearingDegrees,
@@ -145,6 +145,7 @@ export function ARHeritageViewerModal({
   const [isSnapshotLoading, setIsSnapshotLoading] = useState<boolean>(false);
   const [snapshotSuccess, setSnapshotSuccess] = useState<string | null>(null);
   const [isControlsCollapsed, setIsControlsCollapsed] = useState<boolean>(false);
+  const [arRegionFilter, setArRegionFilter] = useState<CulturalRegion | 'All'>('All');
 
   // Ampera Sample Data Inspection Modal
   const [isAmperaDataModalOpen, setIsAmperaDataModalOpen] = useState<boolean>(false);
@@ -949,7 +950,7 @@ export function ARHeritageViewerModal({
                   SIGUNTANG WebAR
                 </span>
                 <span className="font-serif text-xs font-bold text-white leading-tight">
-                  Palembang Heritage Lens
+                  {selectedMarkerNode?.region ? `${selectedMarkerNode.region} Heritage Lens` : 'Koridor Sumsel AR Lens'}
                 </span>
               </div>
             </div>
@@ -1564,41 +1565,98 @@ export function ARHeritageViewerModal({
                 )}
               </AnimatePresence>
 
-              {/* HORIZONTAL SITE QUICK SELECTOR STRIP */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-                  <span className="text-[10px] font-mono text-amber-400 font-bold uppercase pl-1 pr-1.5 shrink-0 flex items-center gap-1">
-                    <MapPin size={11} />
-                    Fokus AR:
+              {/* REGIONAL FILTER & HORIZONTAL SITE QUICK SELECTOR STRIP */}
+              <div className="flex flex-col gap-1.5">
+                {/* Region Filter Tabs */}
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                  <span className="text-[9px] font-mono text-stone-400 font-bold uppercase shrink-0">
+                    Wilayah:
                   </span>
-                  {PALEMBANG_NODES.map((node) => {
-                    const isSelected = selectedMarkerNode?.id === node.id;
-                    const marker = markersRef.current.get(node.id);
-                    const distStr = marker ? formatDistance(marker.distance) : '';
-                    const isAmpera = node.id === 'node-ampera';
+                  {(['All', 'Palembang', 'Pagaralam', 'Lahat', 'Ogan Ilir'] as const).map((reg) => (
+                    <button
+                      key={reg}
+                      onClick={() => setArRegionFilter(reg)}
+                      className={`px-2 py-0.5 rounded-lg text-[9px] font-mono uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
+                        arRegionFilter === reg
+                          ? reg === 'Pagaralam'
+                            ? 'bg-amber-500 text-stone-950 font-extrabold shadow-sm'
+                            : reg === 'Lahat'
+                            ? 'bg-emerald-500 text-stone-950 font-extrabold shadow-sm'
+                            : reg === 'Ogan Ilir'
+                            ? 'bg-blue-600 text-white font-extrabold shadow-sm'
+                            : reg === 'Palembang'
+                            ? 'bg-red-700 text-white font-extrabold shadow-sm'
+                            : 'bg-white text-stone-950 font-extrabold shadow-sm'
+                          : 'bg-black/50 text-stone-400 hover:text-white border border-white/10'
+                      }`}
+                    >
+                      {reg === 'All' ? '🌐 Semua' : REGIONAL_INFO[reg]?.icon + ' ' + reg}
+                    </button>
+                  ))}
 
-                    return (
-                      <button
-                        key={node.id}
-                        onClick={() => handleFocusSite(node)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-mono font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-                          isAmpera && isAmperaMatched
-                            ? 'bg-emerald-500 text-stone-950 font-extrabold shadow-lg shadow-emerald-400/30 scale-105'
-                            : isSelected
-                            ? 'bg-amber-400 text-stone-950 font-extrabold shadow-lg shadow-amber-400/25 scale-105'
-                            : 'bg-black/60 hover:bg-white/10 text-stone-300 border border-white/10'
-                        }`}
-                      >
-                        <span>{node.name.split('(')[0].trim()}</span>
-                        {isAmpera && isAmperaMatched ? (
-                          <span className="text-[9px] bg-black/40 text-emerald-200 px-1 rounded font-bold">MATCH</span>
-                        ) : (
-                          distStr && <span className="text-[9px] opacity-75 font-normal">({distStr})</span>
-                        )}
-                      </button>
-                    );
-                  })}
+                  {/* Dropdown for All 17 Regions */}
+                  <div className="relative shrink-0">
+                    <select
+                      value={arRegionFilter}
+                      onChange={(e) => setArRegionFilter(e.target.value as CulturalRegion | 'All')}
+                      aria-label="Pilih Daerah Se-Sumatera Selatan"
+                      className="text-[9px] font-mono bg-stone-900 text-amber-300 border border-amber-500/40 rounded-lg px-2 py-0.5 outline-none cursor-pointer hover:border-amber-400 transition-colors"
+                    >
+                      <option value="All" className="bg-stone-900 text-stone-200">Seluruh 17 Daerah Sumsel</option>
+                      <optgroup label="Kota Otonom" className="bg-stone-900 text-amber-400 font-bold">
+                        <option value="Palembang" className="bg-stone-900 text-stone-200">🏛️ Kota Palembang (Ibukota)</option>
+                        <option value="Pagaralam" className="bg-stone-900 text-stone-200">⛰️ Kota Pagar Alam</option>
+                        <option value="Prabumulih" className="bg-stone-900 text-stone-200">🍍 Kota Prabumulih</option>
+                        <option value="Lubuklinggau" className="bg-stone-900 text-stone-200">🌊 Kota Lubuklinggau</option>
+                      </optgroup>
+                      <optgroup label="13 Kabupaten" className="bg-stone-900 text-stone-400 font-bold">
+                        {ALL_SUMSEL_REGIONS.filter(r => !['Palembang', 'Pagaralam', 'Prabumulih', 'Lubuklinggau'].includes(r)).map(regId => (
+                          <option key={regId} value={regId} className="bg-stone-900 text-stone-200">
+                            {REGIONAL_INFO[regId]?.icon} {REGIONAL_INFO[regId]?.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    </select>
+                  </div>
                 </div>
+
+                {/* Nodes Horizontal Strip */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                    <span className="text-[10px] font-mono text-amber-400 font-bold uppercase pl-1 pr-1.5 shrink-0 flex items-center gap-1">
+                      <MapPin size={11} />
+                      Fokus AR:
+                    </span>
+                    {PALEMBANG_NODES
+                      .filter((n) => arRegionFilter === 'All' || (n.region || 'Palembang') === arRegionFilter)
+                      .map((node) => {
+                        const isSelected = selectedMarkerNode?.id === node.id;
+                        const marker = markersRef.current.get(node.id);
+                        const distStr = marker ? formatDistance(marker.distance) : '';
+                        const isAmpera = node.id === 'node-ampera';
+
+                        return (
+                          <button
+                            key={node.id}
+                            onClick={() => handleFocusSite(node)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-mono font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                              isAmpera && isAmperaMatched
+                                ? 'bg-emerald-500 text-stone-950 font-extrabold shadow-lg shadow-emerald-400/30 scale-105'
+                                : isSelected
+                                ? 'bg-amber-400 text-stone-950 font-extrabold shadow-lg shadow-amber-400/25 scale-105'
+                                : 'bg-black/60 hover:bg-white/10 text-stone-300 border border-white/10'
+                            }`}
+                          >
+                            <span>{node.name.split('(')[0].trim()}</span>
+                            {isAmpera && isAmperaMatched ? (
+                              <span className="text-[9px] bg-black/40 text-emerald-200 px-1 rounded font-bold">MATCH</span>
+                            ) : (
+                              distStr && <span className="text-[9px] opacity-75 font-normal">({distStr})</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                  </div>
 
                 {/* CAPTURE SNAPSHOT BUTTON */}
                 <button
@@ -1613,8 +1671,9 @@ export function ARHeritageViewerModal({
                 </button>
               </div>
             </div>
-          )}
-        </footer>
+          </div>
+        )}
+      </footer>
 
         {/* =========================================================================
             7. MODAL DETAIL DATA SAMPEL PENANDA 3D JEMBATAN AMPERA

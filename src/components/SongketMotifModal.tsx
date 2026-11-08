@@ -181,7 +181,7 @@ export function SongketMotifModal({
                             alt={motif.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).src = 'https://bagindorentcar.com/wp-content/uploads/2018/11/IMG_0359.jpg';
+                              (e.currentTarget as HTMLImageElement).src = 'https://sumeks.disway.id/upload/57bddaacfc0b15cdea1a12ff567fbaea.jpg';
                             }}
                           />
                         </div>
